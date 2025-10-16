@@ -89,18 +89,28 @@ The app will be available at `http://localhost:3000`
 
 ```
 src/
+├── app/                 
+│   ├── page.js          # Home page (root route)
+│   ├── layout.js        # Root layout shared across all routes
+│   ├── globals.css      # Global styles (includes Tailwind CSS)
+│   └── ...              # Additional route folders (e.g., about/, products/, etc.)
+│
 ├── components/
-│   ├── auth/           # Authentication components
-│   ├── common/         # Reusable components (Header, etc.)
-│   ├── home/           # Home page components
-│   └── products/       # Product-related components
-├── contexts/           # React Context providers
-├── firebase/           # Firebase configuration
-├── pages/              # Page components
-│   ├── seller/         # Seller dashboard pages
+│   ├── auth/            # Authentication components (Login, Signup, etc.)
+│   ├── common/          # Reusable shared components (Header, Footer, Navbar, etc.)
+│   ├── home/            # Components specific to the home page
+│   └── products/        # Product listing and detail components
+│
+├── contexts/            # React Context providers for global state management
+│
+├── firebase/            # Firebase configuration and initialization
+│
+├── pages/               # Optional legacy pages (for backward compatibility)
+│   ├── seller/          # Seller dashboard and related pages
 │   └── ...
-├── styles/             # Global styles
-└── App.js              # Main application component
+|
+└── App.js               # Main application entry point
+
 ```
 
 ## 🔧 Configuration
