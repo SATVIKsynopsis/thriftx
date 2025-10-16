@@ -1,0 +1,69 @@
+mutation SeedDatabase @auth(level: USER) {
+  user_upsertMany(data: [
+    {
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      displayName: "Test User 1",
+      email: "test1@example.com",
+      isSeller: false,
+      createdAt: "2024-01-01T00:00:00Z"
+    },
+    {
+      id: "550e8400-e29b-41d4-a716-446655440001",
+      displayName: "Test Seller 1",
+      email: "seller1@example.com",
+      isSeller: true,
+      createdAt: "2024-01-01T00:00:00Z"
+    }
+  ])
+  product_upsertMany(data: [
+    {
+      id: "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      sellerId: "550e8400-e29b-41d4-a716-446655440001",
+      name: "Sample Product 1",
+      description: "This is a sample product",
+      category: "Electronics",
+      price: 99.99,
+      stockQuantity: 100,
+      createdAt: "2024-01-02T00:00:00Z"
+    },
+    {
+      id: "fedcba98-7654-3210-0fed-cba987654321",
+      sellerId: "550e8400-e29b-41d4-a716-446655440001",
+      name: "Sample Product 2",
+      description: "This is another sample product",
+      category: "Books",
+      price: 19.99,
+      stockQuantity: 50,
+      createdAt: "2024-01-03T00:00:00Z"
+    }
+  ])
+    order_upsertMany(data: [
+    {
+      id: "00000000-e29b-41d4-a716-446655440000",
+      buyerId: "550e8400-e29b-41d4-a716-446655440000",
+      orderDate: "2024-01-04T00:00:00Z",
+      shippingAddress: "some address",
+      status: "pending",
+      totalAmount: 99.00,
+      trackingNumber: "some tracking number"
+    }
+  ])
+  orderItem_upsertMany(data: [
+    {
+      orderId: "00000000-e29b-41d4-a716-446655440000",
+      productId: "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      priceAtPurchase: 99.00,
+      quantity: 1,
+    }
+  ])
+    review_upsertMany(data: [
+    {
+      id: "11111111-e29b-41d4-a716-446655440000",
+      productId: "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      reviewerId: "550e8400-e29b-41d4-a716-446655440000",
+      comment: "some comment",
+      createdAt: "2024-01-04T00:00:00Z",
+      rating: 5,
+    }
+  ])
+}

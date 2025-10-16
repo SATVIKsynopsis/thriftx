@@ -1,0 +1,32 @@
+mutation AddNewReview @auth(level: USER) {
+  review_insert(data: {
+    productId: "550e8400-e29b-41d4-a716-446655440000",
+    reviewerId_expr: "auth.uid",
+    comment: "This product is amazing!",
+    rating: 5
+  })
+}
+
+query ListProductsByCategory @auth(level: PUBLIC) {
+  products(where: {category: {eq: "Electronics"}}) {
+    id
+    name
+    price
+    description
+  }
+}
+
+mutation UpdateProductStock @auth(level: USER) {
+  product_update(
+    key: {id: "550e8400-e29b-41d4-a716-446655440000"}
+    data: {stockQuantity: 100}
+  )
+}
+
+query ListMyProducts @auth(level: USER) {
+  products(where: {sellerId_expr: "auth.uid"}) {
+    id
+    name
+    price
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "name": "thriftx-marketplace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A sustainable fashion thrift store marketplace built with Next.js and Firebase",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "setup": "node scripts/setup.js",
+    "deploy": "next build && firebase deploy",
+    "deploy:rules": "firebase deploy --only firestore:rules,storage"
+  },
+  "dependencies": {
+    "@radix-ui/react-icons": "^1.3.2",
+    "firebase": "^12.4.0",
+    "framer-motion": "^12.23.24",
+    "lucide-react": "^0.546.0",
+    "motion": "^12.23.24",
+    "next": "15.5.5",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-hot-toast": "^2.6.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "eslint": "^9",
+    "eslint-config-next": "15.5.5",
+    "tailwindcss": "^4"
+  }
+}

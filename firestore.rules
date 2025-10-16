@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can read and write their own user document
+    // Super admin can read all users
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null && request.auth.token.email == 'admin@thriftx.com';
+    }
+    
+    // Products can be read by anyone, but only created/updated by authenticated users
+    match /products/{productId} {
+      allow read: if true;
+      allow create, update: if request.auth != null && request.auth.uid == resource.data.sellerId;
+      allow delete: if request.auth != null && (request.auth.uid == resource.data.sellerId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+    }
+    
+    // Orders can only be accessed by the buyer, seller, or admin
+    // Super admin can read all orders
+    match /orders/{orderId} {
+      allow read, write: if request.auth != null && 
+        (request.auth.uid == resource.data.buyerId || 
+         request.auth.uid == resource.data.sellerId ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+      allow read: if request.auth != null && request.auth.token.email == 'admin@thriftx.com';
+    }
+    
+    // Cart items can only be accessed by the owner
+    match /carts/{userId}/items/{itemId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Categories can be read by anyone, managed by admins
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Super admin has access to all collections
+    match /{document=**} {
+      allow read, write: if request.auth != null && request.auth.token.email == 'admin@thriftx.com';
+    }
+  }
+}
