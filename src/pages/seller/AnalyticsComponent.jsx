@@ -1,16 +1,18 @@
+"use client";
+
 import React, { useEffect, useState } from 'react';
 import { Line, Doughnut, Bar, Pie } from 'react-chartjs-2';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../../firebase/config';
-import { useAuth } from '../../contexts/AuthContext';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
-import { formatPrice } from '../../utils/formatters';
+import { db } from '@/firebase/config';
+import { useAuth } from '@/contexts/AuthContext';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import { formatPrice } from '@/utils/formatters';
 import { Star } from 'lucide-react';
 import { Chart as ChartJS, Title, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, ArcElement, BarElement } from 'chart.js';
 
 ChartJS.register(Title, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, ArcElement, BarElement);
 
-const SellerAnalytics = () => {
+const SellerAnalyticsComponent = () => {
   const { currentUser } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -221,4 +223,4 @@ const SellerAnalytics = () => {
   );
 };
 
-export default SellerAnalytics;
+export default SellerAnalyticsComponent;

@@ -223,7 +223,7 @@ const Header = () => {
                 <>
                   {/* Auth Links */}
                   <a href='/login' className='px-4 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-all'>Login</a>
-                  <a href='/register/buyer' className='px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all'>Register</a>
+                  <a href='/register/customer' className='px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all'>Register</a>
                 </>
               )}
             </nav>
@@ -305,7 +305,7 @@ const Header = () => {
               ) : (
                 <>
                   <a href='/login' onClick={() => setMobileMenuOpen(false)} className='block px-3 py-2 text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-md'>Login</a>
-                  <a href='/register/buyer' onClick={() => setMobileMenuOpen(false)} className='block px-3 py-2 text-base font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md text-center'>Register</a>
+                  <a href='/register/customer' onClick={() => setMobileMenuOpen(false)} className='block px-3 py-2 text-base font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md text-center'>Register</a>
                 </>
               )}
             </div>

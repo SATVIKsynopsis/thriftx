@@ -152,7 +152,7 @@ const LoginComponent = () => {
         <p className="text-gray-500 text-center mt-6 text-sm sm:text-base">
           Don’t have an account?{" "}
           <Link
-            href="/register/buyer"
+            href="/register/customer"
             className="text-blue-600 font-semibold hover:underline"
           >
             Sign up

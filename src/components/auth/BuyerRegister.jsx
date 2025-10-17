@@ -1,10 +1,13 @@
+"use client";
+
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import  Link from "next/link";
+import { useRouter} from 'next/navigation'
 import { Eye, EyeOff, Mail, Lock, User, MapPin, Heart, Users, Loader2 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import toast from "react-hot-toast";
 
-const Register = () => {
+const BuyerRegister = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -20,7 +23,7 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
 
   const { signup } = useAuth();
-  const navigate = useNavigate();
+  const navigate = useRouter();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -57,7 +60,7 @@ const Register = () => {
         sustainabilityGoals: formData.sustainabilityGoals.trim()
       });
       toast.success('Account created successfully!');
-      navigate('/');
+      navigate.push('/');
     } catch (error) {
       console.error('Registration error:', error);
       if (error.code === 'auth/email-already-in-use') {
@@ -77,7 +80,7 @@ const Register = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-500 to-indigo-600 p-4">
       <div className="bg-white rounded-xl shadow-lg p-4 sm:p-8 max-w-md w-full">
-        <h1 className="text-2xl font-bold text-center text-gray-800 mb-2">Buyer Signup</h1>
+        <h1 className="text-2xl font-bold text-center text-gray-800 mb-2">Customer Signup</h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <InputField label="Full Name" name="name" icon={<User size={20} />} value={formData.name} onChange={handleChange} error={errors.name} />
           <InputField label="Email" name="email" type="email" icon={<Mail size={20} />} value={formData.email} onChange={handleChange} error={errors.email} />
@@ -98,8 +101,8 @@ const Register = () => {
 
         </form>
         <p className="text-center text-sm sm:text-md text-gray-500 mt-4">
-          Want to become a <Link to="/register/seller" className="text-green-600 font-semibold">Seller ?</Link><br />
-          Already have an account? <Link to="/login" className="text-indigo-600 font-semibold">Sign in</Link>
+          Want to become a <Link href="/register/seller" className="text-green-600 font-semibold">Seller ?</Link><br />
+          Already have an account? <Link href="/login" className="text-indigo-600 font-semibold">Sign in</Link>
         </p>
       </div>
     </div>
@@ -122,4 +125,4 @@ const InputField = ({ label, name, type = "text", icon, value, onChange, error, 
   </div>
 );
 
-export default Register;
+export default BuyerRegister;

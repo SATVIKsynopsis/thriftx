@@ -1,15 +1,18 @@
+"use client";
+
 import React, { useEffect, useState, Fragment } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import Link from 'next/link';
+import { useParams } from "next/navigation";
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { db } from '../../firebase/config';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
-import { formatPrice } from '../../utils/formatters';
+import { db } from '@/firebase/config';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import { formatPrice } from '@/utils/formatters';
 import { Listbox, Transition } from '@headlessui/react';
 import { Check, ChevronDown,  Calendar,Phone, Mail, MapPin } from 'lucide-react';
 
 const statusOptions = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 
-const OrderDetails = () => {
+const OrderDetailsComponent = () => {
   const { orderId } = useParams();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -56,7 +59,7 @@ const OrderDetails = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
-        <Link to="/seller/orders" className="text-blue-600 mb-4 inline-block">
+        <Link href="/seller/orders" className="text-blue-600 mb-4 inline-block">
           &larr; Back to Orders
         </Link>
 
@@ -149,4 +152,4 @@ const OrderDetails = () => {
   );
 };
 
-export default OrderDetails;
+export default OrderDetailsComponent;

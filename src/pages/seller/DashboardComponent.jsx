@@ -1,20 +1,20 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import styled from 'styled-components';
-import '../../index.css';
-import { 
-  collection, 
-  query, 
-  where, 
-  getDocs, 
+import Link from 'next/link';
+import {
+  collection,
+  query,
+  where,
+  getDocs,
   orderBy,
   limit
 } from 'firebase/firestore';
-import { 
-  Package, 
-  ShoppingCart, 
-  IndianRupee, 
-  TrendingUp, 
+import {
+  Package,
+  ShoppingCart,
+  IndianRupee,
+  TrendingUp,
   Plus,
   Eye,
   Edit,
@@ -28,268 +28,251 @@ import { useAuth } from '../../contexts/AuthContext';
 import { formatPrice } from '../../utils/formatters';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
-const DashboardContainer = styled.div`
-  min-height: 100vh;
-  background: #f9fafb;
-  padding: 2rem 0;
-`;
+// Converted Styled Components to Tailwind CSS Class Wrappers/Components:
+// (These are kept from the previous conversion as they define the structure)
 
-const Container = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
-  
-  @media (max-width: 768px) {
-    padding: 0 1rem;
+const DashboardContainer = ({ children }) => (
+  <div className="min-h-screen bg-gray-50 py-8">
+    {children}
+  </div>
+);
+
+const Container = ({ children }) => (
+  <div className="max-w-7xl mx-auto px-8 lg:px-4 sm:px-2">
+    {children}
+  </div>
+);
+
+const Header = ({ children }) => (
+  <div className="mb-12">
+    {children}
+  </div>
+);
+
+const Title = ({ children }) => (
+  <h1 className="text-4xl font-bold text-gray-800 mb-2">
+    {children}
+  </h1>
+);
+
+const Subtitle = ({ children }) => (
+  <p className="text-lg text-gray-600">
+    {children}
+  </p>
+);
+
+const StatsGrid = ({ children }) => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+    {children}
+  </div>
+);
+
+const StatCard = ({ children }) => (
+  <div className="bg-white rounded-xl p-8 shadow-md border border-gray-200">
+    {children}
+  </div>
+);
+
+const StatHeader = ({ children, className = '' }) => (
+  <div className={`flex items-center justify-between mb-4 ${className}`}>
+    {children}
+  </div>
+);
+
+const StatIcon = ({ color, children }) => {
+  // Map color prop to a Tailwind background class
+  let bgColorClass = '';
+  switch (color) {
+    case '#2563eb': // blue-600
+      bgColorClass = 'bg-blue-600';
+      break;
+    case '#059669': // emerald-600
+      bgColorClass = 'bg-emerald-600';
+      break;
+    case '#dc2626': // red-600
+      bgColorClass = 'bg-red-600';
+      break;
+    case '#f59e0b': // amber-500
+      bgColorClass = 'bg-amber-500';
+      break;
+    default:
+      bgColorClass = 'bg-gray-500';
   }
-`;
 
-const Header = styled.div`
-  margin-bottom: 3rem;
-`;
+  return (
+    <div className={`flex items-center justify-center w-12 h-12 ${bgColorClass} rounded-lg text-white mr-4 flex-shrink-0`}>
+      {children}
+    </div>
+  );
+};
 
-const Title = styled.h1`
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 0.5rem;
-`;
+const StatInfo = ({ children, className = '' }) => (
+  <div className={`flex-1 ${className}`}>
+    {children}
+  </div>
+);
 
-const Subtitle = styled.p`
-  color: #6b7280;
-  font-size: 1.125rem;
-`;
+const StatValue = ({ children, className = '' }) => (
+  <div className={`text-3xl font-bold text-gray-800 ${className}`}>
+    {children}
+  </div>
+);
 
-const StatsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 3rem;
-`;
+const StatLabel = ({ children, className = '' }) => (
+  <div className={`text-sm text-gray-500 mb-1 ${className}`}>
+    {children}
+  </div>
+);
 
-const StatCard = styled.div`
-  background: white;
-  border-radius: 1rem;
-  padding: 2rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e5e7eb;
-`;
+const StatChange = ({ positive, children }) => (
+  <div className={`text-sm font-semibold ${positive ? 'text-emerald-600' : 'text-red-600'}`}>
+    {children}
+  </div>
+);
 
-const StatHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-`;
+const QuickActions = ({ children }) => (
+  <div className="bg-white rounded-xl p-8 shadow-md mb-12">
+    {children}
+  </div>
+);
 
-const StatIcon = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 3rem;
-  height: 3rem;
-  background: ${props => props.color};
-  border-radius: 0.75rem;
-  color: white;
-  margin-right: 1rem;
-`;
+const ActionsTitle = ({ children }) => (
+  <h2 className="text-2xl font-bold text-gray-800 mb-6">
+    {children}
+  </h2>
+);
 
-const StatInfo = styled.div`
-  flex: 1;
-`;
+const ActionsGrid = ({ children }) => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    {children}
+  </div>
+);
 
-const StatValue = styled.div`
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1f2937;
-`;
+const ActionButton = React.forwardRef(({ to, children, ...props }, ref) => (
+  <Link
+    href={to}
+    ref={ref}
+    className="flex items-center gap-4 p-6 bg-gray-50 border-2 border-gray-200 rounded-lg text-gray-700 transition-all hover:border-blue-600 hover:bg-blue-50 hover:text-blue-600"
+    {...props}
+  >
+    {children}
+  </Link>
+));
+ActionButton.displayName = 'ActionButton';
 
-const StatLabel = styled.div`
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin-bottom: 0.5rem;
-`;
+const ActionIcon = ({ children }) => (
+  <div className="flex items-center justify-center w-10 h-10 bg-blue-600 rounded-md text-white">
+    {children}
+  </div>
+);
 
-const StatChange = styled.div`
-  font-size: 0.875rem;
-  color: ${props => props.positive ? '#059669' : '#dc2626'};
-  font-weight: 600;
-`;
+const ActionInfo = ({ children }) => (
+  <div className="flex-1">
+    {children}
+  </div>
+);
 
-const QuickActions = styled.div`
-  background: white;
-  border-radius: 1rem;
-  padding: 2rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  margin-bottom: 3rem;
-`;
+const ActionTitle = ({ children }) => (
+  <div className="font-semibold mb-0.5">
+    {children}
+  </div>
+);
 
-const ActionsTitle = styled.h2`
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 1.5rem;
-`;
+const ActionDescription = ({ children }) => (
+  <div className="text-sm text-gray-500">
+    {children}
+  </div>
+);
 
-const ActionsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-`;
+const RecentSection = ({ children }) => (
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    {children}
+  </div>
+);
 
-const ActionButton = styled(Link)`
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.5rem;
-  background: #f9fafb;
-  border: 2px solid #e5e7eb;
-  border-radius: 0.75rem;
-  text-decoration: none;
-  color: #374151;
-  transition: all 0.2s;
-  
-  &:hover {
-    border-color: #2563eb;
-    background: #eff6ff;
-    color: #2563eb;
-  }
-`;
+const RecentCard = ({ children }) => (
+  <div className="bg-white rounded-xl p-8 shadow-md">
+    {children}
+  </div>
+);
 
-const ActionIcon = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  background: #2563eb;
-  border-radius: 0.5rem;
-  color: white;
-`;
+const RecentTitle = ({ children }) => (
+  <h3 className="text-xl font-bold text-gray-800 mb-6">
+    {children}
+  </h3>
+);
 
-const ActionInfo = styled.div`
-  flex: 1;
-`;
+const ProductList = ({ children }) => (
+  <div className="flex flex-col gap-4">
+    {children}
+  </div>
+);
 
-const ActionTitle = styled.div`
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-`;
+const ProductItem = ({ children }) => (
+  <div className="flex items-center gap-4 p-4 border border-gray-200 rounded-md transition-all hover:border-blue-600 hover:bg-gray-50">
+    {children}
+  </div>
+);
 
-const ActionDescription = styled.div`
-  font-size: 0.875rem;
-  color: #6b7280;
-`;
+const ProductImage = ({ alt, ...props }) => (
+  <img
+    className="w-12 h-12 object-cover rounded-md flex-shrink-0"
+    alt={alt}
+    {...props}
+  />
+);
 
-const RecentSection = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  
-  @media (max-width: 1024px) {
-    grid-template-columns: 1fr;
-  }
-`;
+const ProductImagePlaceholder = ({ children }) => (
+  <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center text-gray-400 text-xs flex-shrink-0">
+    {children}
+  </div>
+);
 
-const RecentCard = styled.div`
-  background: white;
-  border-radius: 1rem;
-  padding: 2rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-`;
+const ProductInfo = ({ children }) => (
+  <div className="flex-1 min-w-0">
+    {children}
+  </div>
+);
 
-const RecentTitle = styled.h3`
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 1.5rem;
-`;
+const ProductName = ({ children }) => (
+  <div className="font-semibold text-gray-800 mb-0.5 truncate">
+    {children}
+  </div>
+);
 
-const ProductList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`;
+const ProductDetails = ({ children, className = '' }) => (
+  <div className={`text-sm text-gray-500 ${className}`}>
+    {children}
+  </div>
+);
 
-const ProductItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  transition: all 0.2s;
-  
-  &:hover {
-    border-color: #2563eb;
-    background: #f9fafb;
-  }
-`;
+const ProductActions = ({ children }) => (
+  <div className="flex gap-2 flex-shrink-0">
+    {children}
+  </div>
+);
 
-const ProductImage = styled.img`
-  width: 3rem;
-  height: 3rem;
-  object-fit: cover;
-  border-radius: 0.5rem;
-`;
+const IconButton = React.forwardRef(({ to, title, children, ...props }, ref) => (
+  <Link
+    href={to}
+    ref={ref}
+    title={title}
+    className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-md text-gray-600 transition-all hover:bg-blue-600 hover:text-white"
+    {...props}
+  >
+    {children}
+  </Link>
+));
+IconButton.displayName = 'IconButton';
 
-const ProductImagePlaceholder = styled.div`
-  width: 3rem;
-  height: 3rem;
-  background: #f3f4f6;
-  border-radius: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #9ca3af;
-  font-size: 0.75rem;
-`;
+const EmptyState = ({ children }) => (
+  <div className="text-center p-8 text-gray-600">
+    {children}
+  </div>
+);
 
-const ProductInfo = styled.div`
-  flex: 1;
-`;
 
-const ProductName = styled.div`
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 0.25rem;
-`;
-
-const ProductDetails = styled.div`
-  font-size: 0.875rem;
-  color: #6b7280;
-`;
-
-const ProductActions = styled.div`
-  display: flex;
-  gap: 0.5rem;
-`;
-
-const IconButton = styled(Link)`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  background: #f3f4f6;
-  border-radius: 0.25rem;
-  color: #6b7280;
-  text-decoration: none;
-  transition: all 0.2s;
-  
-  &:hover {
-    background: #2563eb;
-    color: white;
-  }
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 2rem;
-  color: #6b7280;
-`;
-
-const Dashboard = () => {
+const DashboardComponent = () => {
   const [stats, setStats] = useState({
     totalProducts: 0,
     totalOrders: 0,
@@ -300,7 +283,7 @@ const Dashboard = () => {
   const [recentOrders, setRecentOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   const { currentUser } = useAuth();
 
   const fetchDashboardData = async () => {
@@ -320,7 +303,7 @@ const Dashboard = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       console.log('Fetching dashboard data for user:', currentUser.uid);
 
       // Fetch products with error handling
@@ -367,47 +350,47 @@ const Dashboard = () => {
         const ordersQuery = query(
           collection(db, 'orders'),
           where('sellerId', '==', currentUser.uid)
-          
+
         );
         const ordersSnapshot = await getDocs(ordersQuery);
-  orders = await Promise.all(
-    ordersSnapshot.docs.map(async (doc) => {
-      const orderData = doc.data();
-      const itemsWithImages = await Promise.all(
-        (orderData.items || []).map(async (item) => {
-          const productDoc = await getDocs(
-            query(collection(db, 'products'), where('__name__', '==', item.productId))
-          );
+        orders = await Promise.all(
+          ordersSnapshot.docs.map(async (doc) => {
+            const orderData = doc.data();
+            const itemsWithImages = await Promise.all(
+              (orderData.items || []).map(async (item) => {
+                const productDoc = await getDocs(
+                  query(collection(db, 'products'), where('__name__', '==', item.productId))
+                );
 
-          if (!productDoc.empty) {
-            const productData = productDoc.docs[0].data();
+                if (!productDoc.empty) {
+                  const productData = productDoc.docs[0].data();
+                  return {
+                    ...item,
+                    images: productData.images || [],
+                    name: productData.name || 'Product'
+                  };
+                }
+                return item;
+              })
+            );
             return {
-              ...item,
-              images: productData.images || [],
-              name: productData.name || 'Product'
+              id: doc.id,
+              ...orderData,
+              items: itemsWithImages
             };
-          }
-          return item;
-        })
-      );
-      return {
-        id: doc.id,
-        ...orderData,
-        items: itemsWithImages
-      };
-    })
-  );
-} catch (orderError) {
-  console.warn('Could not fetch orders:', orderError);
-  orders = [];
-}
+          })
+        );
+      } catch (orderError) {
+        console.warn('Could not fetch orders:', orderError);
+        orders = [];
+      }
 
 
       // Calculate stats with safeguards
       const totalProducts = products.length || 0;
       const totalOrders = orders.length || 0;
       const totalRevenue = orders.reduce((sum, order) => sum + (parseFloat(order.total) || 0), 0);
-      const avgRating = products.length > 0 
+      const avgRating = products.length > 0
         ? products.reduce((sum, product) => sum + (parseFloat(product.rating) || 0), 0) / products.length
         : 0;
 
@@ -423,17 +406,17 @@ const Dashboard = () => {
       setStats(newStats);
       setRecentProducts(recentProds);
       setRecentOrders(orders.slice(0, 5));
-      
+
       console.log('Dashboard data loaded successfully');
-      
+
       // Set default values if no data was found
       if (totalProducts === 0 && totalOrders === 0) {
         console.log('No data found, setting default empty state');
       }
-      
+
     } catch (error) {
       console.error('Critical error fetching dashboard data:', error);
-      
+
       // Provide more specific error messages
       let errorMessage = 'Failed to load dashboard data.';
       if (error.code === 'permission-denied') {
@@ -443,7 +426,7 @@ const Dashboard = () => {
       } else if (error.message) {
         errorMessage = `Error: ${error.message}`;
       }
-      
+
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -466,8 +449,8 @@ const Dashboard = () => {
     return (
       <DashboardContainer>
         <Container>
-          <LoadingSpinner 
-            text="Loading dashboard..." 
+          <LoadingSpinner
+            text="Loading dashboard..."
             height="400px"
             textColor="#6b7280"
           />
@@ -480,47 +463,24 @@ const Dashboard = () => {
     return (
       <DashboardContainer>
         <Container>
-          <div style={{ 
-            textAlign: 'center', 
-            padding: '4rem 0',
-            color: '#6b7280'
-          }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠️</div>
-            <h2 style={{ color: '#374151', marginBottom: '1rem' }}>Dashboard Error</h2>
-            <p style={{ marginBottom: '1rem' }}>{error}</p>
-            <p style={{ fontSize: '0.875rem', marginBottom: '2rem', color: '#9ca3af' }}>
+          <div className="text-center py-16 text-gray-600">
+            <div className="text-5xl mb-4">⚠️</div>
+            <h2 className="text-gray-700 mb-4 text-2xl font-semibold">Dashboard Error</h2>
+            <p className="mb-4">{error}</p>
+            <p className="text-sm mb-8 text-gray-400">
               This might be due to network issues or missing data. Check your internet connection and try again.
             </p>
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <button 
+            <div className="flex gap-4 justify-center flex-wrap">
+              <button
                 onClick={refreshDashboard}
-                style={{
-                  padding: '0.75rem 1.5rem',
-                  background: '#2563eb',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '0.5rem',
-                  cursor: 'pointer',
-                  fontSize: '1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}
+                className="py-3 px-6 bg-blue-600 text-white rounded-lg cursor-pointer text-base flex items-center gap-2 transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 <RefreshCw size={16} />
                 Retry
               </button>
-              <button 
-                onClick={() => window.location.reload()} 
-                style={{
-                  padding: '0.75rem 1.5rem',
-                  background: '#f3f4f6',
-                  color: '#374151',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '0.5rem',
-                  cursor: 'pointer',
-                  fontSize: '1rem'
-                }}
+              <button
+                onClick={() => window.location.reload()}
+                className="py-3 px-6 bg-gray-100 text-gray-700 border border-gray-200 rounded-lg cursor-pointer text-base transition-colors duration-200 hover:bg-gray-200"
               >
                 Reload Page
               </button>
@@ -535,39 +495,19 @@ const Dashboard = () => {
     <DashboardContainer>
       <Container>
         <Header>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div className="flex justify-between items-start">
             <div>
               <Title>Seller Dashboard</Title>
               <Subtitle>Manage your products and track your sales</Subtitle>
             </div>
             <button
               onClick={refreshDashboard}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.75rem 1rem',
-                background: '#f3f4f6',
-                border: '1px solid #e5e7eb',
-                borderRadius: '0.5rem',
-                cursor: 'pointer',
-                color: '#374151',
-                fontSize: '0.875rem',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.background = '#e5e7eb';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.background = '#f3f4f6';
-              }}
+              className="flex items-center gap-2 p-3 bg-gray-100 border border-gray-200 rounded-lg cursor-pointer text-gray-700 text-sm transition-all hover:bg-gray-200"
             >
               <RefreshCw size={16} />
               Refresh
             </button>
           </div>
-          
-
         </Header>
 
         <StatsGrid>
@@ -685,8 +625,8 @@ const Dashboard = () => {
                 {recentProducts.map((product) => (
                   <ProductItem key={product.id}>
                     {product.images && product.images.length > 0 ? (
-                      <ProductImage 
-                        src={product.images[0]} 
+                      <ProductImage
+                        src={product.images[0]}
                         alt={product.name}
                         onError={(e) => {
                           e.target.style.display = 'none';
@@ -698,14 +638,14 @@ const Dashboard = () => {
                         <Package size={16} />
                       </ProductImagePlaceholder>
                     )}
-                    
+
                     <ProductInfo>
                       <ProductName>{product.name}</ProductName>
                       <ProductDetails>
                         {formatPrice(product.price)} • Stock: {product.stock || 0}
                       </ProductDetails>
                     </ProductInfo>
-                    
+
                     <ProductActions>
                       <IconButton to={`/product/${product.id}`} title="View">
                         <Eye size={16} />
@@ -719,19 +659,12 @@ const Dashboard = () => {
               </ProductList>
             ) : (
               <EmptyState>
-                <Package size={48} style={{ margin: '0 auto 1rem', display: 'block' }} />
+                <Package size={48} className="mx-auto mb-4 block" />
                 <p>No products yet</p>
-                <p style={{ fontSize: '0.875rem', color: '#9ca3af', marginBottom: '1rem' }}>
+                <p className="text-sm text-gray-400 mb-4">
                   Start your sustainable fashion journey by adding your first product
                 </p>
-                <Link to="/seller/products/add" style={{ 
-                  color: '#2563eb',
-                  textDecoration: 'none',
-                  padding: '0.5rem 1rem',
-                  border: '1px solid #2563eb',
-                  borderRadius: '0.5rem',
-                  transition: 'all 0.2s'
-                }}>
+                <Link to="/seller/products/add" className="text-blue-600 border border-blue-600 rounded-lg py-2 px-4 transition-all hover:bg-blue-50">
                   Add Your First Product
                 </Link>
               </EmptyState>
@@ -748,14 +681,14 @@ const Dashboard = () => {
                   return (
                     <Link
                       key={order.id}
-                      to={`/seller/orders/${order.id}`}
-                      style={{ textDecoration: 'none', color: 'inherit' }}
+                      href={`/seller/orders/${order.id}`}
+                      className="text-inherit no-underline"
                     >
                       <ProductItem>
                         {productImage ? (
-                          <ProductImage 
-                            src={productImage} 
-                            alt={firstItem?.name || 'Product'} 
+                          <ProductImage
+                            src={productImage}
+                            alt={firstItem?.name || 'Product'}
                             onError={(e) => {
                               e.target.style.display = 'none';
                               e.target.nextElementSibling.style.display = 'flex';
@@ -771,7 +704,7 @@ const Dashboard = () => {
                           <ProductDetails>
                             {formatPrice(order.total)} • {order.status}
                           </ProductDetails>
-                          <ProductDetails style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
+                          <ProductDetails className="text-xs text-gray-400">
                             {order.createdAt ? new Date(order.createdAt.seconds * 1000).toLocaleDateString() : ''}
                           </ProductDetails>
                         </ProductInfo>
@@ -782,19 +715,12 @@ const Dashboard = () => {
               </ProductList>
             ) : (
               <EmptyState>
-                <ShoppingCart size={48} style={{ margin: '0 auto 1rem', display: 'block' }} />
+                <ShoppingCart size={48} className="mx-auto mb-4 block" />
                 <p>No orders yet</p>
-                <p style={{ fontSize: '0.875rem', color: '#9ca3af', marginBottom: '1rem' }}>
+                <p className="text-sm text-gray-400 mb-4">
                   Orders will appear here once customers start buying your products
                 </p>
-                <Link to="/seller/products/add" style={{ 
-                  color: '#2563eb',
-                  textDecoration: 'none',
-                  padding: '0.5rem 1rem',
-                  border: '1px solid #2563eb',
-                  borderRadius: '0.5rem',
-                  transition: 'all 0.2s'
-                }}>
+                <Link to="/seller/products/add" className="text-blue-600 border border-blue-600 rounded-lg py-2 px-4 transition-all hover:bg-blue-50">
                   Add More Products
                 </Link>
               </EmptyState>
@@ -806,4 +732,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default DashboardComponent;

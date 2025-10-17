@@ -1,11 +1,12 @@
+import ProductsComponent from '@/pages/seller/ProductsComponent'
 import React from 'react'
 
-const SellerProductsPage = () => {
+const Products = () => {
   return (
     <div>
-      
+      <ProductsComponent />
     </div>
   )
 }
 
-export default SellerProductsPage
+export default Products

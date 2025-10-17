@@ -1,11 +1,12 @@
+import OrdersComponent from '@/pages/OrdersComponent'
 import React from 'react'
 
-const SellerOrdersPage = () => {
+const Orders = () => {
   return (
     <div>
-      
+      <OrdersComponent />
     </div>
   )
 }
 
-export default SellerOrdersPage
+export default Orders

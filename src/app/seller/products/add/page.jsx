@@ -1,11 +1,12 @@
+import AddProductComponent from '@/pages/seller/AddProductComponent'
 import React from 'react'
 
-const SellerAddProductsPage = () => {
+const AddProduct = () => {
   return (
     <div>
-      
+      <AddProductComponent />
     </div>
   )
 }
 
-export default SellerAddProductsPage
+export default AddProduct

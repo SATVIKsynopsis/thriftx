@@ -1,11 +1,12 @@
+import OrderDetailsComponent from '@/pages/seller/OrderDetails';
 import React from 'react'
 
-const SellerCustomerOrderPage = () => {
+const OrderDetails = () => {
   return (
     <div>
-      
+      <OrderDetailsComponent />
     </div>
   )
 }
 
-export default SellerCustomerOrderPage
+export default OrderDetails;

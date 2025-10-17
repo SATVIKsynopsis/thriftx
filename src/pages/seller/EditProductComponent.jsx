@@ -1,361 +1,290 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
+import { useParams, useRouter } from 'next/navigation';
+// Removed styled-components import
 import { useForm } from 'react-hook-form';
-import { 
-  Upload, 
-  X, 
-  Package, 
-  IndianRupee, 
-  FileText, 
-  Image as ImageIcon,
+import {
+  Upload,
+  X,
+  Package,
+  IndianRupee,
+  ImageIcon,
   Save,
   ArrowLeft
 } from 'lucide-react';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '../../firebase/config';
-import { useAuth } from '../../contexts/AuthContext';
-import { CATEGORIES, PRODUCT_CONDITIONS } from '../../utils/constants';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { db, storage } from '@/firebase/config';
+import { useAuth } from '@/contexts/AuthContext';
+// Assuming these are accessible constants and components
+import { CATEGORIES, PRODUCT_CONDITIONS } from '@/utils/constants';
+import LoadingSpinner from '@/components/common/LoadingSpinner'; 
 import toast from 'react-hot-toast';
 import { v4 as uuidv4 } from 'uuid';
 
-// Reuse styled components from AddProduct
-const EditProductContainer = styled.div`
-  min-height: 100vh;
-  background: #f9fafb;
-  padding: 2rem 0;
-`;
+// --- Tailwind CSS Helper Components (Replacing Styled Components) ---
 
-const Container = styled.div`
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 0 2rem;
-  
-  @media (max-width: 768px) {
-    padding: 0 1rem;
+const EditProductContainer = ({ children }) => (
+  <div className="min-h-screen bg-gray-50 py-8">
+    {children}
+  </div>
+);
+
+const Container = ({ children }) => (
+  <div className="max-w-4xl mx-auto px-4 lg:px-6">
+    {children}
+  </div>
+);
+
+const BackButton = ({ onClick, children }) => (
+  <button
+    onClick={onClick}
+    className="inline-flex items-center gap-2 bg-transparent border-none text-gray-600 cursor-pointer mb-8 p-2 rounded-lg transition-all duration-200 hover:text-blue-600 hover:bg-gray-100"
+  >
+    {children}
+  </button>
+);
+
+const Header = ({ children }) => (
+  <div className="mb-8">
+    {children}
+  </div>
+);
+
+const Title = ({ children }) => (
+  <h1 className="text-3xl font-bold text-gray-900 mb-1 sm:text-4xl">
+    {children}
+  </h1>
+);
+
+const Subtitle = ({ children }) => (
+  <p className="text-lg text-gray-600">
+    {children}
+  </p>
+);
+
+const Form = ({ children, onSubmit }) => (
+  <form
+    onSubmit={onSubmit}
+    className="bg-white rounded-xl p-6 lg:p-8 shadow-lg border border-gray-100"
+  >
+    {children}
+  </form>
+);
+
+const Section = ({ children }) => (
+  <div className="mb-8 last:mb-0">
+    {children}
+  </div>
+);
+
+const SectionTitle = ({ children }) => (
+  <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2 border-b pb-2">
+    {children}
+  </h2>
+);
+
+const FormRow = ({ columns = '1fr', children }) => {
+  // Translate CSS grid template into Tailwind classes
+  let gridClass = 'grid-cols-1 md:grid-cols-1';
+  if (columns === '1fr 1fr') {
+    gridClass = 'grid-cols-1 md:grid-cols-2';
+  } else if (columns === '1fr 1fr 1fr') {
+    gridClass = 'grid-cols-1 md:grid-cols-3';
   }
-`;
 
-const BackButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: none;
-  border: none;
-  color: #6b7280;
-  cursor: pointer;
-  margin-bottom: 2rem;
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-  transition: all 0.2s;
-  
-  &:hover {
-    color: #2563eb;
-    background: #f3f4f6;
+  return (
+    <div className={`grid ${gridClass} gap-4 mb-4`}>
+      {children}
+    </div>
+  );
+};
+
+const FormGroup = ({ children }) => <div>{children}</div>;
+
+const Label = ({ htmlFor, children }) => (
+  <label
+    htmlFor={htmlFor}
+    className="block font-medium text-gray-700 mb-1.5"
+  >
+    {children}
+  </label>
+);
+
+const BaseInput = "w-full p-3 border-2 border-gray-200 rounded-lg text-base transition-all duration-200 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100";
+const ErrorClass = "border-red-500 focus:border-red-500 focus:ring-red-100";
+
+const Input = React.forwardRef(({ className, error, ...props }, ref) => (
+  <input
+    ref={ref}
+    className={`${BaseInput} ${error ? ErrorClass : ''} ${className}`}
+    {...props}
+  />
+));
+Input.displayName = 'Input';
+
+const TextArea = React.forwardRef(({ className, error, ...props }, ref) => (
+  <textarea
+    ref={ref}
+    className={`${BaseInput} min-h-[120px] resize-y ${error ? ErrorClass : ''} ${className}`}
+    {...props}
+  />
+));
+TextArea.displayName = 'TextArea';
+
+const Select = React.forwardRef(({ className, error, ...props }, ref) => (
+  <select
+    ref={ref}
+    className={`${BaseInput} bg-white ${error ? ErrorClass : ''} ${className}`}
+    {...props}
+  />
+));
+Select.displayName = 'Select';
+
+
+const ErrorMessage = ({ children }) => (
+  <span className="text-red-500 text-sm mt-1 block">
+    {children}
+  </span>
+);
+
+const ImageUploadArea = ({ dragOver, onClick, onDragOver, onDragLeave, onDrop, children }) => (
+  <div
+    className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200 bg-gray-50
+      ${dragOver ? 'border-blue-600 bg-blue-50' : 'border-gray-300 hover:border-blue-500 hover:bg-blue-50'}
+    `}
+    onClick={onClick}
+    onDragOver={onDragOver}
+    onDragLeave={onDragLeave}
+    onDrop={onDrop}
+  >
+    {children}
+  </div>
+);
+
+const UploadIcon = ({ children }) => (
+  <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-200 rounded-full mb-4 text-gray-600">
+    {children}
+  </div>
+);
+
+const UploadText = ({ children }) => (
+  <p className="text-gray-600 font-medium mb-1">
+    {children}
+  </p>
+);
+
+const UploadSubtext = ({ children }) => (
+  <p className="text-gray-400 text-sm">
+    {children}
+  </p>
+);
+
+const HiddenInput = (props) => (
+  <input
+    className="hidden"
+    {...props}
+  />
+);
+
+const ImagePreviewGrid = ({ children }) => (
+  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4">
+    {children}
+  </div>
+);
+
+const ImagePreview = ({ children }) => (
+  <div className="relative w-full aspect-square rounded-lg overflow-hidden border-2 border-gray-200">
+    {children}
+  </div>
+);
+
+const PreviewImage = ({ alt, ...props }) => (
+  <img
+    className="w-full h-full object-cover"
+    alt={alt}
+    {...props}
+  />
+);
+
+const RemoveImageButton = ({ onClick, children }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className="absolute top-1 right-1 bg-black bg-opacity-50 text-white border-none rounded-full w-6 h-6 flex items-center justify-center cursor-pointer transition-all duration-200 hover:bg-opacity-70"
+  >
+    {children}
+  </button>
+);
+
+const ActionButtons = ({ children }) => (
+  <div className="flex gap-4 mt-8 pt-6 border-t border-gray-200 flex-col sm:flex-row">
+    {children}
+  </div>
+);
+
+const Button = ({ type = 'button', className, disabled, onClick, children }) => {
+  const baseClasses = "flex-1 flex items-center justify-center gap-2 py-3 px-6 rounded-xl font-semibold text-base cursor-pointer transition-all duration-200 border-none shadow-md";
+  const primaryClasses = "bg-blue-600 text-white hover:bg-blue-700";
+  const secondaryClasses = "bg-gray-200 text-gray-700 hover:bg-gray-300";
+  const disabledClasses = "bg-gray-400 text-white cursor-not-allowed shadow-none";
+
+  let finalClasses = baseClasses;
+  if (className === 'primary') {
+    finalClasses += ` ${primaryClasses}`;
+  } else if (className === 'secondary') {
+    finalClasses += ` ${secondaryClasses}`;
   }
-`;
 
-const Header = styled.div`
-  margin-bottom: 2rem;
-`;
+  return (
+    <button
+      type={type}
+      className={`${finalClasses} ${disabled ? disabledClasses : ''}`}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  );
+};
 
-const Title = styled.h1`
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 0.5rem;
-`;
+// --- Component Logic ---
 
-const Subtitle = styled.p`
-  color: #6b7280;
-  font-size: 1.125rem;
-`;
+const EditProductComponent = () => {
+  const params = useParams();
+  const router = useRouter();
+  const id = params.id; // Get product ID from Next.js dynamic route
 
-const Form = styled.form`
-  background: white;
-  border-radius: 1rem;
-  padding: 2rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-`;
-
-const Section = styled.div`
-  margin-bottom: 2rem;
-  
-  &:last-child {
-    margin-bottom: 0;
-  }
-`;
-
-const SectionTitle = styled.h2`
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-`;
-
-const FormRow = styled.div`
-  display: grid;
-  grid-template-columns: ${props => props.columns || '1fr'};
-  gap: 1rem;
-  margin-bottom: 1rem;
-`;
-
-const FormGroup = styled.div``;
-
-const Label = styled.label`
-  display: block;
-  font-weight: 500;
-  color: #374151;
-  margin-bottom: 0.5rem;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  transition: all 0.2s;
-  
-  &:focus {
-    outline: none;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-  }
-  
-  &.error {
-    border-color: #ef4444;
-  }
-`;
-
-const TextArea = styled.textarea`
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  resize: vertical;
-  min-height: 120px;
-  font-family: inherit;
-  transition: all 0.2s;
-  
-  &:focus {
-    outline: none;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-  }
-  
-  &.error {
-    border-color: #ef4444;
-  }
-`;
-
-const Select = styled.select`
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  background: white;
-  transition: all 0.2s;
-  
-  &:focus {
-    outline: none;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-  }
-  
-  &.error {
-    border-color: #ef4444;
-  }
-`;
-
-const ErrorMessage = styled.span`
-  color: #ef4444;
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
-  display: block;
-`;
-
-const ImageUploadArea = styled.div`
-  border: 2px dashed #d1d5db;
-  border-radius: 0.75rem;
-  padding: 2rem;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  background: #fafafa;
-  
-  &:hover {
-    border-color: #2563eb;
-    background: #eff6ff;
-  }
-  
-  &.dragover {
-    border-color: #2563eb;
-    background: #eff6ff;
-  }
-`;
-
-const UploadIcon = styled.div`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 4rem;
-  height: 4rem;
-  background: #e5e7eb;
-  border-radius: 50%;
-  margin-bottom: 1rem;
-  color: #6b7280;
-`;
-
-const UploadText = styled.p`
-  color: #6b7280;
-  margin-bottom: 0.5rem;
-`;
-
-const UploadSubtext = styled.p`
-  color: #9ca3af;
-  font-size: 0.875rem;
-`;
-
-const HiddenInput = styled.input`
-  display: none;
-`;
-
-const ImagePreviewGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
-`;
-
-const ImagePreview = styled.div`
-  position: relative;
-  width: 120px;
-  height: 120px;
-  border-radius: 0.5rem;
-  overflow: hidden;
-  border: 2px solid #e5e7eb;
-`;
-
-const PreviewImage = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-`;
-
-const RemoveImageButton = styled.button`
-  position: absolute;
-  top: 0.25rem;
-  right: 0.25rem;
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 1.5rem;
-  height: 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  
-  &:hover {
-    background: rgba(0, 0, 0, 0.7);
-  }
-`;
-
-const ActionButtons = styled.div`
-  display: flex;
-  gap: 1rem;
-  margin-top: 2rem;
-  padding-top: 2rem;
-  border-top: 1px solid #e5e7eb;
-  
-  @media (max-width: 768px) {
-    flex-direction: column;
-  }
-`;
-
-const Button = styled.button`
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 1rem 2rem;
-  border-radius: 0.75rem;
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-  
-  &.primary {
-    background: #2563eb;
-    color: white;
-    
-    &:hover {
-      background: #1d4ed8;
-    }
-  }
-  
-  &.secondary {
-    background: #f3f4f6;
-    color: #374151;
-    
-    &:hover {
-      background: #e5e7eb;
-    }
-  }
-  
-  &:disabled {
-    background: #9ca3af;
-    color: white;
-    cursor: not-allowed;
-  }
-`;
-
-
-
-
-
-const EditProduct = () => {
-  const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [images, setImages] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [dragOver, setDragOver] = useState(false);
-  
+
   const { currentUser } = useAuth();
-  const navigate = useNavigate();
-  
-  const { register, handleSubmit, formState: { errors }, setValue, reset } = useForm();
+
+  const { register, handleSubmit, formState: { errors }, reset } = useForm();
 
   useEffect(() => {
     const fetchProduct = async () => {
+      if (!id || !currentUser) return;
+
       try {
         const productDoc = await getDoc(doc(db, 'products', id));
-        
+
         if (productDoc.exists()) {
           const productData = { id: productDoc.id, ...productDoc.data() };
-          
+
           // Check if current user owns this product
           if (productData.sellerId !== currentUser.uid) {
             toast.error('You do not have permission to edit this product');
-            navigate('/seller/products');
+            router.push('/seller/products');
             return;
           }
-          
+
           setProduct(productData);
-          
+
           // Set form values
           reset({
             name: productData.name,
@@ -366,7 +295,7 @@ const EditProduct = () => {
             originalPrice: productData.originalPrice || '',
             stock: productData.stock
           });
-          
+
           // Set existing images
           if (productData.images) {
             const existingImages = productData.images.map((url, index) => ({
@@ -377,10 +306,10 @@ const EditProduct = () => {
             }));
             setImages(existingImages);
           }
-          
+
         } else {
           toast.error('Product not found');
-          navigate('/seller/products');
+          router.push('/seller/products');
         }
       } catch (error) {
         console.error('Error fetching product:', error);
@@ -390,15 +319,21 @@ const EditProduct = () => {
       }
     };
 
-    if (currentUser) {
-      fetchProduct();
-    }
-  }, [id, currentUser, navigate, reset]);
+    fetchProduct();
+  }, [id, currentUser, router, reset]); // Added id and router to dependency array
 
   const handleImageUpload = (files) => {
-    const newImages = Array.from(files).slice(0, 5 - images.length);
-    
-    newImages.forEach(file => {
+    // Only allow up to 5 images total
+    const maxFiles = 5;
+    const currentCount = images.length;
+    const newFiles = Array.from(files).slice(0, maxFiles - currentCount);
+
+    if (newFiles.length === 0 && currentCount === maxFiles) {
+      toast.error(`You can only upload a maximum of ${maxFiles} images.`);
+      return;
+    }
+
+    newFiles.forEach(file => {
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -410,12 +345,16 @@ const EditProduct = () => {
           }]);
         };
         reader.readAsDataURL(file);
+      } else {
+        toast.error(`File '${file.name}' is not an image and was skipped.`);
       }
     });
   };
 
   const handleFileSelect = (e) => {
     handleImageUpload(e.target.files);
+    // Clear input value to allow selecting the same file(s) again
+    e.target.value = null; 
   };
 
   const handleDragOver = (e) => {
@@ -453,19 +392,25 @@ const EditProduct = () => {
 
   const onSubmit = async (data) => {
     setUploading(true);
-    
+
+    if (images.length === 0) {
+      toast.error('Please upload at least one image for the product.');
+      setUploading(false);
+      return;
+    }
+
     try {
       // Upload new images
       const newImageUrls = await uploadNewImages();
-      
+
       // Get existing image URLs
       const existingImageUrls = images
         .filter(img => img.isExisting)
         .map(img => img.url);
-      
+
       // Combine all image URLs
       const allImageUrls = [...existingImageUrls, ...newImageUrls];
-      
+
       // Update product document
       const productData = {
         ...data,
@@ -475,12 +420,12 @@ const EditProduct = () => {
         images: allImageUrls,
         updatedAt: serverTimestamp()
       };
-      
+
       await updateDoc(doc(db, 'products', id), productData);
-      
-      toast.success('Product updated successfully!');
-      navigate('/seller/products');
-      
+
+      toast.success('Product updated successfully! 🎉');
+      router.push('/seller/products');
+
     } catch (error) {
       console.error('Error updating product:', error);
       toast.error('Failed to update product. Please try again.');
@@ -493,8 +438,8 @@ const EditProduct = () => {
     return (
       <EditProductContainer>
         <Container>
-          <LoadingSpinner>
-            <div className="loading-spinner" />
+          <LoadingSpinner className="flex items-center justify-center min-h-[400px] text-gray-600 text-lg">
+            <div className="animate-spin h-6 w-6 border-4 border-blue-500 border-t-transparent rounded-full mr-4" />
             Loading product details...
           </LoadingSpinner>
         </Container>
@@ -503,12 +448,16 @@ const EditProduct = () => {
   }
 
   if (!product) {
+    // This state is primarily for if the product is not found after loading finishes
     return (
       <EditProductContainer>
         <Container>
-          <div style={{ textAlign: 'center', padding: '4rem 0' }}>
-            <h2>Product not found</h2>
-            <p>The product you're trying to edit doesn't exist or has been removed.</p>
+          <div className="text-center p-16 bg-white rounded-xl shadow-lg mt-10">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Product Not Found 😔</h2>
+            <p className="text-gray-600">The product you're trying to edit doesn't exist or has been removed.</p>
+            <Button className="primary mt-6 mx-auto" onClick={() => router.push('/seller/products')}>
+                Go to Product List
+            </Button>
           </div>
         </Container>
       </EditProductContainer>
@@ -518,7 +467,7 @@ const EditProduct = () => {
   return (
     <EditProductContainer>
       <Container>
-        <BackButton onClick={() => navigate('/seller/products')}>
+        <BackButton onClick={() => router.push('/seller/products')}>
           <ArrowLeft size={20} />
           Back to Products
         </BackButton>
@@ -534,13 +483,13 @@ const EditProduct = () => {
               <Package size={20} />
               Basic Information
             </SectionTitle>
-            
+
             <FormGroup>
               <Label htmlFor="name">Product Name</Label>
               <Input
                 id="name"
                 {...register('name', { required: 'Product name is required' })}
-                className={errors.name ? 'error' : ''}
+                error={errors.name}
                 placeholder="Enter product name"
               />
               {errors.name && <ErrorMessage>{errors.name.message}</ErrorMessage>}
@@ -551,7 +500,7 @@ const EditProduct = () => {
               <TextArea
                 id="description"
                 {...register('description', { required: 'Description is required' })}
-                className={errors.description ? 'error' : ''}
+                error={errors.description}
                 placeholder="Describe your product in detail"
               />
               {errors.description && <ErrorMessage>{errors.description.message}</ErrorMessage>}
@@ -563,13 +512,13 @@ const EditProduct = () => {
                 <Select
                   id="category"
                   {...register('category', { required: 'Category is required' })}
-                  className={errors.category ? 'error' : ''}
+                  error={errors.category}
                 >
-                                  {CATEGORIES.map(cat => (
-                  <option key={cat.value} value={cat.value}>
-                    {cat.label}
-                  </option>
-                ))}
+                  {CATEGORIES.map(cat => (
+                    <option key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </option>
+                  ))}
                 </Select>
                 {errors.category && <ErrorMessage>{errors.category.message}</ErrorMessage>}
               </FormGroup>
@@ -579,14 +528,14 @@ const EditProduct = () => {
                 <Select
                   id="condition"
                   {...register('condition', { required: 'Condition is required' })}
-                  className={errors.condition ? 'error' : ''}
+                  error={errors.condition}
                 >
                   <option value="">Select condition</option>
-                  <option value="new">New</option>
-                  <option value="like-new">Like New</option>
-                  <option value="good">Good</option>
-                  <option value="fair">Fair</option>
-                  <option value="poor">Poor</option>
+                  {PRODUCT_CONDITIONS.map(cond => ( // Using the imported constant
+                    <option key={cond.value} value={cond.value}>
+                      {cond.label}
+                    </option>
+                  ))}
                 </Select>
                 {errors.condition && <ErrorMessage>{errors.condition.message}</ErrorMessage>}
               </FormGroup>
@@ -598,7 +547,7 @@ const EditProduct = () => {
               <IndianRupee size={20} />
               Pricing & Inventory
             </SectionTitle>
-            
+
             <FormRow columns="1fr 1fr 1fr">
               <FormGroup>
                 <Label htmlFor="price">Price (₹)</Label>
@@ -607,18 +556,18 @@ const EditProduct = () => {
                   type="number"
                   step="0.01"
                   min="0"
-                  {...register('price', { 
+                  {...register('price', {
                     required: 'Price is required',
                     min: { value: 0.01, message: 'Price must be greater than 0' }
                   })}
-                  className={errors.price ? 'error' : ''}
+                  error={errors.price}
                   placeholder="0.00"
                 />
                 {errors.price && <ErrorMessage>{errors.price.message}</ErrorMessage>}
               </FormGroup>
 
               <FormGroup>
-                <Label htmlFor="originalPrice">Original Price (₹)</Label>
+                <Label htmlFor="originalPrice">Original Price (₹) <span className="text-gray-400 text-sm">(Optional)</span></Label>
                 <Input
                   id="originalPrice"
                   type="number"
@@ -635,11 +584,12 @@ const EditProduct = () => {
                   id="stock"
                   type="number"
                   min="0"
-                  {...register('stock', { 
+                  {...register('stock', {
                     required: 'Stock quantity is required',
-                    min: { value: 0, message: 'Stock cannot be negative' }
+                    min: { value: 0, message: 'Stock cannot be negative' },
+                    valueAsNumber: true
                   })}
-                  className={errors.stock ? 'error' : ''}
+                  error={errors.stock}
                   placeholder="0"
                 />
                 {errors.stock && <ErrorMessage>{errors.stock.message}</ErrorMessage>}
@@ -652,10 +602,10 @@ const EditProduct = () => {
               <ImageIcon size={20} />
               Product Images
             </SectionTitle>
-            
+
             {images.length < 5 && (
               <ImageUploadArea
-                className={dragOver ? 'dragover' : ''}
+                dragOver={dragOver}
                 onClick={() => document.getElementById('imageInput').click()}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -665,8 +615,8 @@ const EditProduct = () => {
                   <Upload size={24} />
                 </UploadIcon>
                 <UploadText>Click to upload or drag and drop</UploadText>
-                <UploadSubtext>PNG, JPG, GIF up to 10MB (max 5 images)</UploadSubtext>
-                
+                <UploadSubtext>PNG, JPG, GIF up to 10MB (max 5 images total)</UploadSubtext>
+
                 <HiddenInput
                   id="imageInput"
                   type="file"
@@ -676,6 +626,11 @@ const EditProduct = () => {
                 />
               </ImageUploadArea>
             )}
+            {images.length === 5 && (
+                 <p className="text-sm text-center text-blue-600 font-medium p-4 border border-blue-100 bg-blue-50 rounded-lg">
+                    Maximum 5 images reached. Remove an image to upload a new one.
+                 </p>
+            )}
 
             {images.length > 0 && (
               <ImagePreviewGrid>
@@ -683,7 +638,6 @@ const EditProduct = () => {
                   <ImagePreview key={image.id}>
                     <PreviewImage src={image.preview} alt="Preview" />
                     <RemoveImageButton
-                      type="button"
                       onClick={() => removeImage(image.id)}
                     >
                       <X size={12} />
@@ -696,9 +650,8 @@ const EditProduct = () => {
 
           <ActionButtons>
             <Button
-              type="button"
               className="secondary"
-              onClick={() => navigate('/seller/products')}
+              onClick={() => router.push('/seller/products')}
             >
               Cancel
             </Button>
@@ -709,7 +662,7 @@ const EditProduct = () => {
             >
               {uploading ? (
                 <>
-                  <div className="loading-spinner" />
+                  <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full mr-2" />
                   Updating...
                 </>
               ) : (
@@ -726,4 +679,4 @@ const EditProduct = () => {
   );
 };
 
-export default EditProduct;
+export default EditProductComponent;

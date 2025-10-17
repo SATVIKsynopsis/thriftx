@@ -1,11 +1,12 @@
+import EditProductComponent from '@/pages/seller/EditProductComponent'
 import React from 'react'
 
-const SellerEditProductPage = () => {
+const EditProduct = () => {
   return (
     <div>
-      
+      <EditProductComponent />
     </div>
   )
 }
 
-export default SellerEditProductPage
+export default EditProduct

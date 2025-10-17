@@ -1,10 +1,14 @@
+"use client";
+
+
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import  Link from "next/link";
+import { useRouter} from 'next/navigation'
 import { Eye, EyeOff, Mail, Lock, User, MapPin, Heart, Users } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import toast from "react-hot-toast";
 
-const Seller = () => {
+const SellerRegister = () => {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -20,7 +24,7 @@ const Seller = () => {
     const [loading, setLoading] = useState(false);
 
     const { signup } = useAuth();
-    const navigate = useNavigate();
+    const navigate = useRouter();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -55,7 +59,7 @@ const Seller = () => {
                 sustainabilityGoals: formData.sustainabilityGoals.trim()
             });
             toast.success('Account created successfully!');
-            navigate('/');
+            navigate.push('/');
         } catch (error) {
             console.error('Registration error:', error);
             if (error.code === 'auth/email-already-in-use') {
@@ -97,8 +101,8 @@ const Seller = () => {
                 </form>
 
                 <p className="text-center text-sm sm:text-md text-gray-500 mt-4">
-                    Want to become a <Link to="/register/buyer" className="text-green-600 font-semibold underline">Customer ?</Link><br />
-                    Already have an account? <Link to="/login" className="text-indigo-600 font-semibold">Sign in</Link>
+                    Want to become a <Link href="/register/customer" className="text-green-600 font-semibold underline">Customer ?</Link><br />
+                    Already have an account? <Link href="/login" className="text-indigo-600 font-semibold">Sign in</Link>
                 </p>
             </div>
         </div>
@@ -136,4 +140,4 @@ const InputField = ({ label, name, type, icon, value, onChange, error, toggle, s
 };
 
 
-export default Seller
+export default SellerRegister
