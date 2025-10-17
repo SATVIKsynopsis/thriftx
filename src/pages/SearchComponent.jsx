@@ -8,7 +8,7 @@ import { db } from '@/firebase/config';
 import { useRouter } from 'next/navigation';
 import {SearchResultItem} from '@/components/products/SearchResult';
 
-export const Search = () => {
+export const SearchComponent = () => {
   const navigate = useRouter();
   const [input, setInput] = useState("");
   const [searchResults, setSearchResults] = useState({
@@ -337,4 +337,4 @@ export const Search = () => {
   );
 };
 
-export default Search;
+export default SearchComponent;

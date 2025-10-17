@@ -1,11 +1,12 @@
+import SuperAdminDashboardComponent from '@/pages/admin/SuperAdminDashboardComponent'
 import React from 'react'
 
-const SuperAdminPage = () => {
+const SuperAdminDashboard = () => {
   return (
     <div>
-       
+       <SuperAdminDashboardComponent />
     </div> 
   )
 }
 
-export default SuperAdminPage
+export default SuperAdminDashboard
