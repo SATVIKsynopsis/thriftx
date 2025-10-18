@@ -9,7 +9,7 @@ import { color, motion } from 'framer-motion';
 const footerItems = [
   {
     title: "Quick Links",
-    links: [
+    links: [ 
       { name: "Browse Products", link: "/search" },
       { name: "Sell on ThriftX", link: "/register" },
       { name: "About Us", link: "/about" },

@@ -1,5 +1,23 @@
 "use client";
 
+
+import { useState } from "react";
+import { ShoppingCart, User, Search as SearchIcon, ChevronDown, X } from "lucide-react";
+import Link from "next/link";
+
+export default function Header() {
+  const [showPromo, setShowPromo] = useState(true);
+
+  return (
+    <header className="w-full bg-black text-white">
+      {/* 🔸 Promo Banner */}
+      {showPromo && (
+        <div className="bg-black text-center text-[11px] sm:text-xs py-2 border-b border-gray-900 relative">
+          <p className="text-gray-200">
+            Sign up and get 20% off to your first order.{" "}
+            <Link href="/signup" className="underline hover:text-white">
+              Sign Up Now
+
 import React, { useState, useEffect } from 'react';
 // Replaced Next.js specific imports with standard React and basic Lucide icons
 import {
@@ -111,17 +129,35 @@ const Header = () => {
               <span className="underline font-extralight cursor-pointer ml-1 hover:text-blue-500">
                 Sign Up Now
               </span>
+
             </Link>
           </p>
-
-          {/* Close icon to hide the banner */}
-          <X 
-            size={20}
-            className="cursor-pointer absolute right-4 hover:text-red-500 transition-colors"
-            onClick={() => setIsBannerVisible(false)}
+          <X
+            size={14}
+            className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-gray-300 hover:text-white"
+            onClick={() => setShowPromo(false)}
           />
         </div>
       )}
+
+
+      {/* 🔸 Main Header */}
+      <div className="flex items-center justify-between px-4 sm:px-8 py-3 bg-black">
+        {/* Logo */}
+        <div className="flex items-center gap-6">
+          <Link href="/" className="flex items-center">
+            <h1 className="text-2xl font-extrabold tracking-tight leading-none">
+              <span className="text-lime-500">Thrift</span>
+              <span className="text-rose-500">X</span>
+            </h1>
+          </Link>
+
+          {/* City Dropdown */}
+          <div className="hidden sm:flex items-center gap-1 cursor-pointer text-sm font-medium">
+            <span className="text-gray-300">BOMBAY</span>
+            <ChevronDown size={14} className="text-gray-400 mt-[1px]" />
+          </div>
+        </div>
 
       {/* Main Navigation Header */}
       <div
@@ -246,76 +282,38 @@ const Header = () => {
                 </a>
               )}
 
-              {/* Mobile Menu Button */}
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(!mobileMenuOpen);
-                  setUserMenuOpen(false);
-                }}
-                className='p-2 text-white hover:bg-gray-800 rounded-full transition-all'
-                aria-expanded={mobileMenuOpen}
-              >
-                {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-              </button>
-            </div>
+
+        {/* Search Bar */}
+        <div className="flex-1 mx-4 sm:mx-6">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search for products..."
+              className="w-full bg-neutral-100 text-gray-800 text-sm rounded-full py-2.5 pl-10 pr-4 placeholder:text-gray-400 focus:outline-none"
+            />
+            <SearchIcon
+              size={18}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+            />
           </div>
         </div>
 
+        {/* Icons */}
+        <div className="flex items-center gap-4">
+          <Link href="/cart">
+            <ShoppingCart
+              size={20}
+              className="text-gray-200 hover:text-white cursor-pointer transition"
+            />
+          </Link>
+          <Link href="/profile">
+            <User
+              size={20}
+              className="text-gray-200 hover:text-white cursor-pointer transition"
+            />
+          </Link>
+        </div>
       </div>
-
-      {/* Mobile Menu Dropdown */}
-        {mobileMenuOpen && (
-          <div
-            className='md:hidden bg-black/90 border-t border-gray-800 absolute w-full z-40 shadow-2xl transition-all duration-200'
-          >
-            {/* Mobile Search - Placeholder */}
-            <div className='px-4 py-2 md:hidden relative'>
-              <input
-                type="text"
-                placeholder="Search products, brands, and sellers..."
-                className="w-full py-2 pl-4 pr-10 bg-gray-900 text-white rounded-lg border border-gray-700 focus:ring-2 focus:ring-lime-500 focus:border-lime-500 transition-all"
-              />
-              <SearchIcon size={20} className="absolute right-6 top-1/2 transform -translate-y-1/2 text-gray-500" />
-            </div>
-
-            <div className='px-4 pt-2 pb-3 space-y-1 sm:px-3'>
-
-              {/* Mobile City Selector */}
-              <select
-                id='mobile-city-select'
-                name='city'
-                value={selectedCity}
-                onChange={handleCityChange}
-                className='w-full block py-2 px-3 bg-gray-900 text-slate-100 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 text-sm font-[Sansation] border border-gray-700 mb-4 appearance-none'
-              >
-                <option className='bg-black' value='BOMBAY'>BOMBAY</option>
-                <option className='bg-black' value='BANGALORE'>BANGALORE</option>
-              </select>
-
-              {/* Auth/User Links (Mobile) */}
-              {currentUser ? (
-                <>
-                  <Link href='/profile' onClick={() => setMobileMenuOpen(false)} className='block px-3 py-2 text-base font-medium text-white hover:bg-gray-800 rounded-md'>Profile</Link>
-                  <Link href='/orders' onClick={() => setMobileMenuOpen(false)} className='flex items-center gap-2 px-3 py-2 text-base font-medium text-white hover:bg-gray-800 rounded-md'><Package size={20} /> Orders</Link>
-                  {userProfile?.role === 'seller' && (
-                    <Link href='/seller/products' onClick={() => setMobileMenuOpen(false)} className='block px-3 py-2 text-base font-medium text-white hover:bg-gray-800 rounded-md'>My Products</Link>
-                  )}
-                  {isSuperAdmin(currentUser) && (
-                    <Link href='/admin/super' onClick={() => setMobileMenuOpen(false)} className='flex items-center gap-2 px-3 py-2 text-base font-medium text-white hover:bg-gray-800 rounded-md'><Shield size={20} /> Super Admin</Link>
-                  )}
-                  <button onClick={handleLogout} className='w-full text-left px-3 py-2 text-base font-medium text-red-400 hover:bg-gray-800 rounded-md'>Logout</button>
-                </>
-              ) : (
-                <>
-                  <Link href='/login' onClick={() => setMobileMenuOpen(false)} className='block px-3 py-2 text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-md'>Login</Link>
-                  <Link href='/register/customer' onClick={() => setMobileMenuOpen(false)} className='block px-3 py-2 text-base font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md text-center'>Register</Link>
-                </>
-              )}
-            </div>
-          </div>
-        )}
-    </div>
+    </header>
   );
-};
-
-export default Header;
+}

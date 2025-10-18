@@ -1,10 +1,13 @@
-
-import Header from "@/components/common/Header";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { Toaster } from "react-hot-toast";
-import Footer from "@/components/common/Footer";
+import ClientLayout from "../components/ClientLayout"; 
+import { Anton } from "next/font/google";
+const anton = Anton({
+  weight: "400",
+  subsets: ["latin"],
+});
 
 export const metadata = {
   title: "ThriftX",
@@ -15,30 +18,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="theme-color" content="#000000" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Anton&display=swap"
-          rel="stylesheet"
-        />
-        <title>ThriftX</title>
-      </head>
-
       <body>
-        {/* ✅ Wrap your entire app in providers */}
         <AuthProvider>
           <CartProvider>
-            <div>
-            <Header />
-            {children}
-            </div>
-            <Footer />
+            <ClientLayout>{children}</ClientLayout>
             <Toaster position="top-right" />
           </CartProvider>
         </AuthProvider>
