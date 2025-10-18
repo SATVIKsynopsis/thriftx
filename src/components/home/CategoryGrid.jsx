@@ -32,20 +32,20 @@ const categories = [
 
 const CategoryGrid = () => {
   return (
-    <div className="text-center mb-8">
-      <h2 className="text-4xl font-bold text-gray-900 mb-4">Shop by Fashion Category</h2>
+    <div className="text-center mb-8 md:mx-10">
+      <h2 className="text-4xl font-bold text-neutral-100 fontAnton mb-4">Shop by <span className='text-lime-400'>Fashion</span> <span className='text-rose-500'>Category</span></h2>
       <p className="text-lg text-gray-500 mb-12 max-w-xl mx-auto">
         Discover amazing pre-loved fashion pieces across all your favorite styles
       </p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {categories.map((category) => {
           const IconComponent = category.icon;
           return (
             <Link
               key={category.name}
               href={category.path}
-              className="bg-white rounded-xl p-6 flex flex-col items-center gap-4 text-gray-900 border border-gray-200 transition transform hover:-translate-y-1 hover:shadow-lg hover:border-blue-600"
+              className="bg-neutral-900 rounded-xl p-6 flex flex-col items-center gap-4 text-white transition transform hover:-translate-y-1 hover:shadow-lg shadow-neutral-500 shadow-md "
             >
               <div className="w-16 h-16 flex items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
                 <IconComponent size={32} />

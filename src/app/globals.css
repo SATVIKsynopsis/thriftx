@@ -38,3 +38,15 @@
   animation-play-state: paused;
 }
 
+
+.scrollbar-hide {
+    /* For IE and Edge */
+    -ms-overflow-style: none; 
+    /* For Firefox */
+    scrollbar-width: none; 
+}
+
+/* For Chrome, Safari, and Opera */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
