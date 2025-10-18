@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Star, CheckCircle } from 'lucide-react';
 
@@ -103,7 +105,7 @@ const CustomerReviews = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-8 sm:mb-12 gap-4 sm:gap-0">
-          <h2 className="text-white text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold uppercase tracking-tight text-center sm:text-left">
+          <h2 className="text-neutral-200 text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold fontAnton uppercase tracking-normal text-center sm:text-left">
             OUR HAPPY CUSTOMERS
           </h2>
 

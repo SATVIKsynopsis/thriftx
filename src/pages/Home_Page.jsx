@@ -9,8 +9,10 @@ import ProductCard from '@/components/products/ProductCard';
 import Hero from '@/components/home/Hero';
 import CategoryGrid from '@/components/home/CategoryGrid';
 import Header from '@/components/common/Header'; 
+import Brand from '@/components/home/Brand';
+import CustomerReviews from './CustomerReviews';
 
-const HomePage = () => {
+const Home_Page = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [newProducts, setNewProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -54,11 +56,9 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Add Header component here */}
-      <Header />
-      
+      {/* Add Header component here */}      
       <Hero />
-
+      <Brand />
       <section className="py-16">
         <div className="max-w-[1200px] mx-auto px-4 md:px-2">
           <CategoryGrid />
@@ -138,8 +138,9 @@ const HomePage = () => {
           )}
         </div>
       </section>
+      <CustomerReviews />
     </div>
   );
 };
 
-export default HomePage;
+export default Home_Page;

@@ -1,8 +1,10 @@
 
+import Header from "@/components/common/Header";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { Toaster } from "react-hot-toast";
+import Footer from "@/components/common/Footer";
 
 export const metadata = {
   title: "ThriftX",
@@ -32,7 +34,11 @@ export default function RootLayout({ children }) {
         {/* ✅ Wrap your entire app in providers */}
         <AuthProvider>
           <CartProvider>
+            <div>
+            <Header />
             {children}
+            </div>
+            <Footer />
             <Toaster position="top-right" />
           </CartProvider>
         </AuthProvider>

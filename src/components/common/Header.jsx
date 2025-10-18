@@ -11,6 +11,7 @@ import {
   User, // Using 'User' from lucide-react instead of CgProfile
   Search as SearchIcon // Renaming lucide's Search icon to avoid conflicts
 } from 'lucide-react'; 
+import Link from 'next/link';
 
 // --- MOCK IMPLEMENTATIONS TO RESOLVE COMPILATION ERRORS ---
 // Since the compiler cannot resolve external contexts and hooks, we mock them.
@@ -263,7 +264,7 @@ const Header = () => {
       {/* Mobile Menu Dropdown */}
         {mobileMenuOpen && (
           <div
-            className='md:hidden bg-black border-t border-gray-800 absolute w-full z-40 shadow-2xl transition-all duration-200'
+            className='md:hidden bg-black/90 border-t border-gray-800 absolute w-full z-40 shadow-2xl transition-all duration-200'
           >
             {/* Mobile Search - Placeholder */}
             <div className='px-4 py-2 md:hidden relative'>
@@ -292,20 +293,20 @@ const Header = () => {
               {/* Auth/User Links (Mobile) */}
               {currentUser ? (
                 <>
-                  <a href='/profile' onClick={() => setMobileMenuOpen(false)} className='block px-3 py-2 text-base font-medium text-white hover:bg-gray-800 rounded-md'>Profile</a>
-                  <a href='/orders' onClick={() => setMobileMenuOpen(false)} className='flex items-center gap-2 px-3 py-2 text-base font-medium text-white hover:bg-gray-800 rounded-md'><Package size={20} /> Orders</a>
+                  <Link href='/profile' onClick={() => setMobileMenuOpen(false)} className='block px-3 py-2 text-base font-medium text-white hover:bg-gray-800 rounded-md'>Profile</Link>
+                  <Link href='/orders' onClick={() => setMobileMenuOpen(false)} className='flex items-center gap-2 px-3 py-2 text-base font-medium text-white hover:bg-gray-800 rounded-md'><Package size={20} /> Orders</Link>
                   {userProfile?.role === 'seller' && (
-                    <a href='/seller/products' onClick={() => setMobileMenuOpen(false)} className='block px-3 py-2 text-base font-medium text-white hover:bg-gray-800 rounded-md'>My Products</a>
+                    <Link href='/seller/products' onClick={() => setMobileMenuOpen(false)} className='block px-3 py-2 text-base font-medium text-white hover:bg-gray-800 rounded-md'>My Products</Link>
                   )}
                   {isSuperAdmin(currentUser) && (
-                    <a href='/admin/super' onClick={() => setMobileMenuOpen(false)} className='flex items-center gap-2 px-3 py-2 text-base font-medium text-white hover:bg-gray-800 rounded-md'><Shield size={20} /> Super Admin</a>
+                    <Link href='/admin/super' onClick={() => setMobileMenuOpen(false)} className='flex items-center gap-2 px-3 py-2 text-base font-medium text-white hover:bg-gray-800 rounded-md'><Shield size={20} /> Super Admin</Link>
                   )}
                   <button onClick={handleLogout} className='w-full text-left px-3 py-2 text-base font-medium text-red-400 hover:bg-gray-800 rounded-md'>Logout</button>
                 </>
               ) : (
                 <>
-                  <a href='/login' onClick={() => setMobileMenuOpen(false)} className='block px-3 py-2 text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-md'>Login</a>
-                  <a href='/register/customer' onClick={() => setMobileMenuOpen(false)} className='block px-3 py-2 text-base font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md text-center'>Register</a>
+                  <Link href='/login' onClick={() => setMobileMenuOpen(false)} className='block px-3 py-2 text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-md'>Login</Link>
+                  <Link href='/register/customer' onClick={() => setMobileMenuOpen(false)} className='block px-3 py-2 text-base font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md text-center'>Register</Link>
                 </>
               )}
             </div>

@@ -40,7 +40,7 @@ const socialmediaLink = [
 const paymentType = [
   { icon: SiPaypal, color: "text-blue-600" },
   { icon: SiMastercard, color: "text-orange-500" },
-  { icon: SiApplepay, color: "text-black" },
+  { icon: SiApplepay, color: "text-white" },
   { icon: SiGooglepay, color: "text-green-600" },
   { icon: SiVisa, color: "text-blue-800" },
 ];
@@ -67,7 +67,7 @@ const FooterComponent = () => {
 
   return (
     <motion.footer
-      className="w-full bg-neutral-100 text-neutral-700 py-12 mt-10"
+      className="w-full bg-black text-neutral-700 py-5 border-t"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true }}
@@ -79,7 +79,7 @@ const FooterComponent = () => {
           {/* Brand Section */}
           <motion.div variants={itemVariants}>
             <h1 className="text-2xl md:text-3xl font-bold mb-3 text-neutral-800">
-              <Link href={'/'}>ThriftX</Link>
+              <Link href={'/'} className="text-lime-500">Thrift<span className="text-rose-500">X</span></Link>
             </h1>
             <p className="text-neutral-600 mb-5 leading-relaxed md:pr-24">
               We have clothes that suit your style and make you proud to wear.
@@ -105,7 +105,7 @@ const FooterComponent = () => {
           <motion.div className="grid grid-cols-2 md:grid-cols-2 mt-10" variants={itemVariants}>
             {footerItems.map((section, index) => (
               <motion.div key={index} variants={itemVariants}>
-                <h3 className="text-lg font-semibold text-neutral-800 mb-3">
+                <h3 className="text-lg font-semibold text-neutral-400 mb-3">
                   {section.title}
                 </h3>
                 <ul className="space-y-2">
@@ -113,7 +113,7 @@ const FooterComponent = () => {
                     <li key={idx}>
                       <Link
                         href={link.link}
-                        className="text-neutral-700 hover:underline hover:text-neutral-500 transition"
+                        className="text-neutral-600 hover:underline hover:text-neutral-500 transition"
                       >
                         {link.name}
                       </Link>
@@ -126,7 +126,7 @@ const FooterComponent = () => {
 
           {/* Contact Info */}
           <motion.div className="mt-10 xl:pl-20" variants={itemVariants}>
-            <h3 className="text-lg font-semibold text-neutral-800 mb-3">
+            <h3 className="text-lg font-semibold text-neutral-400 mb-3">
               Contact Info
             </h3>
             <ul className="space-y-3 text-neutral-600">
@@ -155,7 +155,7 @@ const FooterComponent = () => {
 
           <div className="flex items-center space-x-4 mt-4 md:mt-0">
             {paymentType.map(({ icon: Icon, color }, index) => (
-              <span className="p-2 shadow-xl rounded-2xl" key={index}>
+              <span className="p-2 shadow-lg shadow-neutral-700 rounded-2xl" key={index}>
                 <Icon className={`text-3xl ${color} hover:opacity-80 transition`} />
               </span>
             ))}

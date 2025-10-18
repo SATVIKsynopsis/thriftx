@@ -77,26 +77,26 @@ const Hero = () => {
           initial="hidden"
           animate="show"
           variants={containerVariants}
-          className="w-full lg:w-1/2 text-center lg:text-left"
+          className="w-full lg:w-1/2  md:text-center lg:text-left"
         >
           <motion.div variants={textVariants} className="fontAnton tracking-[6px]">
             <h1 className="font-extrabold leading-[0.8] select-none mb-6 lg:mb-8">
               <motion.span
-                className="block text-white text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-[8rem]"
+                className="block text-white text-8xl sm:text-9xl md:text-9xl lg:text-[8rem]"
                 whileHover={{ scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 400 }}
               >
                 STREET
               </motion.span>
               <motion.span
-                className="block text-[#bdf800] text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-[8rem] -mt-1 lg:-mt-2"
+                className="block text-[#bdf800] text-8xl sm:text-9xl md:text-9xl lg:text-[8rem] -mt-1 lg:-mt-2"
                 whileHover={{ scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 400 }}
               >
                 STYLE
               </motion.span>
               <motion.span
-                className="block text-[#ff2b78] text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-[8rem] -mt-1 lg:-mt-2"
+                className="block text-[#ff2b78] text-8xl sm:text-9xl md:text-9xl lg:text-[8rem] -mt-1 lg:-mt-2"
                 whileHover={{ scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 400 }}
               >
@@ -110,15 +110,15 @@ const Hero = () => {
             whileHover={{ x: 5 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
-            <div className="mt-4 lg:mt-6 text-sm sm:text-base md:text-lg max-w-md mx-auto lg:mx-0 text-gray-300 leading-relaxed">
-  <p className="text-yellow-300 text-xl">
-    Mumbai&apos;s Underground fashion market
-  </p>
-  <p className="text-neutral-500 lg:-mt-3 mt-2">
-    Discover unique vintage pieces, street fashion finds, and
-    one-of-a-kind thrift treasures from Mumbai&apos;s coolest sellers.
-  </p>
-</div>
+            <div className="mt-4 lg:mt-6 text-sm sm:text-base md:text-lg max-w-md md:mx-auto lg:mx-0 text-gray-300 leading-relaxed">
+              <p className="text-yellow-300 text-xl pb-5">
+                Mumbai&apos;s Underground fashion market
+              </p>
+              <p className="text-neutral-500 lg:-mt-3 -mt-2 ">
+                Discover unique vintage pieces, street fashion finds, and
+                one-of-a-kind thrift treasures from Mumbai&apos;s coolest sellers.
+              </p>
+            </div>
 
           </motion.div>
 
@@ -160,74 +160,15 @@ const Hero = () => {
           >
             <div className="flex gap-4">
               <motion.div
-                custom={0}
-                variants={cardVariants}
-                className="bg-white rounded-[20px] overflow-hidden w-[300px] h-[213px] relative cursor-pointer"
-                whileHover={{ scale: 1.05, y: -8, rotateZ: -1 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <div className="absolute top-4 left-4 text-lg font-semibold z-10 bg-black/30 backdrop-blur-sm px-3 py-1 rounded-lg">
-                  Casual
-                </div>
-                <Image
-                  src={image1}
-                  alt="Casual"
-                  fill
-                  className="object-cover"
-                />
-              </motion.div>
-
-              <motion.div
                 custom={1}
                 variants={cardVariants}
-                className="bg-white rounded-[20px] overflow-hidden w-[505px] h-[213px] relative cursor-pointer"
+                className="bg-white rounded-[20px] overflow-hidden w-[505px] h-[413px] relative cursor-pointer"
                 whileHover={{ scale: 1.05, y: -8, rotateZ: 1 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <div className="absolute top-4 left-4 text-lg font-semibold z-10 bg-black/30 backdrop-blur-sm px-3 py-1 rounded-lg">
-                  Formal
-                </div>
                 <Image
                   src={image2}
                   alt="Formal"
-                  fill
-                  className="object-cover"
-                />
-              </motion.div>
-            </div>
-
-            <div className="flex gap-4">
-              <motion.div
-                custom={2}
-                variants={cardVariants}
-                className="bg-white rounded-[20px] overflow-hidden w-[505px] h-[213px] relative cursor-pointer"
-                whileHover={{ scale: 1.05, y: -8, rotateZ: -1 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <div className="absolute top-4 left-4 text-lg font-semibold z-10 bg-black/30 backdrop-blur-sm px-3 py-1 rounded-lg">
-                  Party
-                </div>
-                <Image
-                  src={image3}
-                  alt="Party"
-                  fill
-                  className="object-cover"
-                />
-              </motion.div>
-
-              <motion.div
-                custom={3}
-                variants={cardVariants}
-                className="bg-white rounded-[20px] overflow-hidden w-[300px] h-[213px] relative cursor-pointer"
-                whileHover={{ scale: 1.05, y: -8, rotateZ: 1 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <div className="absolute top-4 left-4 text-lg font-semibold z-10 bg-black/30 backdrop-blur-sm px-3 py-1 rounded-lg">
-                  Gym
-                </div>
-                <Image
-                  src={image4}
-                  alt="Gym"
                   fill
                   className="object-cover"
                 />
