@@ -1,14 +1,15 @@
 "use client";
+
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 
 // ✅ Correct way to reference images from /public folder
-import image1 from "../../../public/image1.png";
+// import image1 from "../../../public/image1.png";
 import image2 from "../../../public/image2.png";
-import image3 from "../../../public/image3.png";
-import image4 from "../../../public/image4.png";
+// import image3 from "../../../public/image3.png";
+// import image4 from "../../../public/image4.png";
 
 const Hero = () => {
   const cardVariants = {
