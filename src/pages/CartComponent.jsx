@@ -95,8 +95,8 @@ const CartComponent = () => {
               >
                 {item.productImage ? (
                   <Image
-                    src={item.productImage}
-                    alt={item.productName}
+                    src={item.productImage || item.image || "/placeholder.jpg"}
+                    alt={item.productName || item.name || "Product image"}
                     width={120}
                     height={120}
                     className="rounded-lg object-cover w-28 h-28"

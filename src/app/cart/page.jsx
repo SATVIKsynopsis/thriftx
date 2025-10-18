@@ -1,12 +1,13 @@
-import CartComponent from '@/pages/CartComponent'
-import React from 'react'
+import Footer from "@/components/common/Footer"
+import CartPage from "../../components/cart/cart-page"
+import Header from "../../components/common/Header"
 
-const Cart = () => {
+export default function Home() {
   return (
-    <div>
-      <CartComponent />
+    <div className="min-h-screen bg-black text-white flex flex-col">
+      <Header />
+      <CartPage />
+      <Footer />
     </div>
   )
 }
-
-export default Cart
