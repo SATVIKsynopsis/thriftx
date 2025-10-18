@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
-import { db } from '../firebase/config';
+import { db } from '@/firebase/config';
 
 export const useProductSearch = (filters = {}) => {
     const [allProducts, setAllProducts] = useState([]);

@@ -11,7 +11,7 @@ import {
   query,
   where 
 } from 'firebase/firestore';
-import { db } from '../firebase/config';
+import { db } from '@/firebase/config';
 import { useAuth } from './AuthContext';
 import toast from 'react-hot-toast';
 

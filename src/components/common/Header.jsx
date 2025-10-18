@@ -12,26 +12,28 @@ import {
   Search as SearchIcon // Renaming lucide's Search icon to avoid conflicts
 } from 'lucide-react'; 
 import Link from 'next/link';
+import { useAuth } from "@/contexts/AuthContext"
+import { useCart } from "@/contexts/CartContext"
 
 // --- MOCK IMPLEMENTATIONS TO RESOLVE COMPILATION ERRORS ---
 // Since the compiler cannot resolve external contexts and hooks, we mock them.
 
-/** Mock implementation for useAuth */
-const useAuth = () => ({
-  // Dummy authenticated user
-  currentUser: { uid: 'mock-user-123', email: 'user@example.com' },
-  userProfile: { role: 'seller', name: 'Mock Seller' },
-  // Mock logout function (does nothing but log a message)
-  logout: async () => { console.log("Mock logout executed."); }, 
-  // Simple mock super admin check
-  isSuperAdmin: (user) => user?.uid === 'mock-super-admin', 
-});
+// /** Mock implementation for useAuth */
+// const useAuth = () => ({
+//   // Dummy authenticated user
+//   currentUser: { uid: 'mock-user-123', email: 'user@example.com' },
+//   userProfile: { role: 'seller', name: 'Mock Seller' },
+//   // Mock logout function (does nothing but log a message)
+//   logout: async () => { console.log("Mock logout executed."); }, 
+//   // Simple mock super admin check
+//   isSuperAdmin: (user) => user?.uid === 'mock-super-admin', 
+// });
 
-/** Mock implementation for useCart */
-const useCart = () => ({
-  // Always returns 3 items for demonstration
-  getItemCount: () => 3, 
-});
+// /** Mock implementation for useCart */
+// const useCart = () => ({
+//   // Always returns 3 items for demonstration
+//   getItemCount: () => 1, 
+// });
 
 // Since 'motion/react' cannot be resolved, we use standard useState for visibility
 // and transition classes for the sticky header effect.
@@ -100,16 +102,16 @@ const Header = () => {
       {isBannerVisible && (
         <div
             // Using standard Tailwind classes for fade-in/out effect
-            className="bg-black text-white text-center py-3 flex items-center justify-center gap-4 transition-all duration-300 ease-in-out"
+            className="bg-black text-white text-center py-2 flex items-center justify-center gap-4 transition-all duration-300 ease-in-out"
         >
           <p className="text-[10px] sm:text-sm">
             Sign up and get 20% off your first order.
             {/* Replaced Next Link with standard anchor tag for compilation */}
-            <a href="/signup"> 
-              <span className="underline font-extralight cursor-pointer ml-1">
+            <Link href="/signup"> 
+              <span className="underline font-extralight cursor-pointer ml-1 hover:text-blue-500">
                 Sign Up Now
               </span>
-            </a>
+            </Link>
           </p>
 
           {/* Close icon to hide the banner */}
@@ -127,22 +129,22 @@ const Header = () => {
         className={`sticky top-0 left-0 right-0 bg-black shadow-lg z-50 transition-all duration-200 ease-in-out ${headerVisibilityClass}`}
       >
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-          <div className='flex items-center justify-between h-16 gap-2 sm:gap-4'>
+          <div className='flex items-center justify-between py-2 gap-2 sm:gap-4'>
 
             {/* Logo */}
             {/* Replaced Next Link with standard anchor tag for compilation */}
-            <a
+            <Link
               href='/'
               className='text-xl font-bold text-blue-600 hover:text-blue-700 transition-colors flex-shrink-0'
             >
               <div className='select-none'>
-                <h1 className='text-balance fontAnton text-2xl sm:text-3xl font-extrabold leading-none tracking-tight'>
+                <h1 className='text-balance fontAnton text-2xl sm:text-3xl font-extrabold leading-none tracking-wide'>
                   <span className='text-lime-500'>Thrift</span>
                   {/* Removed motion.span animation for stability */}
                   <span className="inline-block text-rose-500">X</span>
                 </h1>
               </div>
-            </a>
+            </Link>
 
             {/* City Selector (Desktop) */}
             <div className='p-2 hidden md:block flex-shrink-0'>
