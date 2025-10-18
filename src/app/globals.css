@@ -121,52 +121,37 @@
   font-style: normal;
 }
 
-
 /* ==============================
    ⚙️ Utility Layer
    ============================== */
 @layer utilities {
+  /* ✅ Clean single marquee keyframes */
   @keyframes marquee {
     0% {
       transform: translateX(0);
     }
     100% {
-      transform: translateX(-100%);
+      transform: translateX(-50%);
     }
-
-
-@keyframes marquee {
-  0% {
-    transform: translateX(0);
-
   }
-  100% {
-    transform: translateX(-50%);
+
+  .animate-marquee {
+    display: inline-flex;
+    animation: marquee 25s linear infinite;
+  }
+
+  /* Optional: Pause on hover */
+  .animate-marquee:hover {
+    animation-play-state: paused;
+  }
+
+  /* Hide Scrollbars */
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* For IE and Edge */
+    scrollbar-width: none; /* For Firefox */
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* For Chrome, Safari, Opera */
   }
 }
-
-
-
-.animate-marquee {
-  display: inline-flex;
-  animation: marquee 25s linear infinite;
-}
-
-/* Optional: Pause on hover */
-.animate-marquee:hover {
-  animation-play-state: paused;
-}
-
-
-.scrollbar-hide {
-    /* For IE and Edge */
-    -ms-overflow-style: none; 
-    /* For Firefox */
-    scrollbar-width: none; 
-}
-
-/* For Chrome, Safari, and Opera */
-.scrollbar-hide::-webkit-scrollbar {
-    display: none;
-}
-
