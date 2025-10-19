@@ -186,7 +186,7 @@ const FilterPage = ({
               transition={{ duration: 0.2 }}
               className="overflow-hidden"
             >
-              <div className="grid grid-cols-5 gap-3">
+              <div className="grid grid-cols-5 gap-3 p-2">
                 {colors.map((color) => (
                   <motion.button
                     key={color.name}
