@@ -1,28 +1,27 @@
-"use client";
+import React from 'react';
+import { Heart } from 'lucide-react';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { Heart, Star, ShoppingCart } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useCart } from '@/contexts/CartContext';
-import { formatPrice } from '@/utils/formatters';
-
-const ProductCard = ({ product }) => {
-  const { currentUser } = useAuth();
-  const { addToCart, loading } = useCart();
-  const [like, setLike] = useState(false);
-
-  const handleAddToCart = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    addToCart(product);
+const ProductCard = ({ product, isFavorite, onToggleFavorite, renderStars }) => {
+  const defaultRenderStars = (rating) => {
+    return (
+      <div className="flex items-center gap-0.5">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <svg
+            key={star}
+            className={`w-3 h-3 ${star <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-600 fill-gray-600'}`}
+            viewBox="0 0 20 20"
+          >
+            <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+          </svg>
+        ))}
+      </div>
+    );
   };
 
-  const isOwnProduct = currentUser && product.sellerId === currentUser.uid;
-
+  const starsFunction = renderStars || defaultRenderStars;
   return (
-    <div className="bg-white rounded-2xl overflow-hidden border border-gray-200 shadow-sm transition-transform hover:-translate-y-1 hover:shadow-lg">
-      <div className="relative w-full h-48 overflow-hidden">
+    <div className="bg-gray-900 rounded-2xl overflow-hidden hover:transform hover:scale-105 transition-transform duration-200">
+      <div className="relative w-full h-64 overflow-hidden">
         {product.images && product.images.length > 0 ? (
           <img
             src={product.images[0]}
@@ -35,86 +34,48 @@ const ProductCard = ({ product }) => {
           />
         ) : null}
         <div
-          className={`absolute inset-0 flex items-center justify-center text-gray-400 text-sm bg-gradient-to-br from-gray-200 to-gray-300 ${product.images && product.images.length > 0 ? 'hidden' : 'flex'
-            }`}
+          className={`absolute inset-0 flex items-center justify-center text-white text-sm bg-gradient-to-br from-slate-600 to-slate-700 ${
+            product.images && product.images.length > 0 ? 'hidden' : 'flex'
+          }`}
         >
           No Image Available
         </div>
-        <button
-          onClick={() => setLike(!like)}
-          className="absolute top-4 right-4 flex items-center justify-center hover:scale-110 transition-transform">
-          <Heart size={18} className={`rounded-full p-1 ${like === true ? "bg-rose-500/90 hover:bg-rose-500 " : "bg-white/90 hover:bg-white"}`} />
-        </button>
-      </div>
 
-      <div className="p-6">
-        <p className="text-xs text-gray-500 mb-1">
-          Sold by {product.sellerName || 'Unknown Seller'}
-        </p>
-
-        {isOwnProduct ? (
-          <Link
-            href={`/seller/products/edit/${product.id}`}
-            className="block text-lg font-semibold text-gray-900 mb-2 hover:text-blue-600"
-          >
-            {product.name}
-          </Link>
-        ) : (
-          <Link
-            href={`/product/${product.id}`}
-            className="block text-lg font-semibold text-gray-900 mb-2 hover:text-blue-600"
-          >
-            {product.name}
-          </Link>
-        )}
-
-        <p className="text-gray-500 text-sm mb-4 line-clamp-2">
-          {product.description}
-        </p>
-
-        <div className="flex items-center justify-between mb-4">
-          <div className="text-green-600 font-bold text-xl">
-            {formatPrice(product.price)}
-            {product.originalPrice && product.originalPrice > product.price && (
-              <span className="text-gray-400 text-base line-through ml-2">
-                {formatPrice(product.originalPrice)}
-              </span>
-            )}
-          </div>
-
-          {product.rating && (
-            <div className="flex items-center gap-1 text-yellow-400">
-              <Star size={16} fill="currentColor" />
-              <span className="text-gray-600 text-sm">{product.rating.toFixed(1)}</span>
-              <span className="text-gray-500 text-sm">({product.reviewCount || 0})</span>
-            </div>
-          )}
+        <div className="absolute top-3 left-3">
+          <span className="bg-pink-600 text-white text-xs font-semibold px-3 py-1 rounded">
+            {product.category}
+          </span>
         </div>
 
-        <div className="flex gap-2">
-          {!isOwnProduct && currentUser && (
-            <button
-              onClick={handleAddToCart}
-              disabled={loading || product.stock === 0}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors ${product.stock === 0 || loading
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700 text-white'
-                }`}
-            >
-              <ShoppingCart size={18} />
-              {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
-            </button>
-          )}
+        <button
+          onClick={() => onToggleFavorite(product.id)}
+          aria-label={`${isFavorite ? 'Remove from' : 'Add to'} favorites`}
+          className="absolute top-3 right-3 w-9 h-9 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors"
+        >
+          <Heart
+            className={`w-5 h-5 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-black'}`}
+          />
+        </button>
 
-          {!currentUser && (
-            <Link
-              href="/login"
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <ShoppingCart size={18} />
-              Login to Buy
-            </Link>
-          )}
+        <div className="absolute bottom-3 left-3">
+          <span className="bg-lime-400 text-black text-xs font-bold px-3 py-1 rounded">
+            {product.brand}
+          </span>
+        </div>
+      </div>
+
+      <div className="p-4">
+        <h3 className="font-semibold text-base mb-1">{product.name}</h3>
+        <p className="text-gray-400 text-xs mb-3">{product.condition}</p>
+
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-lime-400 text-xl font-bold">{product.price}</span>
+          <span className="text-gray-500 text-sm line-through">{product.originalPrice}</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {starsFunction(product.rating)}
+          <span className="text-gray-400 text-xs">({product.reviews})</span>
         </div>
       </div>
     </div>
