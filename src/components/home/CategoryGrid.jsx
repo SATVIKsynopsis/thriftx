@@ -45,7 +45,7 @@ const CategoryGrid = () => {
             <Link
               key={category.name}
               href={category.path}
-              className="bg-neutral-900 rounded-xl p-6 flex flex-col items-center gap-4 text-white transition transform hover:-translate-y-1 hover:shadow-lg shadow-neutral-500 shadow-md "
+              className="bg-neutral-900 rounded-2xl p-6 flex flex-col items-center gap-4 text-white transition transform hover:-translate-y-1 hover:shadow-lg shadow-neutral-500 shadow-md "
             >
               <div className="w-16 h-16 flex items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
                 <IconComponent size={32} />

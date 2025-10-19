@@ -78,10 +78,10 @@ const BuyerRegister = () => {
         error.code === "auth/email-already-in-use"
           ? "Email already registered"
           : error.code === "auth/weak-password"
-          ? "Password is too weak"
-          : error.code === "auth/invalid-email"
-          ? "Invalid email format"
-          : `Error: ${error.message}`
+            ? "Password is too weak"
+            : error.code === "auth/invalid-email"
+              ? "Invalid email format"
+              : `Error: ${error.message}`
       );
     } finally {
       setLoading(false);
@@ -95,7 +95,7 @@ const BuyerRegister = () => {
       px-6 py-12"
     >
       <div
-        className="w-full max-w-md border border-gray-800 bg-gradient-to-br 
+        className="w-full max-w-3xl border border-gray-800 bg-gradient-to-br 
         from-neutral-950/95 via-black/90 to-neutral-900/95 rounded-3xl 
         shadow-[0_0_25px_rgba(255,255,255,0.05)] p-8 backdrop-blur-md"
       >
@@ -113,79 +113,90 @@ const BuyerRegister = () => {
         </div>
 
         {/* FORM */}
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-          <InputField
-            label="Full Name"
-            name="name"
-            icon={<User size={18} />}
-            value={formData.name}
-            onChange={handleChange}
-            error={errors.name}
-          />
-          <InputField
-            label="Email"
-            name="email"
-            type="email"
-            icon={<Mail size={18} />}
-            value={formData.email}
-            onChange={handleChange}
-            error={errors.email}
-          />
-          <InputField
-            label="Password"
-            name="password"
-            type={showPassword ? "text" : "password"}
-            icon={<Lock size={18} />}
-            value={formData.password}
-            onChange={handleChange}
-            error={errors.password}
-            toggle={showPassword}
-            setToggle={setShowPassword}
-          />
-          <InputField
-            label="Confirm Password"
-            name="confirmPassword"
-            type={showConfirmPassword ? "text" : "password"}
-            icon={<Lock size={18} />}
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            error={errors.confirmPassword}
-            toggle={showConfirmPassword}
-            setToggle={setShowConfirmPassword}
-          />
-          <InputField
-            label="Location (optional)"
-            name="location"
-            icon={<MapPin size={18} />}
-            value={formData.location}
-            onChange={handleChange}
-          />
-          <InputField
-            label="Favorite Styles (optional)"
-            name="favoriteStyles"
-            icon={<Heart size={18} />}
-            value={formData.favoriteStyles}
-            onChange={handleChange}
-          />
-          <InputField
-            label="Why Choose Sustainable Fashion? (optional)"
-            name="sustainabilityGoals"
-            icon={<Users size={18} />}
-            value={formData.sustainabilityGoals}
-            onChange={handleChange}
-          />
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="flex flex-col gap-4">
+            <InputField
+              label="Full Name"
+              name="name"
+              icon={<User size={18} />}
+              value={formData.name}
+              onChange={handleChange}
+              error={errors.name}
+            />
+            <InputField
+              label="Email"
+              name="email"
+              type="email"
+              icon={<Mail size={18} />}
+              value={formData.email}
+              onChange={handleChange}
+              error={errors.email}
+            />
+            <InputField
+              label="Password"
+              name="password"
+              type={showPassword ? "text" : "password"}
+              icon={<Lock size={18} />}
+              value={formData.password}
+              onChange={handleChange}
+              error={errors.password}
+              toggle={showPassword}
+              setToggle={setShowPassword}
+            />
+          </div>
 
-          {/* SUBMIT BUTTON */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 bg-gradient-to-r from-lime-500 via-yellow-400 to-rose-500 text-black 
-            font-semibold rounded-full shadow-lg hover:scale-[1.02] hover:opacity-90 
-            transition-all duration-300 flex items-center justify-center gap-2"
-          >
-            {loading && <Loader2 className="animate-spin" size={18} />}
-            {loading ? "Creating your account..." : "Create Account"}
-          </button>
+          <div className="flex flex-col gap-4">
+            <InputField
+              label="Confirm Password"
+              name="confirmPassword"
+              type={showConfirmPassword ? "text" : "password"}
+              icon={<Lock size={18} />}
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              error={errors.confirmPassword}
+              toggle={showConfirmPassword}
+              setToggle={setShowConfirmPassword}
+            />
+            <InputField
+              label="Location (optional)"
+              name="location"
+              icon={<MapPin size={18} />}
+              value={formData.location}
+              onChange={handleChange}
+            />
+            <InputField
+              label="Favorite Styles (optional)"
+              name="favoriteStyles"
+              icon={<Heart size={18} />}
+              value={formData.favoriteStyles}
+              onChange={handleChange}
+            />
+          </div>
+
+          {/* Full width field */}
+          <div className="md:col-span-2">
+            <InputField
+              label="Why Choose Sustainable Fashion? (optional)"
+              name="sustainabilityGoals"
+              icon={<Users size={18} />}
+              value={formData.sustainabilityGoals}
+              onChange={handleChange}
+            />
+          </div>
+
+          {/* Submit button */}
+          <div className="md:col-span-2">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 bg-gradient-to-r from-lime-500 via-yellow-400 to-rose-500 text-black 
+      font-semibold rounded-full shadow-lg hover:scale-[1.02] hover:opacity-90 
+      transition-all duration-300 flex items-center justify-center gap-2"
+            >
+              {loading && <Loader2 className="animate-spin" size={18} />}
+              {loading ? "Creating your account..." : "Create Account"}
+            </button>
+          </div>
         </form>
 
         {/* FOOTER */}
@@ -229,9 +240,8 @@ const InputField = ({
   <div className="relative group">
     <label className="block text-gray-300 font-medium mb-1">{label}</label>
     <div
-      className={`relative rounded-lg overflow-hidden border ${
-        error ? "border-red-500" : "border-gray-700"
-      } bg-neutral-900/50 transition-all group-hover:border-lime-400`}
+      className={`relative rounded-full overflow-hidden border ${error ? "border-red-500" : "border-gray-700"
+        } bg-neutral-900/50 transition-all group-hover:border-lime-400`}
     >
       <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
         {icon}
@@ -241,7 +251,7 @@ const InputField = ({
         name={name}
         value={value}
         onChange={onChange}
-        className="w-full bg-transparent text-white placeholder-gray-500 pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-lime-500 rounded-lg"
+        className="w-full bg-transparent text-white placeholder-gray-500 pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-lime-500 rounded-full"
       />
       {toggle !== undefined && (
         <button

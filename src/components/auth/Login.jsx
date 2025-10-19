@@ -151,7 +151,7 @@ const InputField = ({
   <div className="relative group">
     <label className="block text-gray-300 font-medium mb-1">{label}</label>
     <div
-      className={`relative rounded-lg overflow-hidden border ${
+      className={`relative rounded-full overflow-hidden border ${
         error ? "border-red-500" : "border-gray-700"
       } bg-neutral-900/50 transition-all group-hover:border-lime-400`}
     >
@@ -163,7 +163,7 @@ const InputField = ({
         name={name}
         value={value}
         onChange={onChange}
-        className="w-full bg-transparent text-white placeholder-gray-500 pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-lime-500 rounded-lg"
+        className="w-full bg-transparent text-white placeholder-gray-500 pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-lime-500 rounded-full"
       />
       {toggle !== undefined && (
         <button

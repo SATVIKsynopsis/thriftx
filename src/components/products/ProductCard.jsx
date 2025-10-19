@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Heart, Star, ShoppingCart } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,6 +10,7 @@ import { formatPrice } from '@/utils/formatters';
 const ProductCard = ({ product }) => {
   const { currentUser } = useAuth();
   const { addToCart, loading } = useCart();
+  const [like, setLike] = useState(false);
 
   const handleAddToCart = (e) => {
     e.preventDefault();
@@ -20,7 +21,7 @@ const ProductCard = ({ product }) => {
   const isOwnProduct = currentUser && product.sellerId === currentUser.uid;
 
   return (
-    <div className="bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm transition-transform hover:-translate-y-1 hover:shadow-lg">
+    <div className="bg-white rounded-2xl overflow-hidden border border-gray-200 shadow-sm transition-transform hover:-translate-y-1 hover:shadow-lg">
       <div className="relative w-full h-48 overflow-hidden">
         {product.images && product.images.length > 0 ? (
           <img
@@ -39,8 +40,10 @@ const ProductCard = ({ product }) => {
         >
           No Image Available
         </div>
-        <button className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/90 hover:bg-white hover:scale-110 transition-transform">
-          <Heart size={18} />
+        <button
+          onClick={() => setLike(!like)}
+          className="absolute top-4 right-4 flex items-center justify-center hover:scale-110 transition-transform">
+          <Heart size={18} className={`rounded-full p-1 ${like === true ? "bg-rose-500/90 hover:bg-rose-500 " : "bg-white/90 hover:bg-white"}`} />
         </button>
       </div>
 
@@ -94,8 +97,8 @@ const ProductCard = ({ product }) => {
               onClick={handleAddToCart}
               disabled={loading || product.stock === 0}
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors ${product.stock === 0 || loading
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-blue-600 hover:bg-blue-700 text-white'
                 }`}
             >
               <ShoppingCart size={18} />
