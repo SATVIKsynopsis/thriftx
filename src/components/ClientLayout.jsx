@@ -7,11 +7,12 @@ import Footer from "@/components/common/Footer";
 export default function ClientLayout({ children }) {
   const pathname = usePathname();
 
-  // 🧠 Hide header & footer on login, register, and cart pages
+  // 🧠 Hide header & footer on login, register, cart, and admin pages
   const hideHeaderFooter =
     pathname === "/login" ||
     pathname === "/cart" ||
-    pathname.startsWith("/register");
+    pathname.startsWith("/register") ||
+    pathname.startsWith("/admin");
 
   return (
     <div>
