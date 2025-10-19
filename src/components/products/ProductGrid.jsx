@@ -5,9 +5,9 @@ const ProductGrid = ({
   products,
   loading,
   favorites,
-  onToggleFavorite,
   renderStars,
-  onClearFilters
+  onClearFilters,
+  sectionContext
 }) => {
   if (loading) {
     return (
@@ -50,8 +50,8 @@ const ProductGrid = ({
           key={product.id}
           product={product}
           isFavorite={favorites.includes(product.id)}
-          onToggleFavorite={onToggleFavorite}
           renderStars={renderStars}
+          sectionContext={sectionContext}
         />
       ))}
     </div>

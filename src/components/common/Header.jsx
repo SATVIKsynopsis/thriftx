@@ -10,12 +10,15 @@ import {
   ClipboardList,
   Shield,
   Package,
+  Heart,
   Menu as MenuIcon, // 👈 Added MenuIcon for the mobile button
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { getAuth, signOut } from "firebase/auth";
+import Breadcrumb from '@/components/common/Breadcrumb';
 
 export default function Header() {
   const [showPromo, setShowPromo] = useState(true);
@@ -24,15 +27,40 @@ export default function Header() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [selectedCity, setSelectedCity] = useState('Bangalore');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [mobileSearchQuery, setMobileSearchQuery] = useState('');
 
   const userMenuRef = useRef(null);
   const mobileMenuRef = useRef(null); // Ref for mobile menu to close on outside click
 
   const { currentUser, userProfile, isSuperAdmin } = useAuth();
   const { getItemCount } = useCart();
+  const router = useRouter();
 
   const handleCityChange = (event) => setSelectedCity(event.target.value);
   const toggleMobileMenu = () => setShowMobileMenu(prev => !prev); // 👈 Toggle function
+
+  // Search handlers
+  const handleSearch = (query) => {
+    if (query.trim()) {
+      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+      setSearchQuery('');
+      setMobileSearchQuery('');
+      setShowMobileMenu(false);
+    }
+  };
+
+  const handleKeyPress = (e, query) => {
+    if (e.key === 'Enter') {
+      handleSearch(query);
+    }
+  };
+
+  const handleMobileSearchIconClick = () => {
+    if (mobileSearchQuery.trim()) {
+      handleSearch(mobileSearchQuery);
+    }
+  };
 
   // --- Effect Hooks ---
 
@@ -153,11 +181,15 @@ export default function Header() {
               <input
                 type="text"
                 placeholder="Search for products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={(e) => handleKeyPress(e, searchQuery)}
                 className="w-full bg-neutral-100 text-gray-800 text-sm rounded-full py-2.5 pl-10 pr-4 placeholder:text-gray-400 focus:outline-none"
               />
               <SearchIcon
                 size={18}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 cursor-pointer hover:text-gray-700"
+                onClick={() => handleSearch(searchQuery)}
               />
             </div>
           </div>
@@ -166,7 +198,10 @@ export default function Header() {
           <div className="flex items-center gap-5 relative">
 
             {/* 🔑 NEW: Search Icon for Mobile (Visible only on small screens) */}
-            <button className="sm:hidden text-gray-200 hover:text-white transition p-1">
+            <button
+              className="sm:hidden text-gray-200 hover:text-white transition p-1"
+              onClick={handleMobileSearchIconClick}
+            >
               <SearchIcon size={22} />
             </button>
 
@@ -205,6 +240,7 @@ export default function Header() {
                     <div className="py-2">
                       {/* User Dropdown Links (Orders, Profile, Admin, etc.) */}
                       <Link href="/orders" className="flex items-center gap-2 px-5 py-2.5 text-sm text-gray-200 hover:bg-neutral-800 hover:text-white transition" onClick={() => setShowUserMenu(false)}><ClipboardList size={16} className="text-gray-400" />Orders</Link>
+                      <Link href="/wishlist" className="flex items-center gap-2 px-5 py-2.5 text-sm text-gray-200 hover:bg-neutral-800 hover:text-white transition" onClick={() => setShowUserMenu(false)}><Heart size={16} className="text-gray-400" />Wishlist</Link>
                       <Link href="/profile" className="flex items-center gap-2 px-5 py-2.5 text-sm text-gray-200 hover:bg-neutral-800 hover:text-white transition" onClick={() => setShowUserMenu(false)}><User size={16} className="text-gray-400" />Profile</Link>
                       {userProfile?.role === "seller" && (<Link href="/seller/products" className="flex items-center gap-2 px-5 py-2.5 text-sm text-gray-200 hover:bg-neutral-800 hover:text-white transition" onClick={() => setShowUserMenu(false)}><Package size={16} className="text-gray-400" />My Products</Link>)}
                       {isSuperAdmin(currentUser) && (<Link href="/admin/super" className="flex items-center gap-2 px-5 py-2.5 text-sm text-gray-200 hover:bg-neutral-800 hover:text-white transition" onClick={() => setShowUserMenu(false)}><Shield size={16} className="text-gray-400" />Super Admin</Link>)}
@@ -245,6 +281,11 @@ export default function Header() {
           </div>
         </div>
 
+        {/* Breadcrumb Navigation - Only show when not on home page */}
+        <div className="px-4 sm:px-8 pb-2">
+          <Breadcrumb />
+        </div>
+
         {/* 🔑 NEW: Mobile Menu Panel */}
         <div
           ref={mobileMenuRef}
@@ -258,11 +299,15 @@ export default function Header() {
               <input
                 type="text"
                 placeholder="Search for products..."
+                value={mobileSearchQuery}
+                onChange={(e) => setMobileSearchQuery(e.target.value)}
+                onKeyPress={(e) => handleKeyPress(e, mobileSearchQuery)}
                 className="w-full bg-neutral-100 text-gray-800 text-sm rounded-full py-2.5 pl-10 pr-4 placeholder:text-gray-400 focus:outline-none"
               />
               <SearchIcon
                 size={18}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 cursor-pointer hover:text-gray-700"
+                onClick={() => handleSearch(mobileSearchQuery)}
               />
             </div>
           </div>
@@ -279,6 +324,10 @@ export default function Header() {
                 <Link href="/orders" className="flex items-center gap-3 px-6 py-3 text-lg text-gray-200 hover:bg-neutral-800 hover:text-white transition" onClick={toggleMobileMenu}>
                   <ClipboardList size={20} className="text-lime-400" />
                   Orders
+                </Link>
+                <Link href="/wishlist" className="flex items-center gap-3 px-6 py-3 text-lg text-gray-200 hover:bg-neutral-800 hover:text-white transition" onClick={toggleMobileMenu}>
+                  <Heart size={20} className="text-lime-400" />
+                  Wishlist
                 </Link>
                 <Link href="/profile" className="flex items-center gap-3 px-6 py-3 text-lg text-gray-200 hover:bg-neutral-800 hover:text-white transition" onClick={toggleMobileMenu}>
                   <User size={20} className="text-lime-400" />

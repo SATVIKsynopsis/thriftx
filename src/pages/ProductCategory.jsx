@@ -10,13 +10,18 @@ import { PRODUCTS_PER_PAGE, SORT_OPTIONS } from '@/utils/filterConstants';
 import ProductGrid from '@/components/products/ProductGrid';
 import ActiveFilters from '@/components/products/ActiveFilters';
 import Pagination from '@/components/common/Pagination';
+import { useAuth } from '@/contexts/AuthContext';
+import useWishlistStore from '@/stores/wishlistStore';
+import { NAVIGATION_CONTEXTS } from '@/utils/navigationContextUtils';
 
 const ProductsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState('Most Popular');
-  const [favorites, setFavorites] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+
+  const { currentUser } = useAuth();
+  const { getWishlistItems, setCurrentUser, clearCurrentUser } = useWishlistStore();
 
   // Use the custom hook for product filtering
   const {
@@ -47,6 +52,15 @@ const ProductsPage = () => {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Handle auth state changes for wishlist
+  useEffect(() => {
+    if (currentUser) {
+      setCurrentUser(currentUser.uid);
+    } else {
+      clearCurrentUser();
+    }
+  }, [currentUser, setCurrentUser, clearCurrentUser]);
 
   // Apply current page reset when filters change
   const handleApplyFilters = () => {
@@ -87,13 +101,16 @@ const ProductsPage = () => {
     };
   }, [sortedProducts.length, currentPage]);
 
-  const toggleFavorite = (id) => {
-    setFavorites(prev =>
-      prev.includes(id)
-        ? prev.filter(fav => fav !== id)
-        : [...prev, id]
-    );
-  };
+  // Get wishlist items for current user
+  const wishlistItems = useMemo(() => {
+    if (!currentUser) return [];
+    return getWishlistItems(currentUser);
+  }, [currentUser, getWishlistItems]);
+
+  // Convert wishlist items to favorite IDs for backward compatibility
+  const favorites = useMemo(() => {
+    return wishlistItems.map(item => item.id);
+  }, [wishlistItems]);
 
   const renderStars = (rating) => {
     return (
@@ -162,7 +179,7 @@ const ProductsPage = () => {
       <div className="flex-1 flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 lg:p-6 border-b border-gray-800">
-          <h1 className="text-xl lg:text-2xl font-bold">Casual</h1>
+          <h1 className="text-xl lg:text-2xl font-bold">Category</h1>
           
           <div className="flex items-center gap-2 lg:gap-4">
             <span className="text-xs lg:text-sm text-gray-400 hidden sm:inline">
@@ -210,9 +227,9 @@ const ProductsPage = () => {
             products={paginatedProducts}
             loading={loading}
             favorites={favorites}
-            onToggleFavorite={toggleFavorite}
             renderStars={renderStars}
             onClearFilters={clearFilters}
+            sectionContext={NAVIGATION_CONTEXTS.CATEGORY}
           />
         </div>
 

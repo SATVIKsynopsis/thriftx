@@ -28,6 +28,7 @@ const Home_Page = () => {
           limit(8)
         );
         const featuredSnapshot = await getDocs(featuredQuery);
+
         const featured = featuredSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
@@ -39,6 +40,7 @@ const Home_Page = () => {
           limit(8)
         );
         const newSnapshot = await getDocs(newQuery);
+
         const newest = newSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),

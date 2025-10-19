@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '@/firebase/config';
+import { productMatchesCategory } from '@/utils/categoryUtils';
 
 export const useProductSearch = (filters = {}) => {
     const [allProducts, setAllProducts] = useState([]);
@@ -53,7 +54,7 @@ export const useProductSearch = (filters = {}) => {
 
         // Apply category filter
         if (category) {
-            results = results.filter(p => p.category === category);
+            results = results.filter(p => productMatchesCategory(p, category));
         }
 
         // Apply condition filter

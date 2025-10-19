@@ -4,6 +4,7 @@ import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import ProductCard from '../products/ProductCard';
 import Link from 'next/link';
+import { setNavigationContext, NAVIGATION_CONTEXTS } from '@/utils/navigationContextUtils';
 
 const TrendingFind = ({ loading, featuredProducts }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -107,7 +108,10 @@ const TrendingFind = ({ loading, featuredProducts }) => {
                     key={product.id}
                     className={`flex-shrink-0 w-full p-2 sm:w-1/2 md:w-1/3 lg:w-1/4`}
                   >
-                    <ProductCard product={product} />
+                    <ProductCard
+                      product={product}
+                      sectionContext={NAVIGATION_CONTEXTS.TRENDING_FINDS}
+                    />
                   </div>
                 ))}
               </div>
@@ -133,7 +137,11 @@ const TrendingFind = ({ loading, featuredProducts }) => {
             {featuredProducts.length > 0 && (
               <div className="text-center mt-8">
                 <Link
-                  href="/search"
+                  href="/browse"
+                  onClick={() => {
+                    // Set navigation context for proper breadcrumb and back navigation
+                    setNavigationContext(NAVIGATION_CONTEXTS.TRENDING_FINDS);
+                  }}
                   className="inline-flex items-center gap-2 border rounded-full text-white px-8 py-4 font-semibold hover:bg-gray-800 transition-transform transform hover:-translate-y-1"
                 >
                   View All Products <ArrowRight size={20} />

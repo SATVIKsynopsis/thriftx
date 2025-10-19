@@ -1,10 +1,10 @@
-import SearchComponent from '@/pages/SearchComponent'
+import SearchResultsPage from '@/components/search/SearchResultsPage'
 import React from 'react'
 
 const Search = () => {
   return (
     <div>
-      <SearchComponent />
+      <SearchResultsPage />
     </div>
   )
 }
