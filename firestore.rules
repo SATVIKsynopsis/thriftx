@@ -9,11 +9,25 @@ service cloud.firestore {
     }
     
     // Products can be read by anyone, but only created/updated by authenticated users
-    match /products/{productId} {
-      allow read: if true;
-      allow create, update: if request.auth != null && request.auth.uid == resource.data.sellerId;
-      allow delete: if request.auth != null && (request.auth.uid == resource.data.sellerId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
-    }
+   match /products/{productId} {
+  allow read: if true;
+
+  // ✅ Sellers OR Super Admin can create/update products
+  allow create, update: if request.auth != null &&
+    (
+      request.auth.uid == request.resource.data.sellerId ||
+      request.auth.token.email == 'admin@thriftx.com'
+    );
+
+  // ✅ Deletion allowed for product owner OR Admin
+  allow delete: if request.auth != null &&
+    (
+      request.auth.uid == resource.data.sellerId ||
+      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+      request.auth.token.email == 'admin@thriftx.com'
+    );
+}
+
     
     // Orders can only be accessed by the buyer, seller, or admin
     // Super admin can read all orders
