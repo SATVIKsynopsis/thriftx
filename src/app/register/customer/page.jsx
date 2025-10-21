@@ -6,7 +6,7 @@ import React from 'react'
 const Register = () => {
   return (
     <div>
-      <Header />
+      
       <BuyerRegister />
       <Footer />
     </div>

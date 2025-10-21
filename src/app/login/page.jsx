@@ -6,7 +6,7 @@ import Footer from '@/components/common/Footer'
 const Login = () => {
   return (
     <div>
-      <Header />
+     
       <LoginComponent />
       <Footer />
     </div>
