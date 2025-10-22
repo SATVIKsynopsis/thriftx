@@ -5,10 +5,10 @@ export function middleware(request) {
   const cookieValue = request.cookies.get('__session')?.value;
 
   // Protected routes (require authentication)
-  const protectedRoutes = ['/cart', '/admin', '/profile'];
+  const protectedRoutes = ['/cart', '/admin', '/profile', '/seller'];
   
   // Auth routes (should not be accessible when logged in)
-  const authRoutes = ['/login', '/register', '/signup'];
+  const authRoutes = ['/login', '/register/customer', '/signup', '/register/seller'];
 
   // Check if user is authenticated
   const isAuthenticated = !!cookieValue;
@@ -79,6 +79,36 @@ export function middleware(request) {
       if (!['admin', 'superadmin'].includes(role)) {
         return NextResponse.redirect(new URL('/?unauthorized=true', request.url));
       }
+    } else if (url.startsWith('/seller')) {
+      // Seller routes require seller role (not buyer)
+      if (role === 'buyer') {
+        console.log("🚫 Buyer attempting to access seller route:", url);
+        return NextResponse.redirect(new URL('/?unauthorized=true', request.url));
+      }
+      
+      // Specific seller route protection
+      const sellerRoutes = [
+        '/seller/analytics',
+        '/seller/dashboard', 
+        '/seller/orders',
+        '/seller/orders/[orderId]',
+        '/seller/products/add',
+        '/seller/products/edit'
+      ];
+      
+      // Check if current URL matches any seller route
+      const isSellerRoute = sellerRoutes.some(route => {
+        if (route.includes('[orderId]')) {
+          // Handle dynamic routes like /seller/orders/123
+          return url.startsWith('/seller/orders/') && url !== '/seller/orders';
+        }
+        return url.startsWith(route);
+      });
+      
+      if (isSellerRoute && role !== 'seller' && role !== 'admin' && role !== 'superadmin') {
+        console.log("🚫 Non-seller role attempting to access seller route:", role, url);
+        return NextResponse.redirect(new URL('/?unauthorized=true', request.url));
+      }
     } else if (url.startsWith('/cart') || url.startsWith('/profile')) {
       // Regular protected routes - any authenticated user can access
       console.log(`✅ User with role ${role} accessing ${url}`);
@@ -98,7 +128,9 @@ export const config = {
     '/admin/:path*', 
     '/profile',
     '/login',
-    '/register',
-    '/signup'
+    '/register/customer',
+    '/register/seller',
+    '/signup',
+    '/seller/:path*' 
   ],
 };
