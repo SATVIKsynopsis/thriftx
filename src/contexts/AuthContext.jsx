@@ -24,54 +24,71 @@ export const AuthProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // ✅ UPDATED: Login handles token + cookie setting
-const login = async (email, password) => {
-  const result = await signInWithEmailAndPassword(auth, email, password);
-  const user = result.user;
+  // ✅ CONSISTENT: Always set cookie as JSON object
+  const setSessionCookie = async (user, role = null) => {
+    const token = await getIdToken(user, true);
+    
+    // If role not provided, fetch it from Firestore
+    let userRole = role;
+    if (!userRole) {
+      const userRef = doc(db, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+      userRole = userSnap.exists() ? userSnap.data().role : 'buyer';
+    }
 
-  // ✅ Get Firebase token
-  const token = await getIdToken(user, true);
+    const sessionData = { 
+      token, 
+      role: userRole,
+      email: user.email // Optional: include email for easier debugging
+    };
 
-  // ✅ Firestore reference
-  const userRef = doc(db, 'users', user.uid);
-  const userSnap = await getDoc(userRef);
-
-  let role;
-
-  if (userSnap.exists()) {
-    // ✅ If user exists in Firestore, use their stored role
-    role = userSnap.data().role;
-  } else {
-    // ✅ If no Firestore doc exists, auto-create one
-    // ✅ Automatically assign superadmin for specific email
-    role = email === 'admin@thriftx.com' ? 'superadmin' : 'buyer';
-
-    await setDoc(userRef, {
-      name: user.displayName || 'Unknown User',
-      email: user.email,
-      role,
-      createdAt: new Date()
+    setCookie('__session', JSON.stringify(sessionData), {
+      path: '/',
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 // 24 hours
     });
-  }
 
-  // ✅ Save token + role in cookie for middleware use
-  setCookie('__session', JSON.stringify({ token, role }), {
-    path: '/',
-    secure: process.env.NODE_ENV === 'production'
-  });
+    console.log("✅ Cookie set with role:", userRole);
+    return userRole;
+  };
 
-  console.log("✅ Cookie set with role:", role);
-  return result;
-};
+  // ✅ UPDATED: Login uses consistent cookie setting
+  const login = async (email, password) => {
+    const result = await signInWithEmailAndPassword(auth, email, password);
+    const user = result.user;
 
+    // ✅ Firestore reference to get user role
+    const userRef = doc(db, 'users', user.uid);
+    const userSnap = await getDoc(userRef);
 
+    let role;
+
+    if (userSnap.exists()) {
+      // ✅ If user exists in Firestore, use their stored role
+      role = userSnap.data().role;
+    } else {
+      // ✅ If no Firestore doc exists, auto-create one
+      role = email === 'admin@thriftx.com' ? 'superadmin' : 'buyer';
+
+      await setDoc(userRef, {
+        name: user.displayName || 'Unknown User',
+        email: user.email,
+        role,
+        createdAt: new Date()
+      });
+    }
+
+    // ✅ Use consistent cookie setting function
+    await setSessionCookie(user, role);
+    return result;
+  };
 
   // ✅ UPDATED: Logout removes session cookie
-const logout = async () => {
-  await signOut(auth);
-  deleteCookie('__session');
-};
-
+  const logout = async () => {
+    await signOut(auth);
+    deleteCookie('__session', { path: '/' });
+  };
 
   const signup = async (email, password, userData) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -79,74 +96,88 @@ const logout = async () => {
 
     await updateProfile(user, { displayName: userData.name });
 
+    // Determine role - allow superadmin creation only for specific email
+    const role = email === 'admin@thriftx.com' ? 'superadmin' : (userData.role || 'buyer');
+
     await setDoc(doc(db, 'users', user.uid), {
       name: userData.name,
       email: userData.email,
-      role: userData.role || 'buyer',
+      role: role,
       createdAt: new Date(),
       ...userData
     });
 
+    // Set initial cookie after signup
+    await setSessionCookie(user, role);
     return userCredential;
   };
 
   const fetchUserProfile = async (uid) => {
     const userDoc = await getDoc(doc(db, 'users', uid));
     if (userDoc.exists()) {
-      setUserProfile(userDoc.data());
+      const profileData = userDoc.data();
+      setUserProfile(profileData);
+      return profileData;
     }
+    return null;
   };
 
-  const isSuperAdmin = (user) => {
-    return user && user.email === 'admin@thriftx.com';
+  // ✅ Role checking functions
+  const isSuperAdmin = () => {
+    return userProfile?.role === 'superadmin';
   };
 
-  const isAdmin = (user) => {
-    if (!user) return false;
-    if (isSuperAdmin(user)) return true;
-    return userProfile?.role === 'admin';
+  const isAdmin = () => {
+    return ['admin', 'superadmin'].includes(userProfile?.role);
   };
 
-  const isSeller = (user) => {
-    if (!user) return false;
-    if (isAdmin(user)) return true;
-    return userProfile?.role === 'seller';
+  const isSeller = () => {
+    return ['seller', 'admin', 'superadmin'].includes(userProfile?.role);
   };
 
-useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      // User logged in: set state
-      setCurrentUser(user);
-      await fetchUserProfile(user.uid);
+  const hasRole = (requiredRole) => {
+    if (!userProfile?.role) return false;
+    
+    const roleHierarchy = {
+      'superadmin': ['superadmin', 'admin', 'seller', 'buyer'],
+      'admin': ['admin', 'seller', 'buyer'],
+      'seller': ['seller', 'buyer'],
+      'buyer': ['buyer']
+    };
 
-      // ✅ Set fresh token in cookie
-      const token = await user.getIdToken(true);
-      setCookie('__session', token, {
-        path: '/',
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-      });
-    } else {
-      // ✅ User signed out: remove token + cookie
-      setCurrentUser(null);
-      setUserProfile(null);
+    return roleHierarchy[userProfile.role]?.includes(requiredRole) || false;
+  };
 
-      // Destroy token persistence
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('firebase:authUser');
-        sessionStorage.clear();
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // User logged in: set state
+        setCurrentUser(user);
+        const profile = await fetchUserProfile(user.uid);
+
+        // ✅ Use consistent cookie setting function
+        await setSessionCookie(user, profile?.role);
+
+        console.log("🔄 Session refreshed with role:", profile?.role);
+      } else {
+        // ✅ User signed out: remove token + cookie
+        setCurrentUser(null);
+        setUserProfile(null);
+
+        // Destroy token persistence
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('firebase:authUser');
+          sessionStorage.clear();
+        }
+
+        deleteCookie('__session', { path: '/' });
       }
 
-      deleteCookie('__session', { path: '/' });
-    }
+      setLoading(false);
+    });
 
-    setLoading(false);
-  });
-
-  return unsubscribe;
-}, []);
-
+    return unsubscribe;
+  }, []);
 
   const value = {
     currentUser,
@@ -157,7 +188,8 @@ useEffect(() => {
     fetchUserProfile,
     isSuperAdmin,
     isAdmin,
-    isSeller
+    isSeller,
+    hasRole
   };
 
   return (
