@@ -18,11 +18,13 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import ThriftXLoader from "../../components/common/NewLoader";
 
 export default function AdminLayout({ children, title, description, breadcrumb }) {
   const [sidebarOpen, setSidebarOpen] = useState(false); // mobile
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // desktop
   const { currentUser, userProfile, logout } = useAuth();
+  const [loading, setLoading] = useState(false);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -63,6 +65,8 @@ export default function AdminLayout({ children, title, description, breadcrumb }
   const mainLeftOffset = headerLeftOffset;
 
   return (
+ 
+
     <div className="min-h-screen bg-gray-50 flex relative">
       {/* Overlay (mobile) */}
       <div
@@ -232,6 +236,9 @@ export default function AdminLayout({ children, title, description, breadcrumb }
         </div>
       </header>
 
+
+
+
       {/* Main */}
       <main
         className={[
@@ -243,6 +250,7 @@ export default function AdminLayout({ children, title, description, breadcrumb }
           mainLeftOffset, // push by sidebar on desktop
         ].join(" ")}
       >
+        
         <div className="max-w-7xl mx-auto">
           {/* Content header */}
           <div className="mb-8">

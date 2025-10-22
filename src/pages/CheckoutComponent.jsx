@@ -25,7 +25,7 @@ import toast from "react-hot-toast";
 const CheckoutComponent = () => {
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("card");
-  const { currentUser } = useAuth();
+  const { currentUser, userProfile } = useAuth();
   const { cartItems, getCartTotal, clearCart } = useCart();
   const router = useRouter();
 
@@ -47,6 +47,26 @@ const CheckoutComponent = () => {
     }
 
     try {
+      // ✅ Fetch complete user data from Firestore
+      const userRef = doc(db, "users", currentUser.uid);
+      const userDoc = await getDoc(userRef);
+      
+      let userData = {
+        name: `${data.firstName} ${data.lastName}`,
+        email: data.email || currentUser.email,
+        phone: data.phone || ''
+      };
+      
+      // If user profile exists in Firestore, use that data
+      if (userDoc.exists()) {
+        const userInfo = userDoc.data();
+        userData = {
+          name: userInfo.name || userInfo.displayName || `${data.firstName} ${data.lastName}`,
+          email: userInfo.email || currentUser.email,
+          phone: data.phone || userInfo.phone || ''
+        };
+      }
+
       const enrichedItems = await Promise.all(
         cartItems.map(async (item) => {
           const productRef = doc(db, "products", item.productId);
@@ -61,22 +81,65 @@ const CheckoutComponent = () => {
         })
       );
 
+      // ✅ Generate readable order number
+      const now = new Date();
+      const year = now.getFullYear().toString().slice(-2);
+      const month = (now.getMonth() + 1).toString().padStart(2, '0');
+      const day = now.getDate().toString().padStart(2, '0');
+      const randomId = Math.random().toString(36).substring(2, 6).toUpperCase();
+      const orderNumber = `ORD-${year}${month}${day}-${randomId}`;
+
       const orderData = {
+        // ✅ Order identification
+        orderNumber: orderNumber,
+        
+        // ✅ User references
         buyerId: currentUser.uid,
+        userId: currentUser.uid, // Also add userId for compatibility
+        
+        // ✅ EMBEDDED user data for quick access (THIS IS KEY!)
+        user: userData,
+        
+        // Detailed buyer info (shipping address)
         buyerInfo: data,
+        
+        // Shipping address in standard format
+        shippingAddress: {
+          fullName: `${data.firstName} ${data.lastName}`,
+          email: data.email,
+          phone: data.phone,
+          address: data.address,
+          city: data.city,
+          state: data.state,
+          zipCode: data.zipCode
+        },
+        
+        // Seller information
         sellerId,
+        
+        // Order items
         items: enrichedItems,
+        
+        // Pricing
         subtotal,
         shipping,
         tax,
         total,
+        
+        // Payment
         paymentMethod,
+        
+        // Status
         status: "pending",
+        
+        // Timestamps
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
 
-      await addDoc(collection(db, "orders"), orderData);
+      const orderRef = await addDoc(collection(db, "orders"), orderData);
+      console.log("✅ Order created:", orderRef.id);
+      
       await clearCart();
 
       toast.success("Order placed successfully!");
