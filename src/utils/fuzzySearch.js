@@ -75,7 +75,7 @@ const fuzzyMatch = (searchTerm, text, threshold = 0.6) => {
 /**
  * Search products across multiple fields with weighted scoring
  */
-const searchProducts = (products, searchTerm) => {
+export const searchProducts = (products, searchTerm) => {
     if (!searchTerm || !searchTerm.trim()) {
         return products.map(p => ({ ...p, searchScore: 100 }));
     }

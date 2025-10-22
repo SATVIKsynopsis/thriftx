@@ -139,7 +139,7 @@ const FilterPage = ({
                     min="0"
                     max={PRICE_RANGE[1]}
                     value={filters.priceRange[0]}
-                    onChange={(e) => updatePriceRange([parseInt(e.target.value), filters.priceRange[1]])}
+                    onChange={(e) => updatePriceRange([Math.min(parseInt(e.target.value), filters.priceRange[1]), filters.priceRange[1]])}
                     className="absolute w-full h-1 bg-transparent appearance-none pointer-events-auto cursor-pointer"
                     style={{ background: 'transparent' }}
                   />
@@ -148,7 +148,7 @@ const FilterPage = ({
                     min="0"
                     max={PRICE_RANGE[1]}
                     value={filters.priceRange[1]}
-                    onChange={(e) => updatePriceRange([filters.priceRange[0], parseInt(e.target.value)])}
+                    onChange={(e) => updatePriceRange([filters.priceRange[0], Math.max(parseInt(e.target.value), filters.priceRange[0])])}
                     className="absolute w-full h-1 bg-transparent appearance-none pointer-events-auto cursor-pointer"
                     style={{ background: 'transparent' }}
                   />
@@ -191,7 +191,7 @@ const FilterPage = ({
                   <motion.button
                     key={color.name}
                     onClick={() => toggleColor(color.name)}
-                    className={`w-10 h-10 rounded-full relative ${color.class} ${filters.colors.includes(color.name) ? 'ring-2 ring-white ring-offset-2 ring-offset-black' : ''}`}
+                    className={`w-10 h-10 rounded-full relative border-2 border-white ${color.class} ${filters.colors.includes(color.name) ? 'ring-2 ring-white ring-offset-2 ring-offset-black' : ''}`}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                   >

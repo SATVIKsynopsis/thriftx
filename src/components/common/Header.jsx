@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   ShoppingCart,
   User,
@@ -19,6 +19,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { getAuth, signOut } from "firebase/auth";
 import Breadcrumb from "@/components/common/Breadcrumb";
+import { searchProducts } from "@/utils/fuzzySearch";
+import { collection, query, orderBy, getDocs } from "firebase/firestore";
+import { db } from "@/firebase/config";
 
 export default function Header() {
   const [showPromo, setShowPromo] = useState(true);
@@ -27,10 +30,17 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [selectedCity, setSelectedCity] = useState("Bangalore");
   const [searchQuery, setSearchQuery] = useState("");
-  const [mobileSearchQuery, setMobileSearchQuery] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [allProducts, setAllProducts] = useState([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
+  const [isSearching, setIsSearching] = useState(false);
 
   const userMenuRef = useRef(null);
   const mobileMenuRef = useRef(null);
+  const searchRef = useRef(null);
+  const suggestionsRef = useRef(null);
 
   const { currentUser, userProfile, isSuperAdmin, isAdmin } = useAuth();
   const isOnlyAdmin =
@@ -43,26 +53,44 @@ export default function Header() {
   const { getItemCount } = useCart();
   const router = useRouter();
 
+  // Debounce function
+  const debounce = (func, wait) => {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  };
+
   const handleCityChange = (event) => setSelectedCity(event.target.value);
   const toggleMobileMenu = () => setShowMobileMenu((prev) => !prev);
 
   // Search
-  const handleSearch = (query) => {
-    if (query.trim()) {
+  const handleSearch = async (query) => {
+    if (query.trim() && !isSearching) {
+      setIsSearching(true);
+      setShowSuggestions(false);
+      setSelectedSuggestionIndex(-1);
+
+      // Navigate to search page
       router.push(`/search?q=${encodeURIComponent(query.trim())}`);
-      setSearchQuery("");
-      setMobileSearchQuery("");
-      setShowMobileMenu(false);
+
+      // Clear states after navigation starts
+      setTimeout(() => {
+        setSearchQuery("");
+        setShowMobileMenu(false);
+        setIsSearching(false);
+      }, 100);
     }
   };
 
-  const handleKeyPress = (e, query) => {
-    if (e.key === "Enter") handleSearch(query);
-  };
 
-  const handleMobileSearchIconClick = () => {
-    if (mobileSearchQuery.trim()) handleSearch(mobileSearchQuery);
-  };
+
+
 
   // Scroll
   useEffect(() => {
@@ -118,6 +146,72 @@ export default function Header() {
       console.error("Logout error:", error);
     }
   };
+
+  // Fetch all products for suggestions
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
+        const snapshot = await getDocs(q);
+        const products = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setAllProducts(products);
+      } catch (error) {
+        console.error('Error fetching products for suggestions:', error);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  // Debounced search for suggestions
+  const debouncedSearch = useCallback(
+    debounce((query) => {
+      if (query.trim() && allProducts.length > 0) {
+        setLoadingSuggestions(true);
+        const results = searchProducts(allProducts, query).slice(0, 8);
+        setSuggestions(results);
+        setShowSuggestions(true);
+        setLoadingSuggestions(false);
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    }, 300),
+    [allProducts]
+  );
+
+  // Handle search query change
+  useEffect(() => {
+    if (searchQuery) {
+      debouncedSearch(searchQuery);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+    setSelectedSuggestionIndex(-1);
+  }, [searchQuery, debouncedSearch]);
+
+
+
+  // Click outside for search suggestions
+  useEffect(() => {
+    const handleClickOutsideSearch = (event) => {
+      // Don't close if clicking on suggestions dropdown
+      const isClickOnSuggestions = suggestionsRef.current?.contains(event.target);
+
+      if (!isClickOnSuggestions &&
+          searchRef.current && !searchRef.current.contains(event.target)
+      ) {
+        setShowSuggestions(false);
+        setSelectedSuggestionIndex(-1);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutsideSearch);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutsideSearch);
+  }, []);
 
   return (
     <header
@@ -177,32 +271,108 @@ export default function Header() {
           </div>
 
           {/* Desktop Search */}
-          <div className="flex-1 mx-4 sm:mx-6 hidden sm:block">
+          <div ref={searchRef} className="flex-1 mx-4 sm:mx-6 block relative">
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search for products..."
+                placeholder={isSearching ? "Searching..." : "Search for products..."}
                 value={searchQuery}
+                disabled={isSearching}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => handleKeyPress(e, searchQuery)}
-                className="w-full bg-neutral-100 text-gray-800 text-sm rounded-full py-2.5 pl-10 pr-4 placeholder:text-gray-400 focus:outline-none"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    if (selectedSuggestionIndex >= 0 && suggestions[selectedSuggestionIndex]) {
+                      handleSearch(suggestions[selectedSuggestionIndex].name);
+                    } else {
+                      handleSearch(searchQuery);
+                    }
+                  } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    setSelectedSuggestionIndex(prev =>
+                      prev < suggestions.length - 1 ? prev + 1 : 0
+                    );
+                  } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    setSelectedSuggestionIndex(prev =>
+                      prev > 0 ? prev - 1 : suggestions.length - 1
+                    );
+                  } else if (e.key === 'Escape') {
+                    setShowSuggestions(false);
+                    setSelectedSuggestionIndex(-1);
+                  }
+                }}
+                onFocus={() => {
+                  if (suggestions.length > 0 && !isSearching) setShowSuggestions(true);
+                }}
+
+                className={`w-full bg-neutral-100 text-gray-800 text-sm rounded-full py-2.5 pl-4 pr-10 placeholder:text-gray-400 focus:outline-none ${
+                  isSearching ? 'opacity-75 cursor-not-allowed' : ''
+                }`}
               />
               <SearchIcon
                 size={18}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 cursor-pointer hover:text-gray-700"
-                onClick={() => handleSearch(searchQuery)}
+                className={`absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer transition-colors ${
+                  isSearching
+                    ? 'text-gray-400 cursor-not-allowed animate-pulse'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+                onClick={() => !isSearching && handleSearch(searchQuery)}
               />
+
+              {/* Suggestions Dropdown */}
+              {showSuggestions && suggestions.length > 0 && (
+                <div ref={suggestionsRef} className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-3xl shadow-lg z-50 max-h-80 overflow-y-auto">
+                  {suggestions.map((product, index) => (
+                    <div
+                      key={product.id}
+                      className={`p-3 cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-50 ${
+                        index === selectedSuggestionIndex ? 'bg-gray-100' : ''
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSearch(product.name);
+                        setShowSuggestions(false);
+                      }}
+                      onMouseEnter={() => setSelectedSuggestionIndex(index)}
+                    >
+                      <div className="flex items-center gap-3">
+                        {product.images && product.images.length > 0 ? (
+                          <img
+                            src={product.images[0]}
+                            alt={product.name}
+                            className="w-10 h-10 object-cover rounded"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.nextElementSibling.style.display = 'flex';
+                            }}
+                          />
+                        ) : (
+                          <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">
+                            No Image
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <div className="font-medium text-gray-900">{product.name}</div>
+                          <div className="text-sm text-gray-500">{product.category}</div>
+                        </div>
+                       
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Loading Indicator */}
+              {loadingSuggestions && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-3">
+                  <div className="text-sm text-gray-500">Loading suggestions...</div>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Right Icons */}
           <div className="flex items-center gap-5 relative">
-            <button
-              className="sm:hidden text-gray-200 hover:text-white transition p-1"
-              onClick={handleMobileSearchIconClick}
-            >
-              <SearchIcon size={22} />
-            </button>
 
             {currentUser && (
               <Link href="/cart" className="relative hidden md:block">
@@ -285,24 +455,6 @@ export default function Header() {
 
         {/* ✅ Mobile Menu */}
         <div ref={mobileMenuRef} className={`md:hidden absolute w-full bg-neutral-900/95 backdrop-blur-sm border-t border-gray-800 transition-all duration-300 ease-in-out transform overflow-hidden ${showMobileMenu ? "max-h-screen py-4" : "max-h-0"}`}>
-          <div className="px-4 pb-4">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search for products..."
-                value={mobileSearchQuery}
-                onChange={(e) => setMobileSearchQuery(e.target.value)}
-                onKeyPress={(e) => handleKeyPress(e, mobileSearchQuery)}
-                className="w-full bg-neutral-100 text-gray-800 text-sm rounded-full py-2.5 pl-10 pr-4 placeholder:text-gray-400 focus:outline-none"
-              />
-              <SearchIcon
-                size={18}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 cursor-pointer hover:text-gray-700"
-                onClick={() => handleSearch(mobileSearchQuery)}
-              />
-            </div>
-          </div>
-
           <div className="flex flex-col">
             {currentUser && (
               <>

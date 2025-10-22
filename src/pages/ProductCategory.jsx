@@ -151,7 +151,7 @@ const ProductsPage = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black bg-opacity-75 z-40"
+              className="fixed inset-0  bg-opacity-25 backdrop-blur-md z-40"
               onClick={() => setShowFilters(false)}
             />
             <motion.div
@@ -176,7 +176,7 @@ const ProductsPage = () => {
       </AnimatePresence>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className={`flex-1 flex flex-col ${showFilters && isMobile ? 'blur-sm' : ''}`}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 lg:p-6 border-b border-gray-800">
           <h1 className="text-xl lg:text-2xl font-bold">Category</h1>

@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 import { productMatchesCategory } from '@/utils/categoryUtils';
+import { searchProducts } from '@/utils/fuzzySearch';
 
 export const useProductSearch = (filters = {}) => {
     const [allProducts, setAllProducts] = useState([]);

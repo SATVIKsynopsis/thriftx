@@ -13,7 +13,7 @@ export const COLORS = [
   { name: 'Blue', class: 'bg-blue-600' },
   { name: 'Purple', class: 'bg-purple-600' },
   { name: 'Pink', class: 'bg-pink-500' },
-  { name: 'White', class: 'bg-white border-2 border-gray-300' },
+  { name: 'White', class: 'bg-white border-2 border-white' },
   { name: 'Black', class: 'bg-black' }
 ];
 
