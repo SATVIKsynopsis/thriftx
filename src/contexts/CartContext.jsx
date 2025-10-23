@@ -15,7 +15,19 @@ import { db } from '@/firebase/config';
 import { useAuth } from './AuthContext';
 import toast from 'react-hot-toast';
 
-const CartContext = createContext();
+// Define the safe default value object
+const defaultCartContextValue = {
+  cartItems: [], // Safe default: an empty array
+  loading: false, // Safe default: false
+  addToCart: () => Promise.resolve(), // Safe default: dummy function
+  removeFromCart: () => Promise.resolve(),
+  updateQuantity: () => Promise.resolve(),
+  clearCart: () => Promise.resolve(),
+  getCartTotal: () => 0,
+  getItemCount: () => 0,
+};
+
+const CartContext = createContext(defaultCartContextValue);
 
 export const useCart = () => {
   return useContext(CartContext);

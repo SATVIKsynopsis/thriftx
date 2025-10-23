@@ -23,6 +23,13 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* ADD THE LINK TAG HERE */}
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Sansation:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap"
+        />
+      </head>
       <body>
         <ThemeProvider
           attribute="class"

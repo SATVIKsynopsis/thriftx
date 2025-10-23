@@ -13,7 +13,21 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/firebase/config';
 import { setCookie, deleteCookie } from 'cookies-next';
 
-const AuthContext = createContext();
+// Define the shape of the default value with all expected properties
+const defaultAuthContextValue = {
+  currentUser: null, // <-- Must be present!
+  userProfile: null, // <-- Must be present!
+  logout: () => Promise.resolve(), // Add dummy function for safety
+  signup: () => Promise.resolve(),
+  login: () => Promise.resolve(),
+  fetchUserProfile: () => Promise.resolve(null),
+  isSuperAdmin: () => false,
+  isAdmin: () => false,
+  isSeller: () => false,
+  hasRole: () => false,
+};
+
+const AuthContext = createContext(defaultAuthContextValue);
 
 export const useAuth = () => {
   return useContext(AuthContext);

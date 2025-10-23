@@ -92,36 +92,6 @@ export default function Header() {
     }
   };
 
-  const handleKeyPress = (e, query) => { if (e.key === 'Enter') handleSearch(query); };
-
-  // const handleMobileSearchIconClick = () => { if (mobileSearchQuery.trim()) handleSearch(mobileSearchQuery); };
-
-  // useEffect(() => {
-  //   const handleScroll = () => setIsScrolled(window.scrollY > 10);
-  //   window.addEventListener("scroll", handleScroll);
-  //   return () => window.removeEventListener("scroll", handleScroll);
-  // }, []);
-
-  // useEffect(() => {
-  //   const handleClickOutsideUser = (event) => {
-  //     if (userMenuRef.current && !userMenuRef.current.contains(event.target)) setShowUserMenu(false);
-  //   };
-  //   document.addEventListener("mousedown", handleClickOutsideUser);
-  //   return () => document.removeEventListener("mousedown", handleClickOutsideUser);
-  // }, []);
-
-  // useEffect(() => {
-  //   const handleClickOutsideMobile = (event) => {
-  //     const isSelectClick = event.target.closest('[role="listbox"]') || event.target.closest('[data-radix-select-content]');
-  //     if (showMobileMenu && mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
-  //       if (!isSelectClick && !document.querySelector('.mobile-menu-toggle')?.contains(event.target)) setShowMobileMenu(false);
-  //     }
-  //   };
-  //   document.addEventListener("mousedown", handleClickOutsideMobile);
-  //   return () => document.removeEventListener("mousedown", handleClickOutsideMobile);
-  // }, [showMobileMenu]);
-
-
   // Scroll
   useEffect(() => {
     const handleScroll = () => {
@@ -250,7 +220,7 @@ export default function Header() {
           <div className="bg-gray-100 text-center text-[11px] sm:text-xs py-2 border-b border-gray-200 relative dark:bg-black/90 dark:border-gray-900">
             <p className="text-gray-700 dark:text-gray-200">
               Sign up and get 20% off your first order.{" "}
-              <Link href="/signup" className="underline hover:text-blue-600" onClick={() => setShowPromo(false)}>Sign Up Now</Link>
+              <Link href="/register/customer" className="underline hover:text-blue-600" onClick={() => setShowPromo(false)}>Sign Up Now</Link>
             </p>
             <X size={14} className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-800 dark:text-gray-300 dark:hover:text-white" onClick={() => setShowPromo(false)} />
           </div>
@@ -283,21 +253,6 @@ export default function Header() {
               </Select>
             </div>
           </div>
-
-          {/* Search Bar */}
-          {/* <div className="flex-1 mx-2 sm:mx-4 hidden md:block">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search for products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => handleKeyPress(e, searchQuery)}
-                className="w-full bg-neutral-100 text-gray-800 text-sm sm:text-base rounded-full py-2.5 pl-10 pr-4 placeholder:text-gray-400 focus:outline-none dark:bg-neutral-800 dark:text-white dark:placeholder:text-gray-500"
-              />
-              <SearchIcon size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 cursor-pointer hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300" onClick={() => handleSearch(searchQuery)} />
-            </div>
-          </div> */}
 
           {/* Desktop Search */}
           <div ref={searchRef} className="flex-1 hidden mx-4 sm:mx-6 sm:block relative">

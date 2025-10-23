@@ -19,7 +19,7 @@ import { db, storage } from '@/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
 // Assuming these are accessible constants and components
 import { CATEGORIES, PRODUCT_CONDITIONS } from '@/utils/constants';
-import LoadingSpinner from '@/components/common/LoadingSpinner'; 
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 import toast from 'react-hot-toast';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -254,8 +254,16 @@ const Button = ({ type = 'button', className, disabled, onClick, children }) => 
 const EditProductComponent = () => {
   const params = useParams();
   const router = useRouter();
-  const id = params.id; // Get product ID from Next.js dynamic route
+  if (!params || !params.id) {
+    // This handles the server prerender where params might be null/undefined,
+    return (
+      <div className="max-w-7xl mx-auto p-8 md:p-12 text-center py-16">
+        <h2 className="text-2xl font-bold text-gray-900">Invalid Product ID</h2>
+      </div>
+    );
+  }
 
+  
   const [product, setProduct] = useState(null);
   const [images, setImages] = useState([]);
   const [uploading, setUploading] = useState(false);
@@ -354,7 +362,7 @@ const EditProductComponent = () => {
   const handleFileSelect = (e) => {
     handleImageUpload(e.target.files);
     // Clear input value to allow selecting the same file(s) again
-    e.target.value = null; 
+    e.target.value = null;
   };
 
   const handleDragOver = (e) => {
@@ -456,7 +464,7 @@ const EditProductComponent = () => {
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Product Not Found 😔</h2>
             <p className="text-gray-600">The product you're trying to edit doesn't exist or has been removed.</p>
             <Button className="primary mt-6 mx-auto" onClick={() => router.push('/seller/products')}>
-                Go to Product List
+              Go to Product List
             </Button>
           </div>
         </Container>
@@ -627,9 +635,9 @@ const EditProductComponent = () => {
               </ImageUploadArea>
             )}
             {images.length === 5 && (
-                 <p className="text-sm text-center text-blue-600 font-medium p-4 border border-blue-100 bg-blue-50 rounded-lg">
-                    Maximum 5 images reached. Remove an image to upload a new one.
-                 </p>
+              <p className="text-sm text-center text-blue-600 font-medium p-4 border border-blue-100 bg-blue-50 rounded-lg">
+                Maximum 5 images reached. Remove an image to upload a new one.
+              </p>
             )}
 
             {images.length > 0 && (

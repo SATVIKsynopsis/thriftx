@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Facebook, Twitter, Instagram, MapPin, Phone, Mail } from "lucide-react";
+import { Facebook, Twitter, Instagram, MapPin, Phone, Mail, User } from "lucide-react";
 import { SiRazorpay } from "react-icons/si";
 import { motion } from "framer-motion";
 
@@ -114,6 +114,15 @@ const FooterComponent = () => {
                 <span>NIT Tiruchirappalli, Tamil Nadu, India</span>
               </li>
             </ul>
+            <p className="mt-3 text-gray-700 dark:text-neutral-400 flex items-center gap-1">
+              Want to become a{" "}
+              <Link
+                href="/register/seller"
+                className="text-lime-600 dark:text-lime-400 hover:text-blue-600 font-semibold transition-colors flex items-center gap-1 hover:underline"
+              >
+                <User size={16} /> Seller?
+              </Link>
+            </p>
           </motion.div>
         </motion.div>
 

@@ -212,7 +212,7 @@ const BuyerRegister = () => {
           // Light Mode: text-gray-500, Dark Mode: text-gray-400
           className="text-center text-gray-500 dark:text-gray-400 mt-8 text-sm"
         >
-          <p>
+          {/* <p>
             Want to become a{" "}
             <Link
               href="/register/seller"
@@ -221,7 +221,7 @@ const BuyerRegister = () => {
             >
               Seller?
             </Link>
-          </p>
+          </p> */}
           <p className="mt-1">
             Already have an account?{" "}
             <Link

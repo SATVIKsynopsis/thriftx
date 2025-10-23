@@ -8,7 +8,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { formatPrice } from '../../utils/formatters';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { Listbox, Transition } from '@headlessui/react';
-import { Link } from 'react-router-dom';
+import { Link } from 'next/link';
 
 const statusOptions = ['all', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 
@@ -114,7 +114,7 @@ const ManageOrders = () => {
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                     <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-1">
-                <Link to={`/seller/orders/${order.id}`} className="hover:text-blue-600">
+                <Link href={`/seller/orders/${order.id}`} className="hover:text-blue-600">
                   Order #{order.id.slice(-8)}
                 </Link>
               </h3>

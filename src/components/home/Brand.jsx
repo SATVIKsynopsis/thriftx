@@ -28,7 +28,7 @@ const Brand = () => {
   const doubledBrands = [...brands, ...brands];
 
   return (
-    <div className="w-full bg-neutral-300 dark:bg-neutral-950 text-gray-800 dark:text-white py-4 overflow-hidden border-t border-b border-gray-300 dark:border-white">
+    <div className="w-full bg-neutral-300 dark:bg-neutral-950 text-gray-800 dark:text-white py-4 overflow-hidden border-y-2 border-black dark:border-white">
       <motion.div
         className="flex whitespace-nowrap"
         animate={{ x: ["0%", "-50%"] }}

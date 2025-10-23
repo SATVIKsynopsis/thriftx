@@ -8,12 +8,14 @@ import { db } from '@/firebase/config';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { formatPrice } from '@/utils/formatters';
 import { Listbox, Transition } from '@headlessui/react';
-import { Check, ChevronDown,  Calendar,Phone, Mail, MapPin } from 'lucide-react';
+import { Check, ChevronDown, Calendar, Phone, Mail, MapPin } from 'lucide-react';
 
 const statusOptions = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 
 const OrderDetailsComponent = () => {
-  const { orderId } = useParams();
+  const params = useParams();
+  // If params is null/undefined (during prerender), default to an empty object {}
+  const { orderId } = params || {};
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -33,7 +35,7 @@ const OrderDetailsComponent = () => {
     };
     fetchOrder();
   }, [orderId]);
-   const formatDate = (timestamp) => {
+  const formatDate = (timestamp) => {
     if (!timestamp?.toDate) return 'N/A';
     return timestamp.toDate().toLocaleDateString('en-IN', {
       day: '2-digit', month: 'short', year: 'numeric'
@@ -67,7 +69,7 @@ const OrderDetailsComponent = () => {
           <h1 className="text-2xl font-bold mb-4">Order #{orderId.slice(-8)}</h1>
 
           <div className="flex flex-col md:flex-row md:justify-between gap-6">
-            
+
             {/*Order Info & Items */}
             <div className="flex-1">
               {/* Status Dropdown */}
@@ -125,27 +127,27 @@ const OrderDetailsComponent = () => {
             </div>
 
             <div className="mb-4 space-y-2">
-                <h2 className="text-xl font-semibold mb-2">Buyer Information</h2>
-                {order.buyerInfo?.phone && (
+              <h2 className="text-xl font-semibold mb-2">Buyer Information</h2>
+              {order.buyerInfo?.phone && (
                 <div className="flex items-center gap-2 text-gray-700">
-               <Phone size={16} className="text-gray-500" />
-               <span>{order.buyerInfo.phone}</span>
-            </div>
-                )}
-                {order.buyerInfo?.email && (
-                <div className="flex items-center gap-2 text-gray-700">
-                   <Mail size={16} className="text-gray-500" />
-                   <span>{order.buyerInfo.email}</span>
+                  <Phone size={16} className="text-gray-500" />
+                  <span>{order.buyerInfo.phone}</span>
                 </div>
-                )}
-               {order.buyerInfo?.address && (
+              )}
+              {order.buyerInfo?.email && (
+                <div className="flex items-center gap-2 text-gray-700">
+                  <Mail size={16} className="text-gray-500" />
+                  <span>{order.buyerInfo.email}</span>
+                </div>
+              )}
+              {order.buyerInfo?.address && (
                 <div className="flex items-start gap-2 text-gray-700">
-                   <MapPin size={16} className="text-gray-500" />
-                   <span>{order.buyerInfo.address}</span>
+                  <MapPin size={16} className="text-gray-500" />
+                  <span>{order.buyerInfo.address}</span>
                 </div>
-                )}
-                </div>
-                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

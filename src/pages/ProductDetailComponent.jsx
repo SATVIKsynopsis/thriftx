@@ -24,8 +24,14 @@ import ProductCarousel from '../components/products/ProductCarousel';
 
 const ProductDetailComponent = () => {
   const params = useParams();
-  const id = params.id;
-
+  if (!params || !params.id) {
+    // This handles the server prerender where params might be null/undefined,
+    return (
+      <div className="max-w-7xl mx-auto p-8 md:p-12 text-center py-16">
+        <h2 className="text-2xl font-bold text-gray-900">Invalid Product ID</h2>
+      </div>
+    );
+  }
   const productDetails = useProductDetails(id);
   const { getVisibleProducts } = useResponsive();
   const carousel = useCarousel(

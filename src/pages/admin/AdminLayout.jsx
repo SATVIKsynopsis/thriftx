@@ -18,7 +18,6 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import ThriftXLoader from "../../components/common/NewLoader";
 
 export default function AdminLayout({ children, title, description, breadcrumb }) {
   const [sidebarOpen, setSidebarOpen] = useState(false); // mobile
