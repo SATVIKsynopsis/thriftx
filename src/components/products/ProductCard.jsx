@@ -86,10 +86,10 @@ const ProductCard = ({ product, isFavorite, renderStars, sectionContext }) => {
 
   return (
     <div
-      className="bg-neutral-100 dark:bg-gray-900 rounded-2xl w-48 md:w-full overflow-hidden hover:transform hover:scale-105 transition-transform duration-200 cursor-pointer shadow-sm dark:shadow-md"
+      className="bg-neutral-100 w-48 dark:bg-gray-900 rounded-2xl sm:w-48 md:w-full overflow-hidden hover:transform hover:scale-105 transition-transform duration-200 cursor-pointer shadow-sm dark:shadow-md"
       onClick={handleViewProduct}
     >
-      <div className="relative w-full h-64 overflow-hidden">
+      <div className="relative w-full h-48 sm:h-64 overflow-hidden">
         {product.images && product.images.length > 0 ? (
           <img
             src={product.images[0]}

@@ -85,36 +85,38 @@ const Breadcrumb = () => {
   if (breadcrumbs.length <= 1) return null;
 
   return (
-    <nav
-      className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400 mb-2 transition-colors"
-      aria-label="Breadcrumb"
-    >
-      {breadcrumbs.map((breadcrumb, index) => {
-        const isLast = index === breadcrumbs.length - 1;
-        const Icon = breadcrumb.icon;
+    <div className='bg-white dark:bg-black' >
+      <div
+        className="flex max-w-[1100px] mx-auto items-center space-x-2 text-sm text-gray-500 dark:text-gray-400 p-2 transition-colors"
+        aria-label="Breadcrumb"
+      >
+        {breadcrumbs.map((breadcrumb, index) => {
+          const isLast = index === breadcrumbs.length - 1;
+          const Icon = breadcrumb.icon;
 
-        return (
-          <React.Fragment key={`${breadcrumb.href}-${index}`}>
-            {index > 0 && <ChevronRight size={16} className="text-gray-400 dark:text-gray-500" />}
+          return (
+            <React.Fragment key={`${breadcrumb.href}-${index}`}>
+              {index > 0 && <ChevronRight size={16} className="text-gray-400 dark:text-gray-500" />}
 
-            {isLast ? (
-              <span className="font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                {Icon && <Icon size={16} />}
-                {breadcrumb.name}
-              </span>
-            ) : (
-              <Link
-                href={breadcrumb.href}
-                className="hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-2"
-              >
-                {Icon && <Icon size={16} />}
-                {breadcrumb.name}
-              </Link>
-            )}
-          </React.Fragment>
-        );
-      })}
-    </nav>
+              {isLast ? (
+                <span className="font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                  {Icon && <Icon size={16} />}
+                  {breadcrumb.name}
+                </span>
+              ) : (
+                <Link
+                  href={breadcrumb.href}
+                  className="hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-2"
+                >
+                  {Icon && <Icon size={16} />}
+                  {breadcrumb.name}
+                </Link>
+              )}
+            </React.Fragment>
+          );
+        })}
+      </div>
+    </div>
   );
 };
 

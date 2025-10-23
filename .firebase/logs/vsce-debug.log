@@ -689,3 +689,93 @@ I1023 06:56:11.413097   10172 load.go:74] Finished reloading
 [debug] [2025-10-23T01:26:11.453Z] I1023 06:56:11.453265   10172 dev.go:102] Listening on address (HTTP + gRPC): 127.0.0.1:50001
  {"metadata":{"emulator":{"name":"dataconnect"},"message":"I1023 06:56:11.453265   10172 dev.go:102] Listening on address (HTTP + gRPC): 127.0.0.1:50001\n"}}
 [error] [Firebase Plugin] error:  {}
+[debug] [2025-10-23T03:52:24.948Z] [Firebase Plugin] Activating Firebase extension.
+[debug] [2025-10-23T03:52:31.932Z] [Firebase Plugin] requireAuthWrapper
+[debug] [2025-10-23T03:52:31.936Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-10-23T03:52:31.937Z] > authorizing via signed-in user (ansarikatib647@gmail.com)
+[debug] [2025-10-23T03:52:31.942Z] Checked if tokens are valid: false, expires at: 1761186361600
+[debug] [2025-10-23T03:52:31.943Z] Checked if tokens are valid: false, expires at: 1761186361600
+[debug] [2025-10-23T03:52:31.944Z] > refreshing access token with scopes: []
+[debug] [2025-10-23T03:52:31.947Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-10-23T03:52:31.948Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-10-23T03:52:31.966Z] [Firebase Plugin] VSCode notification server listening on port 40001
+[info] [Firebase Plugin] Starting Data Connect toolkit (version 2.15.0) on port 50001
+[debug] [2025-10-23T03:52:32.870Z] W1023 09:22:32.861660    8080 control.go:68] [/emulator/thriftxfinfinal 8593] connector "example" has errors: example\queries.gql:27:20: Field "sellerId_expr" is not defined by type "Product_Filter". Did you mean "sellerId"?
+
+sources: example\queries.gql [653B] 
+I1023 09:22:32.861660    8080 control.go:94] [/emulator/thriftxfinfinal 8593] UpdateResources(): done
+Main schema: sources: schema\schema.gql [738B] 
+Connector "example": sources: example\queries.gql [653B] 
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"W1023 09:22:32.861660    8080 control.go:68] [/emulator/thriftxfinfinal 8593] connector \"example\" has errors: example\\queries.gql:27:20: Field \"sellerId_expr\" is not defined by type \"Product_Filter\". Did you mean \"sellerId\"?\n\nsources: example\\queries.gql [653B] \nI1023 09:22:32.861660    8080 control.go:94] [/emulator/thriftxfinfinal 8593] UpdateResources(): done\nMain schema: sources: schema\\schema.gql [738B] \nConnector \"example\": sources: example\\queries.gql [653B] \n"}}
+[debug] [2025-10-23T03:52:32.871Z] Ignoring unsupported arg: auto_download {"metadata":{"emulator":{"name":"dataconnect"},"message":"Ignoring unsupported arg: auto_download"}}
+[debug] [2025-10-23T03:52:32.872Z] Ignoring unsupported arg: port {"metadata":{"emulator":{"name":"dataconnect"},"message":"Ignoring unsupported arg: port"}}
+[debug] [2025-10-23T03:52:32.872Z] Starting Data Connect Emulator with command {"binary":"C:\\Users\\Dell\\.cache\\firebase\\emulators\\dataconnect-emulator-2.15.0.exe","args":["--logtostderr","-v=2","dev","--listen=localhost:50001","--config_dir=c:\\Users\\Dell\\Desktop\\ThriftX_Associate\\client\\dataconnect","--enable_output_schema_extensions=true","--enable_output_generated_sdk=true"],"optionalArgs":["listen","config_dir","enable_output_schema_extensions","enable_output_generated_sdk"],"joinArgs":true,"shell":false,"port":9399} {"metadata":{"emulator":{"name":"dataconnect"},"message":"Starting Data Connect Emulator with command {\"binary\":\"C:\\\\Users\\\\Dell\\\\.cache\\\\firebase\\\\emulators\\\\dataconnect-emulator-2.15.0.exe\",\"args\":[\"--logtostderr\",\"-v=2\",\"dev\",\"--listen=localhost:50001\",\"--config_dir=c:\\\\Users\\\\Dell\\\\Desktop\\\\ThriftX_Associate\\\\client\\\\dataconnect\",\"--enable_output_schema_extensions=true\",\"--enable_output_generated_sdk=true\"],\"optionalArgs\":[\"listen\",\"config_dir\",\"enable_output_schema_extensions\",\"enable_output_generated_sdk\"],\"joinArgs\":true,\"shell\":false,\"port\":9399}"}}
+[info] i  dataconnect: Data Connect Emulator logging to dataconnect-debug.log {"metadata":{"emulator":{"name":"dataconnect"},"message":"Data Connect Emulator logging to \u001b[1mdataconnect-debug.log\u001b[22m"}}
+[debug] [2025-10-23T03:52:32.919Z] I1023 09:22:32.919010   12324 load.go:31] Reloading schema and connectors...
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I1023 09:22:32.919010   12324 load.go:31] Reloading schema and connectors...\n"}}
+[debug] [2025-10-23T03:52:33.031Z] W1023 09:22:33.013749   12324 control.go:68] [/emulator/thriftxfinfinal 3ada] connector "example" has errors: example\queries.gql:27:20: Field "sellerId_expr" is not defined by type "Product_Filter". Did you mean "sellerId"?
+
+sources: example\queries.gql [653B] 
+I1023 09:22:33.013749   12324 control.go:94] [/emulator/thriftxfinfinal 3ada] UpdateResources(): done
+Main schema: sources: schema\schema.gql [738B] 
+Connector "example": sources: example\queries.gql [653B] 
+E1023 09:22:33.016567   12324 load.go:73] Could not load sources: 
+Errors: example\queries.gql:27:20: Field "sellerId_expr" is not defined by type "Product_Filter". Did you mean "sellerId"?
+I1023 09:22:33.026489   12324 collector.go:107] schema extensions wrote into "c:\\Users\\Dell\\Desktop\\ThriftX_Associate\\client\\dataconnect\\.dataconnect\\schema"
+Generated sources: prelude.gql [73219B] main\input.gql [49965B] main\relation.gql [27009B] main\query.gql [6182B] main\mutation.gql [16644B] main\implicit.gql [2483B] 
+I1023 09:22:33.026489   12324 load.go:74] Finished reloading
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"W1023 09:22:33.013749   12324 control.go:68] [/emulator/thriftxfinfinal 3ada] connector \"example\" has errors: example\\queries.gql:27:20: Field \"sellerId_expr\" is not defined by type \"Product_Filter\". Did you mean \"sellerId\"?\n\nsources: example\\queries.gql [653B] \nI1023 09:22:33.013749   12324 control.go:94] [/emulator/thriftxfinfinal 3ada] UpdateResources(): done\nMain schema: sources: schema\\schema.gql [738B] \nConnector \"example\": sources: example\\queries.gql [653B] \nE1023 09:22:33.016567   12324 load.go:73] Could not load sources: \nErrors: example\\queries.gql:27:20: Field \"sellerId_expr\" is not defined by type \"Product_Filter\". Did you mean \"sellerId\"?\nI1023 09:22:33.026489   12324 collector.go:107] schema extensions wrote into \"c:\\\\Users\\\\Dell\\\\Desktop\\\\ThriftX_Associate\\\\client\\\\dataconnect\\\\.dataconnect\\\\schema\"\nGenerated sources: prelude.gql [73219B] main\\input.gql [49965B] main\\relation.gql [27009B] main\\query.gql [6182B] main\\mutation.gql [16644B] main\\implicit.gql [2483B] \nI1023 09:22:33.026489   12324 load.go:74] Finished reloading\n"}}
+[debug] [2025-10-23T03:52:33.086Z] I1023 09:22:33.085976   12324 dev.go:102] Listening on address (HTTP + gRPC): 127.0.0.1:50001
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I1023 09:22:33.085976   12324 dev.go:102] Listening on address (HTTP + gRPC): 127.0.0.1:50001\n"}}
+[debug] [2025-10-23T03:52:33.190Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-10-23T03:52:33.190Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-10-23T03:52:33.279Z] [Firebase Plugin] User found:  ansarikatib647@gmail.com
+[info] [Firebase Plugin] (Core:Project) New user detected, fetching projects
+[debug] [2025-10-23T03:52:33.282Z] Checked if tokens are valid: true, expires at: 1761195152191
+[debug] [2025-10-23T03:52:33.284Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects pageSize=1000
+[error] [Firebase Plugin] error:  {}
+[debug] [2025-10-23T03:52:34.031Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects 200
+[debug] [2025-10-23T03:52:34.031Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects [omitted]
+[info] [Firebase Plugin] Stopping Data Connect toolkit
+[warn] !  Data Connect Emulator has exited upon receiving signal: SIGINT 
+[debug] [2025-10-23T04:22:29.033Z] [Firebase Plugin] Activating Firebase extension.
+[debug] [2025-10-23T04:22:41.717Z] [Firebase Plugin] requireAuthWrapper
+[debug] [2025-10-23T04:22:41.720Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-10-23T04:22:41.721Z] > authorizing via signed-in user (ansarikatib647@gmail.com)
+[debug] [2025-10-23T04:22:41.724Z] Checked if tokens are valid: true, expires at: 1761195152191
+[debug] [2025-10-23T04:22:41.725Z] Checked if tokens are valid: true, expires at: 1761195152191
+[debug] [2025-10-23T04:22:41.725Z] [Firebase Plugin] User found:  ansarikatib647@gmail.com
+[info] [Firebase Plugin] (Core:Project) New user detected, fetching projects
+[debug] [2025-10-23T04:22:41.728Z] Checked if tokens are valid: true, expires at: 1761195152191
+[debug] [2025-10-23T04:22:41.730Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects pageSize=1000
+[debug] [2025-10-23T04:22:41.743Z] [Firebase Plugin] VSCode notification server listening on port 40001
+[info] [Firebase Plugin] Starting Data Connect toolkit (version 2.15.0) on port 50001
+[debug] [2025-10-23T04:22:43.016Z] W1023 09:52:43.010485   16260 control.go:68] [/emulator/thriftxfinfinal 2d49] connector "example" has errors: example\queries.gql:27:20: Field "sellerId_expr" is not defined by type "Product_Filter". Did you mean "sellerId"?
+
+sources: example\queries.gql [653B] 
+I1023 09:52:43.011498   16260 control.go:94] [/emulator/thriftxfinfinal 2d49] UpdateResources(): done
+Main schema: sources: schema\schema.gql [738B] 
+Connector "example": sources: example\queries.gql [653B] 
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"W1023 09:52:43.010485   16260 control.go:68] [/emulator/thriftxfinfinal 2d49] connector \"example\" has errors: example\\queries.gql:27:20: Field \"sellerId_expr\" is not defined by type \"Product_Filter\". Did you mean \"sellerId\"?\n\nsources: example\\queries.gql [653B] \nI1023 09:52:43.011498   16260 control.go:94] [/emulator/thriftxfinfinal 2d49] UpdateResources(): done\nMain schema: sources: schema\\schema.gql [738B] \nConnector \"example\": sources: example\\queries.gql [653B] \n"}}
+[debug] [2025-10-23T04:22:43.017Z] Ignoring unsupported arg: auto_download {"metadata":{"emulator":{"name":"dataconnect"},"message":"Ignoring unsupported arg: auto_download"}}
+[debug] [2025-10-23T04:22:43.018Z] Ignoring unsupported arg: port {"metadata":{"emulator":{"name":"dataconnect"},"message":"Ignoring unsupported arg: port"}}
+[debug] [2025-10-23T04:22:43.018Z] Starting Data Connect Emulator with command {"binary":"C:\\Users\\Dell\\.cache\\firebase\\emulators\\dataconnect-emulator-2.15.0.exe","args":["--logtostderr","-v=2","dev","--listen=localhost:50001","--config_dir=c:\\Users\\Dell\\Desktop\\ThriftX_Associate\\client\\dataconnect","--enable_output_schema_extensions=true","--enable_output_generated_sdk=true"],"optionalArgs":["listen","config_dir","enable_output_schema_extensions","enable_output_generated_sdk"],"joinArgs":true,"shell":false,"port":9399} {"metadata":{"emulator":{"name":"dataconnect"},"message":"Starting Data Connect Emulator with command {\"binary\":\"C:\\\\Users\\\\Dell\\\\.cache\\\\firebase\\\\emulators\\\\dataconnect-emulator-2.15.0.exe\",\"args\":[\"--logtostderr\",\"-v=2\",\"dev\",\"--listen=localhost:50001\",\"--config_dir=c:\\\\Users\\\\Dell\\\\Desktop\\\\ThriftX_Associate\\\\client\\\\dataconnect\",\"--enable_output_schema_extensions=true\",\"--enable_output_generated_sdk=true\"],\"optionalArgs\":[\"listen\",\"config_dir\",\"enable_output_schema_extensions\",\"enable_output_generated_sdk\"],\"joinArgs\":true,\"shell\":false,\"port\":9399}"}}
+[info] i  dataconnect: Data Connect Emulator logging to dataconnect-debug.log {"metadata":{"emulator":{"name":"dataconnect"},"message":"Data Connect Emulator logging to \u001b[1mdataconnect-debug.log\u001b[22m"}}
+[debug] [2025-10-23T04:22:43.136Z] I1023 09:52:43.053990   16108 load.go:31] Reloading schema and connectors...
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I1023 09:52:43.053990   16108 load.go:31] Reloading schema and connectors...\n"}}
+[debug] [2025-10-23T04:22:43.398Z] W1023 09:52:43.140006   16108 control.go:68] [/emulator/thriftxfinfinal 1367] connector "example" has errors: example\queries.gql:27:20: Field "sellerId_expr" is not defined by type "Product_Filter". Did you mean "sellerId"?
+
+sources: example\queries.gql [653B] 
+I1023 09:52:43.140006   16108 control.go:94] [/emulator/thriftxfinfinal 1367] UpdateResources(): done
+Main schema: sources: schema\schema.gql [738B] 
+Connector "example": sources: example\queries.gql [653B] 
+E1023 09:52:43.170862   16108 load.go:73] Could not load sources: 
+Errors: example\queries.gql:27:20: Field "sellerId_expr" is not defined by type "Product_Filter". Did you mean "sellerId"?
+I1023 09:52:43.177633   16108 collector.go:107] schema extensions wrote into "c:\\Users\\Dell\\Desktop\\ThriftX_Associate\\client\\dataconnect\\.dataconnect\\schema"
+Generated sources: prelude.gql [73219B] main\relation.gql [27009B] main\query.gql [6182B] main\mutation.gql [16644B] main\implicit.gql [2483B] main\input.gql [49965B] 
+I1023 09:52:43.177633   16108 load.go:74] Finished reloading
+I1023 09:52:43.323385   16108 dev.go:102] Listening on address (HTTP + gRPC): 127.0.0.1:50001
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"W1023 09:52:43.140006   16108 control.go:68] [/emulator/thriftxfinfinal 1367] connector \"example\" has errors: example\\queries.gql:27:20: Field \"sellerId_expr\" is not defined by type \"Product_Filter\". Did you mean \"sellerId\"?\n\nsources: example\\queries.gql [653B] \nI1023 09:52:43.140006   16108 control.go:94] [/emulator/thriftxfinfinal 1367] UpdateResources(): done\nMain schema: sources: schema\\schema.gql [738B] \nConnector \"example\": sources: example\\queries.gql [653B] \nE1023 09:52:43.170862   16108 load.go:73] Could not load sources: \nErrors: example\\queries.gql:27:20: Field \"sellerId_expr\" is not defined by type \"Product_Filter\". Did you mean \"sellerId\"?\nI1023 09:52:43.177633   16108 collector.go:107] schema extensions wrote into \"c:\\\\Users\\\\Dell\\\\Desktop\\\\ThriftX_Associate\\\\client\\\\dataconnect\\\\.dataconnect\\\\schema\"\nGenerated sources: prelude.gql [73219B] main\\relation.gql [27009B] main\\query.gql [6182B] main\\mutation.gql [16644B] main\\implicit.gql [2483B] main\\input.gql [49965B] \nI1023 09:52:43.177633   16108 load.go:74] Finished reloading\nI1023 09:52:43.323385   16108 dev.go:102] Listening on address (HTTP + gRPC): 127.0.0.1:50001\n"}}
+[error] [Firebase Plugin] error:  {}
+[debug] [2025-10-23T04:22:44.300Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects 200
+[debug] [2025-10-23T04:22:44.301Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects [omitted]

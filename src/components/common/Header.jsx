@@ -18,7 +18,6 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { getAuth, signOut } from "firebase/auth";
-import Breadcrumb from '@/components/common/Breadcrumb';
 import {
   Select,
   SelectContent,
@@ -38,30 +37,28 @@ export default function Header() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [selectedCity, setSelectedCity] = useState("Bangalore");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [suggestions, setSuggestions] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [mobileSearchQuery, setMobileSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedCity, setSelectedCity] = useState("Bangalore");
+  const [suggestions, setSuggestions] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
-  const [isSearching, setIsSearching] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   const userMenuRef = useRef(null);
   const mobileMenuRef = useRef(null);
   const searchRef = useRef(null);
   const suggestionsRef = useRef(null);
 
-  const { currentUser, userProfile, isSuperAdmin, isAdmin } = useAuth();
-  const isOnlyAdmin =
-    currentUser && isAdmin(currentUser) && !isSuperAdmin(currentUser);
-  const isOnlySuperAdmin =
-    currentUser && isSuperAdmin(currentUser) && !isAdmin(currentUser);
-  const isBoth =
-    currentUser && isAdmin(currentUser) && isSuperAdmin(currentUser);
 
+  const { currentUser, userProfile, isSuperAdmin } = useAuth();
   const { getItemCount } = useCart();
   const router = useRouter();
+
+  const toggleMobileMenu = () => setShowMobileMenu(prev => !prev);
 
   // Debounce function
   const debounce = (func, wait) => {
@@ -75,9 +72,6 @@ export default function Header() {
       timeout = setTimeout(later, wait);
     };
   };
-
-  const handleCityChange = (event) => setSelectedCity(event.target.value);
-  const toggleMobileMenu = () => setShowMobileMenu((prev) => !prev);
 
   // Search
   const handleSearch = async (query) => {
@@ -98,19 +92,52 @@ export default function Header() {
     }
   };
 
+  const handleKeyPress = (e, query) => { if (e.key === 'Enter') handleSearch(query); };
+
+  // const handleMobileSearchIconClick = () => { if (mobileSearchQuery.trim()) handleSearch(mobileSearchQuery); };
+
+  // useEffect(() => {
+  //   const handleScroll = () => setIsScrolled(window.scrollY > 10);
+  //   window.addEventListener("scroll", handleScroll);
+  //   return () => window.removeEventListener("scroll", handleScroll);
+  // }, []);
+
+  // useEffect(() => {
+  //   const handleClickOutsideUser = (event) => {
+  //     if (userMenuRef.current && !userMenuRef.current.contains(event.target)) setShowUserMenu(false);
+  //   };
+  //   document.addEventListener("mousedown", handleClickOutsideUser);
+  //   return () => document.removeEventListener("mousedown", handleClickOutsideUser);
+  // }, []);
+
+  // useEffect(() => {
+  //   const handleClickOutsideMobile = (event) => {
+  //     const isSelectClick = event.target.closest('[role="listbox"]') || event.target.closest('[data-radix-select-content]');
+  //     if (showMobileMenu && mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
+  //       if (!isSelectClick && !document.querySelector('.mobile-menu-toggle')?.contains(event.target)) setShowMobileMenu(false);
+  //     }
+  //   };
+  //   document.addEventListener("mousedown", handleClickOutsideMobile);
+  //   return () => document.removeEventListener("mousedown", handleClickOutsideMobile);
+  // }, [showMobileMenu]);
 
 
-
-
+  // Scroll
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 10);
+    const handleScroll = () => {
+      if (window.scrollY > 10) setIsScrolled(true);
+      else setIsScrolled(false);
+    };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Click outside for user menu
   useEffect(() => {
     const handleClickOutsideUser = (event) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) setShowUserMenu(false);
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setShowUserMenu(false);
+      }
     };
     document.addEventListener("mousedown", handleClickOutsideUser);
     return () =>
@@ -144,12 +171,9 @@ export default function Header() {
       setShowUserMenu(false);
       setShowMobileMenu(false);
       window.location.href = "/";
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
+    } catch (error) { console.error("Logout error:", error); }
   };
 
-  // Fetch all products for suggestions
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -184,7 +208,6 @@ export default function Header() {
     [allProducts]
   );
 
-  // Handle search query change
   useEffect(() => {
     if (searchQuery) {
       debouncedSearch(searchQuery);
@@ -196,7 +219,6 @@ export default function Header() {
   }, [searchQuery, debouncedSearch]);
 
 
-
   // Click outside for search suggestions
   useEffect(() => {
     const handleClickOutsideSearch = (event) => {
@@ -204,7 +226,7 @@ export default function Header() {
       const isClickOnSuggestions = suggestionsRef.current?.contains(event.target);
 
       if (!isClickOnSuggestions &&
-          searchRef.current && !searchRef.current.contains(event.target)
+        searchRef.current && !searchRef.current.contains(event.target)
       ) {
         setShowSuggestions(false);
         setSelectedSuggestionIndex(-1);
@@ -216,9 +238,9 @@ export default function Header() {
   }, []);
 
   return (
-    <header className={`w-full top-0 left-0 z-50 sticky transition-all duration-300 
-      ${isScrolled 
-        ? "bg-white/90 backdrop-blur-md shadow-lg border-b border-gray-200 dark:backdrop-blur-md dark:bg-black/70 dark:shadow-lg dark:border-b dark:border-gray-800" 
+    <header className={`w-full top-0 left-0 z-100 sticky transition-all duration-300 
+      ${isScrolled
+        ? "bg-white/90 backdrop-blur-md shadow-lg border-b border-gray-200 dark:backdrop-blur-md dark:bg-black/70 dark:shadow-lg dark:border-b dark:border-gray-800"
         : "bg-white dark:bg-black"}`
     }>
       <div className="max-w-[1100px] mx-auto">
@@ -262,8 +284,23 @@ export default function Header() {
             </div>
           </div>
 
+          {/* Search Bar */}
+          {/* <div className="flex-1 mx-2 sm:mx-4 hidden md:block">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search for products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={(e) => handleKeyPress(e, searchQuery)}
+                className="w-full bg-neutral-100 text-gray-800 text-sm sm:text-base rounded-full py-2.5 pl-10 pr-4 placeholder:text-gray-400 focus:outline-none dark:bg-neutral-800 dark:text-white dark:placeholder:text-gray-500"
+              />
+              <SearchIcon size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 cursor-pointer hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300" onClick={() => handleSearch(searchQuery)} />
+            </div>
+          </div> */}
+
           {/* Desktop Search */}
-          <div ref={searchRef} className="flex-1 mx-4 sm:mx-6 block relative">
+          <div ref={searchRef} className="flex-1 hidden mx-4 sm:mx-6 sm:block relative">
             <div className="relative">
               <input
                 type="text"
@@ -296,34 +333,31 @@ export default function Header() {
                 onFocus={() => {
                   if (suggestions.length > 0 && !isSearching) setShowSuggestions(true);
                 }}
-
-                className={`w-full bg-neutral-100 text-gray-800 text-sm rounded-full py-2.5 pl-4 pr-10 placeholder:text-gray-400 focus:outline-none ${
-                  isSearching ? 'opacity-75 cursor-not-allowed' : ''
-                }`}
+                className={`w-full bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-100 text-sm rounded-full py-2.5 pl-4 pr-10 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none ${isSearching ? 'opacity-75 cursor-not-allowed' : ''
+                  }`}
               />
               <SearchIcon
                 size={18}
-                className={`absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer transition-colors ${
-                  isSearching
-                    ? 'text-gray-400 cursor-not-allowed animate-pulse'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
+                className={`absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer transition-colors ${isSearching
+                  ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed animate-pulse'
+                  : 'text-gray-500 dark:text-gray-300 hover:text-neutral-700 dark:hover:text-white'
+                  }`}
                 onClick={() => !isSearching && handleSearch(searchQuery)}
               />
 
               {/* Suggestions Dropdown */}
               {showSuggestions && suggestions.length > 0 && (
-                <div ref={suggestionsRef} className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-3xl shadow-lg z-50 max-h-80 overflow-y-auto">
+                <div ref={suggestionsRef} className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 max-h-80 overflow-y-auto">
                   {suggestions.map((product, index) => (
                     <div
                       key={product.id}
-                      className={`p-3 cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-50 ${
-                        index === selectedSuggestionIndex ? 'bg-gray-100' : ''
-                      }`}
+                      className={`p-3 cursor-pointer border-b border-gray-100 dark:border-neutral-700 last:border-b-0 hover:bg-neutral-50 dark:hover:bg-neutral-700 ${index === selectedSuggestionIndex ? 'bg-neutral-100 dark:bg-neutral-700' : ''
+                        }`}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleSearch(product.name);
                         setShowSuggestions(false);
+                        setShowMobileSearch(false);
                       }}
                       onMouseEnter={() => setSelectedSuggestionIndex(index)}
                     >
@@ -339,15 +373,14 @@ export default function Header() {
                             }}
                           />
                         ) : (
-                          <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">
+                          <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center text-xs text-gray-500 dark:text-gray-300">
                             No Image
                           </div>
                         )}
                         <div className="flex-1">
-                          <div className="font-medium text-gray-900">{product.name}</div>
-                          <div className="text-sm text-gray-500">{product.category}</div>
+                          <div className="font-medium text-gray-900 dark:text-gray-100">{product.name}</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-300">{product.category}</div>
                         </div>
-                       
                       </div>
                     </div>
                   ))}
@@ -356,16 +389,17 @@ export default function Header() {
 
               {/* Loading Indicator */}
               {loadingSuggestions && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-3">
-                  <div className="text-sm text-gray-500">Loading suggestions...</div>
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 p-3">
+                  <div className="text-sm text-gray-500 dark:text-gray-300">Loading suggestions...</div>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Right Icons */}
-          <div className="flex items-center gap-5 relative">
 
+          {/* Icons & Mobile Toggle */}
+          <div className="flex items-center gap-3 sm:gap-5 relative">
+            {/* Cart Icon */}
             {currentUser && (
               <Link href="/cart" className="relative hidden md:block">
                 <ShoppingCart size={22} className="text-gray-600 hover:text-gray-800 cursor-pointer transition dark:text-gray-200 dark:hover:text-white" />
@@ -398,27 +432,45 @@ export default function Header() {
               </div>
             ) : (
               <div className="hidden md:flex items-center gap-2 sm:gap-3">
-                <Link href="/login" className="px-3 py-1 sm:px-4 sm:py-2 text-sm sm:text-base font-bold border border-gray-300 bg-rose-500 text-black rounded-full hover:opacity-70 transition-all duration-200 dark:border-gray-700">Login</Link>
+                <Link href="/login" className="px-3 py-1 sm:px-4 sm:py-2 text-sm sm:text-base font-bold border border-gray-300 bg-rose-500 text-black rounded-full hover:opacity-70 transition-all duration-200 dark:border-gray-900">Login</Link>
                 <Link href="/register/customer" className="px-3 py-1 sm:px-4 sm:py-2 text-sm sm:text-base font-bold bg-lime-400 text-black rounded-full hover:opacity-70 transition-all duration-200 shadow-md">Register</Link>
               </div>
             )}
 
-            <ModeToggle />
+            {/* Mobile Icons */}
+            <div className="flex items-center gap-3 sm:gap-5 relative ">
+              {/* Search icon for mobile */}
+              <button
+                onClick={() => setShowMobileSearch(prev => !prev)}
+                className="text-gray-700 sm:hidden hover:text-gray-900 transition p-1 dark:text-gray-200 dark:hover:text-white"
+              >
+                {showMobileSearch ? <X size={24} /> : <SearchIcon size={24} />}
+              </button>
 
-            {/* Mobile Menu Toggle */}
-            <button className="md:hidden text-gray-700 hover:text-gray-900 transition p-1 mobile-menu-toggle dark:text-gray-200 dark:hover:text-white" onClick={toggleMobileMenu}>
-              {showMobileMenu ? <X size={26} /> : <MenuIcon size={26} />}
-            </button>
+              <ModeToggle />
+
+              {/* Menu toggle */}
+              <button
+                className="text-gray-700 md:hidden hover:text-gray-900 transition p-1 mobile-menu-toggle dark:text-gray-200 dark:hover:text-white"
+                onClick={toggleMobileMenu}
+              >
+                {showMobileMenu ? <X size={26} /> : <MenuIcon size={26} />}
+              </button>
+            </div>
+
           </div>
         </div>
 
-        {/* Breadcrumb */}
-        <div className="px-4 sm:px-6 pb-2">
-          <Breadcrumb />
-        </div>
+        {/* Mobile Menu */}
+        <div ref={mobileMenuRef} className={`md:hidden absolute w-full bg-white/90 backdrop-blur-sm border-t border-gray-300 transition-all duration-300 ease-in-out transform overflow-hidden dark:bg-black/90 dark:border-gray-800 ${showMobileMenu ? "max-h-screen py-4" : "max-h-0"}`}>
+          {/* Mobile Search */}
+          <div className="px-4 pb-4">
+            <div className="relative">
+              {/* <input type="text" placeholder="Search for products..." value={mobileSearchQuery} onChange={(e) => setMobileSearchQuery(e.target.value)} onKeyPress={(e) => handleKeyPress(e, mobileSearchQuery)} className="w-full bg-neutral-100 text-gray-800 text-sm rounded-full py-2.5 pl-10 pr-4 placeholder:text-gray-400 focus:outline-none dark:bg-neutral-800 dark:text-white dark:placeholder:text-gray-500" /> */}
+              <SearchIcon size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 cursor-pointer hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300" onClick={() => handleSearch(mobileSearchQuery)} />
+            </div>
+          </div>
 
-        {/* ✅ Mobile Menu */}
-        <div ref={mobileMenuRef} className={`md:hidden absolute w-full bg-neutral-900/95 backdrop-blur-sm border-t border-gray-800 transition-all duration-300 ease-in-out transform overflow-hidden ${showMobileMenu ? "max-h-screen py-4" : "max-h-0"}`}>
           <div className="flex flex-col">
             {currentUser && <>
               <Link href="/cart" className="flex items-center gap-3 px-6 py-3 text-lg text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition dark:text-gray-200 dark:hover:bg-neutral-800 dark:hover:text-white"> <ShoppingCart size={20} className="text-lime-500" />Cart {getItemCount() > 0 && <span className="ml-2 bg-red-500 text-white text-xs rounded-full px-2 py-0.5">{getItemCount()}</span>} </Link>
@@ -442,7 +494,6 @@ export default function Header() {
           <div className="p-4 border-t border-gray-300 mt-2 dark:border-gray-800" onClick={(e) => e.stopPropagation()}>
             <Select className="w-full">
               <SelectTrigger className="w-full bg-white text-gray-800 border border-gray-300 rounded-lg px-4 py-2 text-sm sm:text-base focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-all duration-200 dark:bg-black dark:text-white dark:border-gray-700 dark:focus:ring-gray-600 dark:focus:border-gray-600">
-                {/* <SelectValue placeholder="Select city" /> */}
                 <SelectValue placeholder="Bombay" />
               </SelectTrigger>
               {/* <SelectContent className="bg-white text-gray-800 border border-gray-300 rounded-xl dark:bg-black dark:text-white dark:border-gray-700">
@@ -454,6 +505,128 @@ export default function Header() {
             </Select>
           </div>
         </div>
+
+        {showMobileSearch && (
+          <div
+            className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 backdrop-blur-sm md:hidden"
+            onClick={() => setShowMobileSearch(false)} // close when clicking outside
+          >
+            {/* Search Box Container */}
+            <div
+              className="w-full max-w-md bg-white dark:bg-neutral-900 rounded-2xl mt-10 mx-4 p-4 shadow-2xl relative"
+              onClick={(e) => e.stopPropagation()} // prevent closing when clicking inside
+            >
+              {/* Close Icon */}
+              <button
+                onClick={() => setShowMobileSearch(false)}
+                className="absolute right-4 top-2 text-gray-500 hover:text-gray-800 dark:text-gray-300 dark:hover:text-white"
+              >
+                <X size={22} />
+              </button>
+
+              {/* Your existing search input + suggestions */}
+              <div ref={searchRef} className="flex-1 block relative">
+                <div className="relative mt-6">
+                  <input
+                    type="text"
+                    placeholder={isSearching ? "Searching..." : "Search for products..."}
+                    value={searchQuery}
+                    disabled={isSearching}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        if (selectedSuggestionIndex >= 0 && suggestions[selectedSuggestionIndex]) {
+                          handleSearch(suggestions[selectedSuggestionIndex].name);
+                        } else {
+                          handleSearch(searchQuery);
+                        }
+                      } else if (e.key === "ArrowDown") {
+                        e.preventDefault();
+                        setSelectedSuggestionIndex(prev =>
+                          prev < suggestions.length - 1 ? prev + 1 : 0
+                        );
+                      } else if (e.key === "ArrowUp") {
+                        e.preventDefault();
+                        setSelectedSuggestionIndex(prev =>
+                          prev > 0 ? prev - 1 : suggestions.length - 1
+                        );
+                      } else if (e.key === "Escape") {
+                        setShowSuggestions(false);
+                        setSelectedSuggestionIndex(-1);
+                      }
+                    }}
+                    onFocus={() => {
+                      if (suggestions.length > 0 && !isSearching) setShowSuggestions(true);
+                    }}
+                    className={`w-full bg-neutral-100 dark:bg-neutral-800 text-gray-800 dark:text-white text-sm rounded-full py-2.5 pl-4 pr-10 placeholder:text-gray-400 focus:outline-none ${isSearching ? "opacity-75 cursor-not-allowed" : ""
+                      }`}
+                  />
+                  <SearchIcon
+                    size={18}
+                    className={`absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer transition-colors ${isSearching
+                      ? "text-gray-400 cursor-not-allowed animate-pulse"
+                      : "text-gray-500 hover:text-gray-700"
+                      }`}
+                    onClick={() => !isSearching && handleSearch(searchQuery)}
+                  />
+
+                  {/* Suggestions Dropdown */}
+                  {showSuggestions && suggestions.length > 0 && (
+                    <div
+                      ref={suggestionsRef}
+                      className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-gray-700 rounded-3xl shadow-lg z-50 max-h-80 overflow-y-auto"
+                    >
+                      {suggestions.map((product, index) => (
+                        <div
+                          key={product.id}
+                          className={`p-3 cursor-pointer border-b border-gray-100 dark:border-gray-800 last:border-b-0 hover:bg-gray-50 dark:hover:bg-neutral-800 ${index === selectedSuggestionIndex ? "bg-gray-100 dark:bg-neutral-800" : ""
+                            }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSearch(product.name);
+                            setShowSuggestions(false);
+                            setShowMobileSearch(false);
+                          }}
+                          onMouseEnter={() => setSelectedSuggestionIndex(index)}
+                        >
+                          <div className="flex items-center gap-3">
+                            {product.images && product.images.length > 0 ? (
+                              <img
+                                src={product.images[0]}
+                                alt={product.name}
+                                className="w-10 h-10 object-cover rounded"
+                                onError={(e) => {
+                                  e.target.style.display = "none";
+                                  e.target.nextElementSibling.style.display = "flex";
+                                }}
+                              />
+                            ) : (
+                              <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">
+                                No Image
+                              </div>
+                            )}
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-900 dark:text-white">{product.name}</div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400">{product.category}</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Loading Indicator */}
+                  {loadingSuggestions && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg z-50 p-3">
+                      <div className="text-sm text-gray-500 dark:text-gray-300">Loading suggestions...</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </header>
   );

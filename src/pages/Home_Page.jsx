@@ -61,6 +61,7 @@ const Home_Page = () => {
 
   return (
     <div className="min-h-screen">
+
       {/* Add Header component here */}
       <Hero />
       <Brand />

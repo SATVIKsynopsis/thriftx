@@ -30,12 +30,6 @@ const footerItems = [
   },
 ];
 
-const socialmediaLink = [
-  { icon: Twitter, link: "#" },
-  { icon: Facebook, link: "#" },
-  { icon: Instagram, link: "#" },
-];
-
 const FooterComponent = () => {
   const containerVariants = {
     hidden: { opacity: 0, y: 50 },
@@ -66,13 +60,13 @@ const FooterComponent = () => {
               We have clothes that suit your style and make you proud to wear. From women to men, find sustainable and stylish fashion here.
             </p>
             <div className="flex space-x-5 lg:mt-10">
-              <Link href="#" className="w-10 h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 duration-300 bg-gray-200 dark:bg-white">
+              <Link href="#" className="w-10 h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 duration-300 bg-gray-200 border border-neutral-400 dark:bg-white">
                 <Twitter size={20} className="text-gray-900 dark:text-black" />
               </Link>
-              <Link href="#" className="w-10 h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 duration-300 bg-gray-900 dark:bg-black">
+              <Link href="#" className="w-10 h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 duration-300 bg-gray-900 dark:border dark:border-white dark:bg-black">
                 <Facebook size={20} className="text-white" />
               </Link>
-              <Link href="#" className="w-10 h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 duration-300 bg-gray-200 dark:bg-white">
+              <Link href="#" className="w-10 h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 duration-300 bg-gray-200 border border-neutral-400 dark:bg-white">
                 <Instagram size={20} className="text-gray-900 dark:text-black" />
               </Link>
             </div>
@@ -127,7 +121,12 @@ const FooterComponent = () => {
         <motion.div className="border-t border-neutral-700 dark:border-neutral-700 pt-6 flex flex-col md:flex-row items-center justify-between text-sm text-gray-600 dark:text-neutral-600 text-center md:text-left" variants={itemVariants}>
           <p>ThriftX &copy; 2025, All Rights Reserved. Made with 💖 in Mumbai</p>
           <div className="flex items-center space-x-4 mt-4 md:mt-0">
-            <span className="p-2 shadow-2xl shadow-black rounded-lg bg-white"><SiRazorpay size={20} fill="purple" /></span>
+            <span className="p-2 shadow-lg rounded-lg bg-white dark:bg-gray-900 flex items-center justify-center">
+              <SiRazorpay
+                size={20}
+                className="text-[#3B8EF3] dark:text-[#3B8EF3]" // Razorpay blue in both modes
+              />
+            </span>
           </div>
         </motion.div>
       </div>

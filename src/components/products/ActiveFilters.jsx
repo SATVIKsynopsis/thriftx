@@ -12,9 +12,9 @@ const ActiveFilters = ({ appliedFilters, onClearAll, PRICE_RANGE }) => {
   }
 
   return (
-    <div className="mb-4 p-3 bg-gray-900 rounded-lg">
+    <div className="mb-4 p-3 bg-gray-200 dark:bg-gray-900 rounded-lg">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-gray-300">Active Filters:</span>
+        <span className="text-sm font-medium text-gray-800 dark:text-gray-300">Active Filters:</span>
         <button
           onClick={onClearAll}
           className="text-xs text-[#bdf800] hover:text-white transition-colors"

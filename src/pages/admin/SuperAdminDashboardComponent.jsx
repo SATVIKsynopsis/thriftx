@@ -105,7 +105,7 @@ const Sidebar = ({ activeTab, setActiveTab, isSidebarOpen, setIsSidebarOpen }) =
         fixed lg:static inset-y-0 left-0 z-50
         w-64 bg-gradient-to-b from-gray-900 to-gray-800 text-white
         transform transition-transform duration-300 ease-in-out
-        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        ${isSidebarOpen ? 'translate-x-0 ' : '-translate-x-full lg:translate-x-0'}
         flex flex-col
       `}>
         
@@ -136,7 +136,7 @@ const Sidebar = ({ activeTab, setActiveTab, isSidebarOpen, setIsSidebarOpen }) =
                   setIsSidebarOpen(false);
                 }}
                 className={`
-                  w-full flex items-center gap-3 px-4 py-3 rounded-xl
+                  w-full flex items-center gap-3 py-5 text-xl rounded-xl
                   transition-all duration-200 font-medium
                   ${isActive 
                     ? 'bg-blue-600 text-white shadow-lg' 

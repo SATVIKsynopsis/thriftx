@@ -7,6 +7,7 @@ import { Anton } from "next/font/google";
 import { ThemeProvider } from "@/ThemeProvider/ThemeProvider";
 import Header from "@/components/common/Header";
 import FooterComponent from "@/components/common/Footer";
+import Breadcrumb from "@/components/common/Breadcrumb";
 
 const anton = Anton({
   weight: "400",
@@ -33,6 +34,7 @@ export default function RootLayout({ children }) {
             <CartProvider>
               {/* <ClientLayout> */}
               <Header />
+              <Breadcrumb />
               {children}
               <FooterComponent />
               {/* </ClientLayout> */}

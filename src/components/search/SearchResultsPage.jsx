@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Check, ChevronsUpDown } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import useWishlistStore from '@/stores/wishlistStore';
 import ProductGrid from '@/components/products/ProductGrid';
@@ -14,12 +14,17 @@ import { getCategoryDisplayName } from '@/utils/categoryUtils';
 import { NAVIGATION_CONTEXTS } from '@/utils/navigationContextUtils';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { useProductSearch } from '@/hooks/useProductSearch';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { Button } from '../ui/button';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../ui/command';
+import { cn } from "@/lib/utils";
 
 const SearchResultsPage = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const searchQuery = searchParams.get('q') || '';
   const categoryQuery = searchParams.get('category') || '';
+  const [sortPopoverOpen, setSortPopoverOpen] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState('Most Popular');
@@ -146,7 +151,7 @@ const SearchResultsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white">
       <div className="max-w-7xl mx-auto p-4 md:p-8">
         {/* Search Header */}
         <div className="mb-8">
@@ -154,7 +159,7 @@ const SearchResultsPage = () => {
           <div className="flex items-center gap-4 mb-4">
             <button
               onClick={handleBackNavigation}
-              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+              className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
               aria-label="Go back"
             >
               <ArrowLeft size={20} />
@@ -162,10 +167,10 @@ const SearchResultsPage = () => {
             </button>
           </div>
 
-          <h1 className="text-3xl font-bold mb-2">
+          <h1 className="text-3xl font-bold mb-2 text-black dark:text-white">
             {getDisplayTitle()}
           </h1>
-          <p className="text-gray-400">
+          <p className="text-gray-700 dark:text-gray-400">
             {paginationInfo.totalProducts > 0
               ? `Found ${paginationInfo.totalProducts} product${paginationInfo.totalProducts !== 1 ? 's' : ''}`
               : 'No products found'
@@ -175,21 +180,55 @@ const SearchResultsPage = () => {
 
         {/* Controls */}
         {searchResults.length > 0 && (
-          <div className="flex items-center justify-between mb-6 p-4 bg-gray-900 rounded-xl">
-            <span className="text-sm text-gray-400">
+          <div className="flex items-center justify-between mb-6 p-4 bg-gray-100 dark:bg-gray-900 rounded-xl">
+            <span className="text-sm text-gray-700 dark:text-gray-400">
               Showing {paginationInfo.startProduct}-{paginationInfo.endProduct} of {paginationInfo.totalProducts} products
             </span>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-400">Sort by:</span>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="bg-black text-white border border-gray-700 rounded px-3 py-1 text-sm focus:outline-none focus:border-gray-500"
-              >
-                {SORT_OPTIONS.map(option => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
+              <span className="text-sm text-gray-700 dark:text-gray-400">Sort by:</span>
+
+              <Popover open={sortPopoverOpen} onOpenChange={setSortPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={sortPopoverOpen}
+                    className="w-[160px] lg:w-[200px] justify-between text-xs lg:text-sm"
+                  >
+                    {sortBy || "Sort by..."}
+                    <ChevronsUpDown className="ml-2 opacity-50 w-4 h-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[160px] lg:w-[200px] p-0">
+                  <Command>
+                    <CommandInput placeholder="Search options..." className="h-9" />
+                    <CommandList>
+                      <CommandEmpty>No options found.</CommandEmpty>
+                      <CommandGroup>
+                        {SORT_OPTIONS.map(option => (
+                          <CommandItem
+                            key={option}
+                            value={option}
+                            onSelect={(currentValue) => {
+                              setSortBy(currentValue);
+                              setSortPopoverOpen(false); // close after select
+                            }}
+                          >
+                            {option}
+                            <Check
+                              className={cn(
+                                "ml-auto",
+                                sortBy === option ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+
             </div>
           </div>
         )}
@@ -202,7 +241,7 @@ const SearchResultsPage = () => {
               loading={loading}
               favorites={favorites}
               renderStars={renderStars}
-              onClearFilters={() => {}} // Not needed for search results
+              onClearFilters={() => { }}
               sectionContext={categoryQuery ? NAVIGATION_CONTEXTS.CATEGORY : NAVIGATION_CONTEXTS.SEARCH}
             />
 
@@ -220,17 +259,17 @@ const SearchResultsPage = () => {
           /* No Results */
           <div className="text-center py-16">
             <div className="mb-6">
-              <svg className="mx-auto h-24 w-24 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="mx-auto h-24 w-24 text-gray-400 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
-            <h3 className="text-xl font-medium text-gray-300 mb-2">No products found</h3>
-            <p className="text-gray-500 mb-6">
+            <h3 className="text-xl font-medium text-gray-700 dark:text-gray-100 mb-2">No products found</h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">
               We couldn't find any products matching "{searchQuery}". Try different keywords or browse our categories.
             </p>
             <div className="space-y-3">
-              <p className="text-sm text-gray-400">Suggestions:</p>
-              <ul className="text-sm text-gray-500 space-y-1">
+              <p className="text-sm text-gray-700 dark:text-gray-400">Suggestions:</p>
+              <ul className="text-sm text-gray-500 dark:text-gray-400 space-y-1">
                 <li>• Check your spelling</li>
                 <li>• Try different keywords</li>
                 <li>• Browse by category instead</li>
@@ -239,7 +278,7 @@ const SearchResultsPage = () => {
             <div className="mt-8">
               <button
                 onClick={handleBackNavigation}
-                className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+                className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
               >
                 <ArrowLeft size={16} />
                 Go Back
@@ -249,7 +288,8 @@ const SearchResultsPage = () => {
         )}
       </div>
     </div>
-  );
-};
 
-export default SearchResultsPage;
+  )
+}
+
+export default SearchResultsPage
