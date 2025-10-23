@@ -39,7 +39,7 @@ const ProductCarousel = ({
 
   return (
     <div className={`relative ${className}`}>
-      <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-8">
+      <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-8 dark:text-white text-gray-900">
         ALSO TRY
       </h2>
 
@@ -49,7 +49,7 @@ const ProductCarousel = ({
           className="flex transition-transform duration-500 ease-in-out select-none"
           style={{
             transform: `translateX(-${currentIndex * (100 / visibleProducts)}%)`,
-            touchAction: 'pan-y' // Allow vertical scrolling while preventing horizontal
+            touchAction: 'pan-y'
           }}
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
@@ -58,18 +58,18 @@ const ProductCarousel = ({
           {products.map((product, idx) => (
             <div
               key={product.id}
-              className={`flex-shrink-0 px-2 sm:px-3`}
+              className="flex-shrink-0 px-2 sm:px-3"
               style={{ width: `${100 / visibleProducts}%` }}
             >
-              <div className="bg-gray-900 rounded-xl sm:rounded-2xl overflow-hidden border border-gray-800 hover:border-gray-700 transition-all duration-200 h-full">
+              <div className="bg-gray-200 dark:bg-gray-900 rounded-xl sm:rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 transition-all duration-200 h-full">
                 <div className="relative">
                   <span className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-pink-500 text-white text-xs px-2 sm:px-3 py-1 rounded font-medium z-10">
                     CATEGORY
                   </span>
-                  <button className="absolute top-2 right-2 sm:top-4 sm:right-4 w-8 h-8 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors z-10">
-                    <Heart className="w-4 h-4 text-black" />
+                  <button className="absolute top-2 right-2 sm:top-4 sm:right-4 w-8 h-8 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10">
+                    <Heart className="w-4 h-4 text-black dark:text-white" />
                   </button>
-                  <div className="bg-gray-700 h-40 sm:h-48 flex items-center justify-center">
+                  <div className="bg-gray-200 dark:bg-gray-700 h-40 sm:h-48 flex items-center justify-center">
                     {product.images && product.images.length > 0 ? (
                       <img
                         src={product.images[0]}
@@ -85,23 +85,27 @@ const ProductCarousel = ({
                   <span className="bg-lime-400 text-black text-xs px-2 py-1 rounded font-bold">
                     BRAND
                   </span>
-                  <h3 className="text-sm sm:text-base mt-2 mb-1 font-semibold line-clamp-2">
+                  <h3 className="text-sm sm:text-base mt-2 mb-1 font-semibold line-clamp-2 dark:text-white text-gray-900">
                     {product.name}
                   </h3>
-                  <p className="text-xs text-gray-500 mb-2">Size M - Excellent condition</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                    Size M - Excellent condition
+                  </p>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-lime-400 font-bold text-sm sm:text-base">
+                    <span className="text-lime-600 dark:text-lime-400 font-bold text-sm sm:text-base">
                       {formatPrice(product.price)}
                     </span>
                     {product.originalPrice && product.originalPrice > product.price && (
-                      <span className="text-gray-500 line-through text-xs sm:text-sm">
+                      <span className="text-gray-400 dark:text-gray-500 line-through text-xs sm:text-sm">
                         {formatPrice(product.originalPrice)}
                       </span>
                     )}
                   </div>
                   <div className="flex items-center gap-1">
                     {renderStars(product.rating || 0)}
-                    <span className="text-xs text-gray-500">({product.reviewCount || 0})</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      ({product.reviewCount || 0})
+                    </span>
                   </div>
                 </div>
               </div>
@@ -121,15 +125,14 @@ const ProductCarousel = ({
                 <button
                   key={idx}
                   onClick={() => {
-                    // We need to pass goToIndex function from parent
                     if (typeof window !== 'undefined' && window.carouselGoToIndex) {
                       window.carouselGoToIndex(slideValue);
                     }
                   }}
                   className={`w-2 h-2 rounded-full transition-colors ${
                     idx === Math.floor(currentIndex / visibleProducts)
-                      ? 'bg-white'
-                      : 'bg-gray-600'
+                      ? 'bg-gray-900 dark:bg-white'
+                      : 'bg-gray-400 dark:bg-gray-600'
                   }`}
                   aria-label={`Go to product set ${idx + 1}`}
                 />
@@ -145,8 +148,8 @@ const ProductCarousel = ({
             disabled={!canGoPrev}
             className={`p-2 sm:p-3 rounded-full transition-colors ${
               !canGoPrev
-                ? 'text-gray-600 cursor-not-allowed'
-                : 'text-white hover:bg-gray-800'
+                ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                : 'text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-800'
             }`}
             aria-label="Previous products"
           >
@@ -157,8 +160,8 @@ const ProductCarousel = ({
             disabled={!canGoNext}
             className={`p-2 sm:p-3 rounded-full transition-colors ${
               !canGoNext
-                ? 'text-gray-600 cursor-not-allowed'
-                : 'text-white hover:bg-gray-800'
+                ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                : 'text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-800'
             }`}
             aria-label="Next products"
           >
@@ -169,7 +172,7 @@ const ProductCarousel = ({
         {/* View All Button */}
         <Link
           href="/browse"
-          className="border border-gray-700 text-white px-4 sm:px-8 py-2 sm:py-3 rounded-full hover:bg-gray-900 transition text-sm"
+          className="border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white px-4 sm:px-8 py-2 sm:py-3 rounded-full hover:bg-gray-200 dark:hover:bg-gray-900 transition text-sm"
         >
           View All Products
         </Link>

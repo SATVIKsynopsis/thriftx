@@ -8,8 +8,15 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import { useProductDetails } from '../hooks/useProductDetails';
 import { useResponsive } from '../hooks/useResponsive';
 import { useCarousel } from '../hooks/useCarousel';
-import { getSmartBackPath, trackNavigation, getCurrentPath } from '../utils/navigationUtils';
-import { getNavigationContext, getSmartBackPath as getContextualBackPath } from '../utils/navigationContextUtils';
+import {
+  getSmartBackPath,
+  trackNavigation,
+  getCurrentPath,
+} from '../utils/navigationUtils';
+import {
+  getNavigationContext,
+  getSmartBackPath as getContextualBackPath,
+} from '../utils/navigationContextUtils';
 import ProductImageGallery from '../components/products/ProductImageGallery';
 import ProductInfo from '../components/products/ProductInfo';
 import RatingSection from '../components/products/RatingSection';
@@ -19,7 +26,6 @@ const ProductDetailComponent = () => {
   const params = useParams();
   const id = params.id;
 
-  // Use custom hooks
   const productDetails = useProductDetails(id);
   const { getVisibleProducts } = useResponsive();
   const carousel = useCarousel(
@@ -29,12 +35,10 @@ const ProductDetailComponent = () => {
 
   const [activeTab, setActiveTab] = useState('reviews');
 
-  // Track navigation for smart back button
   useEffect(() => {
     trackNavigation(getCurrentPath(), `/product/${id}`);
   }, [id]);
 
-  // Make goToIndex available globally for the carousel dots
   useEffect(() => {
     if (typeof window !== 'undefined') {
       window.carouselGoToIndex = carousel.goToIndex;
@@ -46,7 +50,6 @@ const ProductDetailComponent = () => {
     };
   }, [carousel.goToIndex]);
 
-  // Loading state
   if (productDetails.loading) {
     return (
       <div className="max-w-7xl mx-auto p-8 md:p-12">
@@ -58,14 +61,20 @@ const ProductDetailComponent = () => {
     );
   }
 
-  // Product not found
   if (!productDetails.product) {
     return (
       <div className="max-w-7xl mx-auto p-8 md:p-12">
         <div className="text-center py-16">
-          <h2 className="text-2xl font-bold">Product not found</h2>
-          <p className="mt-2 text-gray-600">The product you're looking for doesn't exist or has been removed.</p>
-          <Link href="/" className="text-blue-600 underline mt-4 inline-block hover:text-blue-800">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Product not found
+          </h2>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
+            The product you're looking for doesn't exist or has been removed.
+          </p>
+          <Link
+            href="/"
+            className="text-indigo-600 dark:text-indigo-400 underline mt-4 inline-block hover:text-indigo-800 dark:hover:text-indigo-300 transition"
+          >
             Go back to homepage
           </Link>
         </div>
@@ -73,7 +82,6 @@ const ProductDetailComponent = () => {
     );
   }
 
-  // Get contextual back navigation data
   const getBackNavigationData = () => {
     const context = getNavigationContext();
     const backPath = getContextualBackPath(`/product/${id}`, '/');
@@ -82,26 +90,26 @@ const ProductDetailComponent = () => {
       return {
         path: backPath,
         label: `Back to ${context.displayName}`,
-        showContext: true
+        showContext: true,
       };
     }
 
     return {
       path: backPath,
       label: 'Back',
-      showContext: false
+      showContext: false,
     };
   };
 
   const backNav = getBackNavigationData();
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-black dark:text-white transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 sm:py-8">
         {/* Back Button */}
         <Link
           href={backNav.path}
-          className="inline-flex items-center gap-2 text-gray-400 no-underline mb-6 sm:mb-8 transition duration-200 hover:text-white"
+          className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 no-underline mb-6 sm:mb-8 transition duration-200 hover:text-gray-900 dark:hover:text-white"
         >
           <ArrowLeft size={20} />
           <span className="text-sm sm:text-base">{backNav.label}</span>
@@ -109,7 +117,6 @@ const ProductDetailComponent = () => {
 
         {/* Product Section */}
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 mb-8 lg:mb-12">
-          {/* Image Gallery */}
           <ProductImageGallery
             images={productDetails.product?.images}
             selectedImage={productDetails.selectedImage}
@@ -117,7 +124,6 @@ const ProductDetailComponent = () => {
             className="w-full lg:w-1/2"
           />
 
-          {/* Product Info */}
           <ProductInfo
             product={productDetails.product}
             quantity={productDetails.quantity}
@@ -134,7 +140,7 @@ const ProductDetailComponent = () => {
           />
         </div>
 
-        {/* Rating Section with Tabs */}
+        {/* Rating Section */}
         <RatingSection
           product={productDetails.product}
           activeTab={activeTab}
@@ -146,7 +152,7 @@ const ProductDetailComponent = () => {
           onHoverRatingChange={productDetails.setHoverRating}
         />
 
-        {/* Related Products Carousel */}
+        {/* Related Products */}
         {productDetails.relatedProducts.length > 0 && (
           <ProductCarousel
             products={productDetails.relatedProducts}

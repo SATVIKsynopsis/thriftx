@@ -1,3 +1,4 @@
+import Link from "next/link";
 import React from "react";
 import {
   SiNike,
@@ -6,42 +7,37 @@ import {
   SiPuma,
   SiUnderarmour,
   SiReebok,
-  SiAsos,
-  SiShopify,
   SiUniqlo,
-  SiHollister,
-  SiAmericanapparel,
-  SiAbercrombie,
-  SiAeropostale,
-  SiLevis,
-  SiTommyhilfiger,
 } from "react-icons/si";
 
 const Brand = () => {
   const brands = [
-    { icon: <SiNike />, name: "Nike" },
-    { icon: <SiAdidas />, name: "Adidas" },
-    { icon: <SiZara />, name: "Zara" },
-    { icon: <SiPuma />, name: "Puma" },
-    { icon: <SiUnderarmour />, name: "Under Armour" },
-    { icon: <SiReebok />, name: "Reebok" },
-    { icon: <SiShopify />, name: "Shopify" },
-    { icon: <SiUniqlo />, name: "Uniqlo" },
+    { icon: <SiNike />, name: "Nike", link: '#' },
+    { icon: <SiAdidas />, name: "Adidas", link: '#' },
+    { icon: <SiZara />, name: "Zara", link: '#' },
+    { icon: <SiPuma />, name: "Puma", link: '#' },
+    { icon: <SiUnderarmour />, name: "Under Armour", link: '#' },
+    { icon: <SiReebok />, name: "Reebok", link: '#' },
+    { icon: <SiUniqlo />, name: "Uniqlo", link: '#' },
   ];
 
-  const doubledBrands = [...brands, ...brands, ...brands];
+  const doubledBrands = [...brands, ...brands,];
 
   return (
-    <div className="w-full bg-neutral-950 text-white py-2 overflow-hidden">
-      <div className="flex whitespace-nowrap animate-marquee items-center">
+    <div className="w-full bg-neutral-300 dark:bg-neutral-950 text-gray-800 dark:text-white py-2 overflow-hidden border-t border-b border-gray-300 dark:border-white">
+      <div
+        className="flex whitespace-nowrap items-center"
+        style={{ animation: "marquee 20s linear infinite" }}
+      >
         {doubledBrands.map((brand, index) => (
-          <div
+          <Link
+            href={brand.link}
             key={index}
-            className="mx-15 text-5xl sm:text-6xl hover:text-green-500 transition-colors duration-300 cursor-pointer flex flex-col items-center"
+            className="mx-16 text-5xl sm:text-6xl hover:text-lime-500 dark:hover:text-green-500 transition-colors duration-300 flex flex-col items-center"
           >
             {brand.icon}
             <span className="text-sm mt-2">{brand.name}</span>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

@@ -2,14 +2,9 @@
 
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { motion } from "framer-motion";
 
-// ✅ Correct way to reference images from /public folder
-// import image1 from "../../../public/image1.png";
-import image2 from "../../../public/image2.png";
-// import image3 from "../../../public/image3.png";
-// import image4 from "../../../public/image4.png";
+const images = ["/im2.png", "/im1.png", "/im4.png", "/im3.png"];
 
 const Hero = () => {
   const cardVariants = {
@@ -56,48 +51,35 @@ const Hero = () => {
     },
   };
 
-  const enhancedTextVariants = {
-    hidden: { opacity: 0, y: 40 },
-    show: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        type: "spring",
-        stiffness: 100,
-        damping: 10,
-        duration: 0.8,
-      },
-    },
-  };
-
   return (
-    <section className="bg-[#000] text-white overflow-hidden py-10 md:py-14 lg:py-20 relative">
-      <div className="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between gap-8 lg:gap-5 px-4 sm:px-6 lg:px-5">
-        {/* LEFT SIDE - Text Content */}
+    <section className="bg-white text-gray-900 dark:bg-black dark:text-white overflow-hidden py-10 md:py-2 lg:pt-2 relative">
+      <div className="max-w-[1100px] mx-auto flex flex-col lg:flex-row justify-between gap-8 px-4 sm:px-6 lg:px-5 md:mb-5">
+
+        {/* LEFT SIDE */}
         <motion.div
           initial="hidden"
           animate="show"
           variants={containerVariants}
-          className="w-full lg:w-1/2  md:text-center lg:text-left"
+          className="w-full lg:w-1/2 "
         >
-          <motion.div variants={textVariants} className="fontAnton tracking-[6px]">
+          <motion.div variants={textVariants} className="fontAnton tracking-[6px] sm:text-center lg:text-left">
             <h1 className="font-extrabold leading-[0.8] select-none mb-6 lg:mb-8">
               <motion.span
-                className="block text-white text-8xl sm:text-9xl md:text-9xl lg:text-[8rem]"
+                className="block text-gray-900 dark:text-white text-8xl sm:text-9xl md:text-[10rem] lg:text-[10rem]"
                 whileHover={{ scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 400 }}
               >
                 STREET
               </motion.span>
               <motion.span
-                className="block text-[#bdf800] text-8xl sm:text-9xl md:text-9xl lg:text-[8rem] -mt-1 lg:-mt-2"
+                className="block text-[#bdf800] text-7xl sm:text-9xl md:text-[8rem] lg:text-[6rem] -mt-1 lg:-mt-2"
                 whileHover={{ scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 400 }}
               >
                 STYLE
               </motion.span>
               <motion.span
-                className="block text-[#ff2b78] text-8xl sm:text-9xl md:text-9xl lg:text-[8rem] -mt-1 lg:-mt-2"
+                className="block text-[#ff2b78] text-8xl sm:text-9xl md:text-[10rem] lg:text-[10rem] -mt-1 lg:-mt-2"
                 whileHover={{ scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 400 }}
               >
@@ -106,32 +88,28 @@ const Hero = () => {
             </h1>
           </motion.div>
 
-          <motion.div
-            variants={enhancedTextVariants}
-            whileHover={{ x: 5 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            <div className="mt-4 lg:mt-6 text-sm sm:text-base md:text-lg max-w-md md:mx-auto lg:mx-0 text-gray-300 leading-relaxed">
-              <p className="text-yellow-300 text-xl pb-5">
-                Mumbai&apos;s Underground fashion market
-              </p>
-              <p className="text-neutral-500 lg:-mt-3 -mt-2 ">
+          <div className="mt-4 lg:-mt-4 w-full mx-auto text-sm text-left sm:text-center md:text-center lg:text-left text-gray-600 dark:text-gray-300 leading-relaxed">
+            <p className="sm:max-w-md sm:mx-auto lg:mx-0  ">
+              <span className="text-yellow-600 dark:text-yellow-300 text-lg">
+                Mumbai's Underground Fashion Market
+              </span>
+              <br />
+              <span className="text-gray-500 dark:text-gray-400">
                 Discover unique vintage pieces, street fashion finds, and
-                one-of-a-kind thrift treasures from Mumbai&apos;s coolest sellers.
-              </p>
-            </div>
-
-          </motion.div>
+                one of a kind thrift treasures from Mumbai's coolest sellers.
+              </span>
+            </p>
+          </div>
 
           <motion.div
             variants={buttonVariants}
             initial="hidden"
             animate="show"
-            className="mt-6 lg:mt-8"
+            className="mt-6 lg:mt-4 sm:flex sm:items-center sm:justify-center lg:justify-start" 
           >
             <motion.div whileHover="hover" whileTap="tap">
               <Link
-                href="/category"
+                href="/search"
                 className="inline-flex items-center justify-center font-semibold px-6 sm:px-8 py-3 rounded-full text-sm sm:text-base relative overflow-hidden group"
                 style={{
                   backgroundColor: "#bdf800",
@@ -144,70 +122,91 @@ const Hero = () => {
               </Link>
             </motion.div>
           </motion.div>
+
         </motion.div>
 
-        {/* RIGHT SIDE - Image Grid */}
+        {/* RIGHT SIDE */}
         <motion.div
           initial="hidden"
           animate="show"
           variants={containerVariants}
           className="w-full lg:w-1/2"
         >
-          {/* Desktop Layout */}
-          <motion.div
-            initial="hidden"
-            animate="show"
-            className="hidden lg:flex flex-col gap-4"
-          >
+          <motion.div animate="show" className="lg:flex flex-col gap-4">
+            {/* First Row */}
             <div className="flex gap-4">
-              <motion.div
-                custom={1}
-                variants={cardVariants}
-                className="bg-white rounded-[20px] overflow-hidden w-[505px] h-[413px] relative cursor-pointer"
-                whileHover={{ scale: 1.05, y: -8, rotateZ: 1 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Image
-                  src={image2}
-                  alt="Formal"
-                  fill
-                  className="object-cover"
-                />
-              </motion.div>
+              {[0, 1].map((i) => (
+                <motion.div
+                  key={i}
+                  custom={i}
+                  variants={cardVariants}
+                  className={`bg-white text-black rounded-[20px] overflow-hidden relative cursor-pointer ${i === 0 ? "w-[200px] md:w-[250px]" : "w-[250px] md:w-[405px]"
+                    } h-[170px]`}
+                  whileHover={{
+                    scale: 1.05,
+                    y: -8,
+                    rotateZ: i === 0 ? -1 : 1,
+                    transition: { type: "spring", stiffness: 300 },
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <motion.img
+                    src={images[i]}
+                    alt={`Card ${i + 1}`}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    whileHover={{ scale: 1.15 }}
+                    transition={{ duration: 0.4 }}
+                  />
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Second Row */}
+            <div className="flex gap-4 my-2">
+              {[2, 3].map((i) => (
+                <motion.div
+                  key={i}
+                  custom={i}
+                  variants={cardVariants}
+                  className={`bg-white text-black rounded-[20px] overflow-hidden relative cursor-pointer ${i === 2 ? "w-[250px] md:w-[405px]" : "w-[200px] md:w-[250px]"
+                    } h-[170px]`}
+                  whileHover={{
+                    scale: 1.05,
+                    y: -8,
+                    rotateZ: i === 2 ? -1 : 1,
+                    transition: { type: "spring", stiffness: 300 },
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <motion.img
+                    src={images[i]}
+                    alt={`Card ${i + 1}`}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    whileHover={{ scale: 1.15 }}
+                    transition={{ duration: 0.4 }}
+                  />
+                </motion.div>
+              ))}
             </div>
           </motion.div>
         </motion.div>
       </div>
 
-      {/* Floating Animated Elements */}
+      {/* Floating Background Dots */}
       <motion.div
         className="absolute top-20 left-5 w-2 h-2 bg-[#bdf800] rounded-full opacity-60 hidden sm:block"
-        animate={{
-          y: [0, -20, 0],
-          x: [0, 10, 0],
-          opacity: [0.4, 0.9, 0.4],
-          scale: [1, 1.2, 1],
-        }}
-        transition={{
-          duration: 4,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
+        animate={{ y: [0, -20, 0], x: [0, 10, 0], opacity: [0.4, 0.9, 0.4], scale: [1, 1.2, 1] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.div
         className="absolute bottom-20 right-5 w-3 h-3 bg-[#ff2b78] rounded-full opacity-40 hidden sm:block"
-        animate={{
-          y: [0, 15, 0],
-          x: [0, -15, 0],
-          opacity: [0.3, 0.8, 0.3],
-          scale: [1, 1.3, 1],
-        }}
-        transition={{
-          duration: 5,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: 1,
-        }}
+        animate={{ y: [0, 15, 0], x: [0, -15, 0], opacity: [0.3, 0.8, 0.3], scale: [1, 1.3, 1] }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+      />
+      <motion.div
+        className="absolute top-1/2 left-10 w-1 h-1 bg-gray-500 dark:bg-white rounded-full opacity-30 hidden sm:block"
+        animate={{ y: [0, -30, 0], x: [0, 20, 0], opacity: [0.2, 0.6, 0.2] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2 }}
       />
     </section>
   );

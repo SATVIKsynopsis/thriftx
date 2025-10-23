@@ -14,10 +14,10 @@ const NewArrival = ({ loading, newProducts }) => {
   // Responsive calculation
   const getVisibleProducts = () => {
     if (typeof window !== 'undefined') {
-      if (window.innerWidth >= 1024) return 4; // lg
-      if (window.innerWidth >= 768) return 3;  // md
-      if (window.innerWidth >= 640) return 2;  // sm
-      return 1; // mobile
+      if (window.innerWidth >= 1024) return 4;
+      if (window.innerWidth >= 768) return 3;
+      if (window.innerWidth >= 640) return 2;
+      return 1;
     }
     return 4;
   };
@@ -26,8 +26,9 @@ const NewArrival = ({ loading, newProducts }) => {
     const updateVisible = () => {
       const visible = getVisibleProducts();
       setVisibleProducts(visible);
-      setMaxIndex(Math.max(newProducts.length - visible, 0));
-      setCurrentIndex(prev => Math.min(prev, Math.max(newProducts.length - visible, 0)));
+      const max = Math.max(newProducts.length - visible, 0);
+      setMaxIndex(max);
+      setCurrentIndex(prev => Math.min(prev, max));
     };
 
     updateVisible();
@@ -57,22 +58,26 @@ const NewArrival = ({ loading, newProducts }) => {
   };
 
   return (
-    <section className="py-16 bg-black">
-      <div className="max-w-[1100px] mx-auto px-4 md:px-2">
-        {/* Header with arrows */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-12 gap-4 sm:gap-0">
+    <section className="pt-5 bg-white dark:bg-black">
+      <div className="max-w-[1100px] mx-auto px-2">
+        <p className='border-t-2 border-gray-200 dark:border-neutral-700 my-5 sm:my-10' />
+
+        <div className="flex sm:flex-row justify-between items-center mb-5 sm:mb-12 gap-4 sm:gap-0">
           <div className="text-center sm:text-left">
-            <h2 className="text-5xl md:text-7xl font-bold flex fontAnton items-center gap-2 text-white mb-2 justify-center sm:justify-start">
-              NEW <span className='text-lime-400 tracking-wider'>ARRIVALS</span>
+            <h2 className="text-2xl sm:text-5xl md:text-7xl font-bold flex fontAnton items-center gap-2 text-gray-900 dark:text-white mb-2 justify-center sm:justify-start">
+              NEW <span className='text-lime-500 dark:text-lime-400 tracking-wider'>ARRIVALS</span>
             </h2>
           </div>
 
-          {/* Navigation Arrows */}
           <div className="flex gap-3">
             <button
               onClick={handlePrev}
               disabled={currentIndex === 0}
-              className={`p-3 rounded-full transition-colors ${currentIndex === 0 ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900 hover:bg-gray-200'}`}
+              className={`p-3 rounded-full transition-colors ${
+                currentIndex === 0
+                ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                : 'text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-800'
+              }`}
               aria-label="Previous products"
             >
               <ChevronLeft size={24} />
@@ -80,7 +85,11 @@ const NewArrival = ({ loading, newProducts }) => {
             <button
               onClick={handleNext}
               disabled={currentIndex >= maxIndex}
-              className={`p-3 rounded-full transition-colors ${currentIndex >= maxIndex ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900 hover:bg-gray-200'}`}
+              className={`p-3 rounded-full transition-colors ${
+                currentIndex >= maxIndex
+                ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                : 'text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-800'
+              }`}
               aria-label="Next products"
             >
               <ChevronRight size={24} />
@@ -90,13 +99,12 @@ const NewArrival = ({ loading, newProducts }) => {
 
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mb-12">
-            {[...Array(8)].map((_, index) => (
+            {[...Array(visibleProducts)].map((_, index) => (
               <div key={index} className="bg-gray-200 rounded-xl h-72 animate-pulse" />
             ))}
           </div>
         ) : (
           <>
-            {/* Scrollable Products */}
             <div className="relative overflow-hidden">
               <div
                 className="flex transition-transform duration-500 ease-in-out"
@@ -108,7 +116,7 @@ const NewArrival = ({ loading, newProducts }) => {
                 {newProducts.map(product => (
                   <div
                     key={product.id}
-                    className="flex-shrink-0 w-full p-2 sm:w-1/2 md:w-1/3 lg:w-1/4"
+                    className={`flex-shrink-0 w-auto p-2 sm:w-1/3 md:w-1/3 lg:w-1/4`} 
                   >
                     <ProductCard
                       product={product}
@@ -119,7 +127,6 @@ const NewArrival = ({ loading, newProducts }) => {
               </div>
             </div>
 
-            {/* Mobile dots */}
             <div className="flex justify-center mt-6 sm:hidden">
               {Array.from({ length: Math.ceil(newProducts.length / visibleProducts) }).map((_, idx) => {
                 const slideValue = idx * visibleProducts;
@@ -128,22 +135,22 @@ const NewArrival = ({ loading, newProducts }) => {
                   <button
                     key={idx}
                     onClick={() => setCurrentIndex(actualIndex)}
-                    className={`w-2 h-2 rounded-full mx-1 transition-colors ${idx === Math.floor(currentIndex / visibleProducts) ? 'bg-gray-900' : 'bg-gray-400'}`}
+                    className={`w-2 h-2 rounded-full mx-1 transition-colors ${
+                      idx === Math.floor(currentIndex / visibleProducts)
+                      ? 'bg-gray-900 dark:bg-white'
+                      : 'bg-gray-400 dark:bg-gray-600'
+                    }`}
                   />
                 );
               })}
             </div>
 
-            {/* View All Button */}
             {newProducts.length > 0 && (
               <div className="text-center mt-8">
                 <Link
                   href="/search"
-                  onClick={() => {
-                    // Set navigation context for proper breadcrumb and back navigation
-                    setNavigationContext(NAVIGATION_CONTEXTS.NEW_ARRIVALS);
-                  }}
-                  className="inline-flex items-center gap-2 border rounded-full text-white px-8 py-4 font-semibold hover:bg-gray-800 transition-transform transform hover:-translate-y-1"
+                  onClick={() => setNavigationContext(NAVIGATION_CONTEXTS.NEW_ARRIVALS)}
+                  className="inline-flex items-center gap-2 border rounded-full text-gray-900 border-gray-900 px-8 py-4 font-semibold hover:bg-gray-100 transition-transform transform hover:-translate-y-1 dark:text-white dark:border dark:hover:bg-gray-800"
                 >
                   View All Products <ArrowRight size={20} />
                 </Link>

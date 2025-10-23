@@ -11,9 +11,7 @@ const Breadcrumb = () => {
   const searchParams = useSearchParams();
 
   // Don't show breadcrumb on home page
-  if (pathname === '/') {
-    return null;
-  }
+  if (pathname === '/') return null;
 
   const generateBreadcrumbs = () => {
     const breadcrumbs = [];
@@ -27,72 +25,52 @@ const Breadcrumb = () => {
       isActive: false
     });
 
-    // Generate breadcrumbs based on current route
     if (pathname.startsWith('/browse')) {
       breadcrumbs.push({
         name: 'Browse All Products',
         href: '/browse',
         isActive: pathname === '/browse'
       });
-    }
-
-    else if (pathname.startsWith('/search')) {
+    } else if (pathname.startsWith('/search')) {
       const searchQuery = searchParams.get('q');
       breadcrumbs.push({
         name: searchQuery ? `Search: "${searchQuery}"` : 'Search Results',
         href: pathname,
         isActive: true
       });
-    }
-
-    else if (pathname.startsWith('/category')) {
+    } else if (pathname.startsWith('/category')) {
       breadcrumbs.push({
         name: 'Category',
         href: '/category',
         isActive: pathname === '/category'
       });
-    }
-
-    else if (pathname.startsWith('/product/')) {
-      // For product pages, use the new navigation context system
+    } else if (pathname.startsWith('/product/')) {
       const contextData = getBreadcrumbData();
-
-      if (contextData) {
-        breadcrumbs.push(contextData);
-      }
-
+      if (contextData) breadcrumbs.push(contextData);
       breadcrumbs.push({
         name: 'Product Details',
         href: pathname,
         isActive: true
       });
-    }
-
-    else if (pathname.startsWith('/wishlist')) {
+    } else if (pathname.startsWith('/wishlist')) {
       breadcrumbs.push({
         name: 'Wishlist',
         href: '/wishlist',
         isActive: pathname === '/wishlist'
       });
-    }
-
-    else if (pathname.startsWith('/cart')) {
+    } else if (pathname.startsWith('/cart')) {
       breadcrumbs.push({
         name: 'Cart',
         href: '/cart',
         isActive: pathname === '/cart'
       });
-    }
-
-    else if (pathname.startsWith('/profile')) {
+    } else if (pathname.startsWith('/profile')) {
       breadcrumbs.push({
         name: 'Profile',
         href: '/profile',
         isActive: pathname === '/profile'
       });
-    }
-
-    else if (pathname.startsWith('/orders')) {
+    } else if (pathname.startsWith('/orders')) {
       breadcrumbs.push({
         name: 'Orders',
         href: '/orders',
@@ -103,35 +81,31 @@ const Breadcrumb = () => {
     return breadcrumbs;
   };
 
-
-
   const breadcrumbs = generateBreadcrumbs();
-
-  if (breadcrumbs.length <= 1) {
-    return null;
-  }
+  if (breadcrumbs.length <= 1) return null;
 
   return (
-    <nav className="flex items-center space-x-2 text-sm text-gray-400 mb-6" aria-label="Breadcrumb">
+    <nav
+      className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400 mb-2 transition-colors"
+      aria-label="Breadcrumb"
+    >
       {breadcrumbs.map((breadcrumb, index) => {
         const isLast = index === breadcrumbs.length - 1;
         const Icon = breadcrumb.icon;
 
         return (
           <React.Fragment key={`${breadcrumb.href}-${index}`}>
-            {index > 0 && (
-              <ChevronRight size={16} className="text-gray-500" />
-            )}
+            {index > 0 && <ChevronRight size={16} className="text-gray-400 dark:text-gray-500" />}
 
             {isLast ? (
-              <span className="font-medium text-gray-200 flex items-center gap-2">
+              <span className="font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
                 {Icon && <Icon size={16} />}
                 {breadcrumb.name}
               </span>
             ) : (
               <Link
                 href={breadcrumb.href}
-                className="hover:text-white transition-colors flex items-center gap-2"
+                className="hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-2"
               >
                 {Icon && <Icon size={16} />}
                 {breadcrumb.name}

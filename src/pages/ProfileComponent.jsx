@@ -80,7 +80,7 @@ const ProfileComponent = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-10">
-      <div className="max-w-4xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
@@ -91,9 +91,9 @@ const ProfileComponent = () => {
           </p>
         </div>
 
-        <div className="flex flex-col gap-8">
-          {/* Personal Info Card */}
-          <div className="bg-white p-6 rounded-xl shadow border border-gray-200">
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Personal Info Card - 3/5 width */}
+          <div className="bg-white p-6 rounded-xl shadow border border-gray-200 flex-grow md:flex-[3]">
             <div className="flex items-center gap-3 border-b border-gray-200 pb-4 mb-4">
               <div className="bg-blue-600 text-white w-10 h-10 rounded-lg flex items-center justify-center">
                 <User size={20} />
@@ -132,9 +132,7 @@ const ProfileComponent = () => {
                   <label className="font-medium text-gray-700">Full Name</label>
                   <input
                     {...register("name", { required: "Name is required" })}
-                    className={`w-full border-2 rounded-lg p-3 mt-1 ${
-                      errors.name ? "border-red-500" : "border-gray-200"
-                    }`}
+                    className={`w-full border-2 rounded-lg p-3 mt-1 ${errors.name ? "border-red-500" : "border-gray-200"}`}
                   />
                   {errors.name && (
                     <span className="text-red-500 text-sm">
@@ -156,9 +154,7 @@ const ProfileComponent = () => {
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="font-medium text-gray-700">
-                    Phone Number
-                  </label>
+                  <label className="font-medium text-gray-700">Phone Number</label>
                   <input
                     {...register("phone")}
                     placeholder="(555) 123-4567"
@@ -217,11 +213,7 @@ const ProfileComponent = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className={`flex items-center justify-center gap-2 py-3 px-6 rounded-lg text-white font-semibold ${
-                  loading
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700 transition"
-                }`}
+                className={`flex items-center justify-center gap-2 py-3 px-6 rounded-lg text-white font-semibold ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 transition"}`}
               >
                 <Save size={20} />
                 {loading ? "Saving..." : "Save Changes"}
@@ -229,93 +221,91 @@ const ProfileComponent = () => {
             </form>
           </div>
 
-          {/* Notifications */}
-          <div className="bg-white p-6 rounded-xl shadow border border-gray-200">
-            <div className="flex items-center gap-3 border-b border-gray-200 pb-4 mb-4">
-              <div className="bg-blue-600 text-white w-10 h-10 rounded-lg flex items-center justify-center">
-                <Bell size={20} />
+          {/* Notifications & Security - 2/5 width */}
+          <div className="flex-grow md:flex-[2] flex flex-col gap-8">
+            {/* Notifications */}
+            <div className="bg-white p-6 rounded-xl shadow border border-gray-200">
+              <div className="flex items-center gap-3 border-b border-gray-200 pb-4 mb-4">
+                <div className="bg-blue-600 text-white w-10 h-10 rounded-lg flex items-center justify-center">
+                  <Bell size={20} />
+                </div>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Notification Preferences
+                </h2>
               </div>
-              <h2 className="text-xl font-semibold text-gray-800">
-                Notification Preferences
-              </h2>
+
+              {["email", "push", "sms"].map((type) => (
+                <div
+                  key={type}
+                  className="flex items-center justify-between py-3 border-b last:border-b-0"
+                >
+                  <div>
+                    <div className="font-medium text-gray-800 capitalize">
+                      {type} Notifications
+                    </div>
+                    <p className="text-gray-500 text-sm">
+                      {type === "email"
+                        ? "Receive updates about your orders and account"
+                        : type === "push"
+                          ? "Get real-time notifications in your browser"
+                          : "Receive text messages for important updates"}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => toggleNotification(type)}
+                    className={`relative w-12 h-6 rounded-full transition ${notifications[type] ? "bg-blue-600" : "bg-gray-300"}`}
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition ${notifications[type] ? "translate-x-6" : ""}`}
+                    />
+                  </button>
+                </div>
+              ))}
             </div>
 
-            {["email", "push", "sms"].map((type) => (
-              <div
-                key={type}
-                className="flex items-center justify-between py-3 border-b last:border-b-0"
-              >
+            {/* Security */}
+            <div className="bg-white p-6 rounded-xl shadow border border-gray-200">
+              <div className="flex items-center gap-3 border-b border-gray-200 pb-4 mb-4">
+                <div className="bg-blue-600 text-white w-10 h-10 rounded-lg flex items-center justify-center">
+                  <Shield size={20} />
+                </div>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Security & Privacy
+                </h2>
+              </div>
+
+              <div className="flex items-center justify-between py-3 border-b">
                 <div>
-                  <div className="font-medium text-gray-800 capitalize">
-                    {type} Notifications
+                  <div className="font-medium text-gray-800">
+                    Two-Factor Authentication
                   </div>
                   <p className="text-gray-500 text-sm">
-                    {type === "email"
-                      ? "Receive updates about your orders and account"
-                      : type === "push"
-                      ? "Get real-time notifications in your browser"
-                      : "Receive text messages for important updates"}
+                    Add an extra layer of security to your account
                   </p>
                 </div>
-                <button
-                  onClick={() => toggleNotification(type)}
-                  className={`relative w-12 h-6 rounded-full transition ${
-                    notifications[type] ? "bg-blue-600" : "bg-gray-300"
-                  }`}
-                >
-                  <span
-                    className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition ${
-                      notifications[type] ? "translate-x-6" : ""
-                    }`}
-                  />
+                <button className="py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold">
+                  Enable
                 </button>
               </div>
-            ))}
-          </div>
 
-          {/* Security */}
-          <div className="bg-white p-6 rounded-xl shadow border border-gray-200">
-            <div className="flex items-center gap-3 border-b border-gray-200 pb-4 mb-4">
-              <div className="bg-blue-600 text-white w-10 h-10 rounded-lg flex items-center justify-center">
-                <Shield size={20} />
-              </div>
-              <h2 className="text-xl font-semibold text-gray-800">
-                Security & Privacy
-              </h2>
-            </div>
-
-            <div className="flex items-center justify-between py-3 border-b">
-              <div>
-                <div className="font-medium text-gray-800">
-                  Two-Factor Authentication
+              <div className="flex items-center justify-between py-3">
+                <div>
+                  <div className="font-medium text-gray-800">
+                    Change Password
+                  </div>
+                  <p className="text-gray-500 text-sm">
+                    Update your account password
+                  </p>
                 </div>
-                <p className="text-gray-500 text-sm">
-                  Add an extra layer of security to your account
-                </p>
+                <button className="py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold">
+                  Change
+                </button>
               </div>
-              <button className="py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold">
-                Enable
-              </button>
-            </div>
-
-            <div className="flex items-center justify-between py-3">
-              <div>
-                <div className="font-medium text-gray-800">
-                  Change Password
-                </div>
-                <p className="text-gray-500 text-sm">
-                  Update your account password
-                </p>
-              </div>
-              <button className="py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold">
-                Change
-              </button>
             </div>
           </div>
         </div>
       </div>
     </div>
   );
-};
-
+}
 export default ProfileComponent;

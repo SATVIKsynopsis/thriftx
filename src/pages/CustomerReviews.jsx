@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Star, CheckCircle } from 'lucide-react';
 
 const CustomerReviews = () => {
@@ -41,21 +41,19 @@ const CustomerReviews = () => {
     }
   ];
 
-  // Responsive visible reviews calculation
   const getVisibleReviews = () => {
     if (typeof window !== 'undefined') {
-      if (window.innerWidth >= 1024) return 3; // lg screens
-      if (window.innerWidth >= 640) return 2;  // sm screens
-      return 1; // mobile
+      if (window.innerWidth >= 1024) return 3;
+      if (window.innerWidth >= 640) return 2;
+      return 1;
     }
-    return 3; // default for SSR
+    return 3;
   };
 
   const [visibleReviews, setVisibleReviews] = useState(3);
   const [maxIndex, setMaxIndex] = useState(reviews.length - 3);
 
-  // Update visible reviews on window resize
-  React.useEffect(() => {
+  useEffect(() => {
     const updateVisibleReviews = () => {
       const visible = getVisibleReviews();
       setVisibleReviews(visible);
@@ -68,55 +66,39 @@ const CustomerReviews = () => {
     return () => window.removeEventListener('resize', updateVisibleReviews);
   }, [reviews.length]);
 
-  const handlePrev = () => {
-    setCurrentIndex((prev) => Math.max(0, prev - 1));
-  };
+  const handlePrev = () => setCurrentIndex(prev => Math.max(0, prev - 1));
+  const handleNext = () => setCurrentIndex(prev => Math.min(maxIndex, prev + 1));
 
-  const handleNext = () => {
-    setCurrentIndex((prev) => Math.min(maxIndex, prev + 1));
-  };
-
-  // Touch handlers for mobile swipe
   const handleTouchStart = (e) => {
-    setTouchEndX(0); // reset
+    setTouchEndX(0);
     setTouchStartX(e.targetTouches[0].clientX);
   };
 
-  const handleTouchMove = (e) => {
-    setTouchEndX(e.targetTouches[0].clientX);
-  };
+  const handleTouchMove = (e) => setTouchEndX(e.targetTouches[0].clientX);
 
   const handleTouchEnd = () => {
     if (!touchStartX || !touchEndX) return;
     const distance = touchStartX - touchEndX;
-    const isLeftSwipe = distance > 50;
-    const isRightSwipe = distance < -50;
-
-    if (isLeftSwipe && currentIndex < maxIndex) {
-      handleNext();
-    }
-    if (isRightSwipe && currentIndex > 0) {
-      handlePrev();
-    }
+    if (distance > 50 && currentIndex < maxIndex) handleNext();
+    if (distance < -50 && currentIndex > 0) handlePrev();
   };
 
   return (
-    <div className="bg-black py-8 sm:py-12 lg:py-16 pb-28 sm:pb-32 lg:pb-40 px-4 sm:px-6 lg:px-8">
+    <div className="bg-white dark:bg-black py-5 sm:py-12 lg:pt-16 sm:pb-32 lg:pb-20 px-2 sm:px-4 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-8 sm:mb-12 gap-4 sm:gap-0">
-          <h2 className="text-neutral-200 text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold fontAnton uppercase tracking-normal text-center sm:text-left">
-            OUR HAPPY CUSTOMERS
+        <p className="border-t-2 border-gray-300 dark:border-neutral-600 pb-10" />
+        
+        <div className="flex flex-row justify-between items-center mb-5 sm:mb-12 gap-4 sm:gap-0">
+          <h2 className=" text-gray-900 dark:text-neutral-200 text-xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold fontAnton uppercase tracking-normal sm:text-left">
+            OUR HAPPY <span className='text-lime-500 dark:text-lime-400'>CUSTOMERS</span>
           </h2>
-
-          {/* Navigation Arrows - Hidden on mobile for better UX */}
-          <div className="hidden sm:flex gap-3">
+          <div className="flex sm:gap-3">
             <button
               onClick={handlePrev}
               disabled={currentIndex === 0}
               className={`p-3 rounded-full transition-colors ${currentIndex === 0
-                  ? 'text-gray-600 cursor-not-allowed'
-                  : 'text-white hover:bg-gray-800 active:bg-gray-700'
+                  ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                  : 'text-gray-900 hover:bg-gray-100 active:bg-gray-200 dark:text-white dark:hover:bg-gray-800 dark:active:bg-gray-700'
                 }`}
               aria-label="Previous reviews"
             >
@@ -126,8 +108,8 @@ const CustomerReviews = () => {
               onClick={handleNext}
               disabled={currentIndex >= maxIndex}
               className={`p-3 rounded-full transition-colors ${currentIndex >= maxIndex
-                  ? 'text-gray-600 cursor-not-allowed'
-                  : 'text-white hover:bg-gray-800 active:bg-gray-700'
+                  ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                  : 'text-gray-900 hover:bg-gray-100 active:bg-gray-200 dark:text-white dark:hover:bg-gray-800 dark:active:bg-gray-700'
                 }`}
               aria-label="Next reviews"
             >
@@ -135,57 +117,36 @@ const CustomerReviews = () => {
             </button>
           </div>
         </div>
-
-        {/* Reviews Slider */}
         <div className="relative overflow-hidden">
           <div
             className="flex transition-transform duration-500 ease-in-out"
-            style={{
-              transform: `translateX(-${currentIndex * (100 / visibleReviews)}%)`
-            }}
+            style={{ transform: `translateX(-${currentIndex * (100 / visibleReviews)}%)` }}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
           >
             {reviews.map((review, idx) => (
-              <div
-                key={idx}
-                className="w-full sm:w-1/2 lg:w-1/3 flex-shrink-0 px-2 sm:px-3"
-              >
-                <div className="bg-black rounded-[15px] sm:rounded-[20px] p-4 sm:p-6 lg:p-7 h-auto sm:h-[240px] border border-[#CFD2C11A]">
-                  {/* Star Rating */}
+              <div key={idx} className="w-full sm:w-1/2 lg:w-1/3 flex-shrink-0 px-2 sm:px-3">
+                <div className="bg-neutral-200 dark:bg-neutral-900 rounded-[15px] sm:rounded-[20px] p-4 sm:p-6 lg:p-7 h-auto sm:h-[180px] border border-gray-200 dark:border-neutral-800">
                   <div className="flex gap-1 mb-3 sm:mb-4">
                     {[...Array(review.rating)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className="w-5 h-5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 fill-yellow-400 text-yellow-400"
-                      />
+                      <Star key={i} className="w-5 h-5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 fill-yellow-400 text-yellow-400" />
                     ))}
                   </div>
-
-                  {/* Name and Verification */}
                   <div className="flex items-center gap-2 mb-3 sm:mb-4">
-                    <h3 className="text-white font-semibold text-base sm:text-lg">
-                      {review.name}
-                    </h3>
+                    <h3 className="text-gray-900 dark:text-white font-semibold text-base sm:text-lg">{review.name}</h3>
                     {review.verified && (
                       <div className="w-4 h-4 sm:w-5 sm:h-5 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
                         <CheckCircle className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-white" />
                       </div>
                     )}
                   </div>
-
-                  {/* Review Text */}
-                  <p className="text-gray-400 text-sm sm:text-sm leading-relaxed">
-                    "{review.text}"
-                  </p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-sm leading-relaxed">"{review.text}"</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
-
-        {/* Mobile Navigation Dots */}
         <div className="flex justify-center mt-6 sm:hidden">
           <div className="flex gap-2">
             {Array.from({ length: Math.ceil(reviews.length / visibleReviews) }).map((_, idx) => {
@@ -195,10 +156,9 @@ const CustomerReviews = () => {
                 <button
                   key={idx}
                   onClick={() => setCurrentIndex(actualIndex)}
-                  className={`w-2 h-2 rounded-full transition-colors ${
-                    idx === Math.floor(currentIndex / visibleReviews)
-                      ? 'bg-white'
-                      : 'bg-gray-600'
+                  className={`w-2 h-2 rounded-full transition-colors ${idx === Math.floor(currentIndex / visibleReviews)
+                    ? 'bg-gray-900 dark:bg-white'
+                    : 'bg-gray-400 dark:bg-gray-600'
                   }`}
                   aria-label={`Go to review set ${idx + 1}`}
                 />

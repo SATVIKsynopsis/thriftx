@@ -11,7 +11,9 @@ const ProductImageGallery = ({
 }) => {
   if (!images || images.length === 0) {
     return (
-      <div className={`bg-gray-700 flex items-center justify-center text-gray-500 ${className}`}>
+      <div
+        className={`flex items-center justify-center text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 ${className}`}
+      >
         No Image Available
       </div>
     );
@@ -25,11 +27,17 @@ const ProductImageGallery = ({
           <button
             key={idx}
             onClick={() => onImageSelect(idx)}
-            className={`flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 ${
-              selectedImage === idx ? 'border-white' : 'border-gray-700'
+            className={`flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 transition-colors duration-200 ${
+              selectedImage === idx
+                ? 'border-indigo-500 dark:border-indigo-400'
+                : 'border-gray-300 dark:border-gray-700'
             }`}
           >
-            <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+            <img
+              src={img}
+              alt={`Thumbnail ${idx + 1}`}
+              className="w-full h-full object-cover"
+            />
           </button>
         ))}
       </div>
@@ -41,15 +49,22 @@ const ProductImageGallery = ({
             <button
               key={idx}
               onClick={() => onImageSelect(idx)}
-              className={`w-20 h-20 rounded-lg overflow-hidden border-2 ${
-                selectedImage === idx ? 'border-white' : 'border-gray-700'
+              className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors duration-200 ${
+                selectedImage === idx
+                  ? 'border-indigo-500 dark:border-indigo-400'
+                  : 'border-gray-300 dark:border-gray-700'
               }`}
             >
-              <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+              <img
+                src={img}
+                alt={`Thumbnail ${idx + 1}`}
+                className="w-full h-full object-cover"
+              />
             </button>
           ))}
         </div>
-        <div className="flex-1 rounded-2xl overflow-hidden bg-gray-800 min-h-[400px]">
+
+        <div className="flex-1 rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800 min-h-[400px]">
           <img
             src={images[selectedImage]}
             alt="Product"
@@ -63,7 +78,7 @@ const ProductImageGallery = ({
       </div>
 
       {/* Mobile: Main image */}
-      <div className="lg:hidden rounded-2xl overflow-hidden bg-gray-800">
+      <div className="lg:hidden rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800">
         <img
           src={images[selectedImage]}
           alt="Product"

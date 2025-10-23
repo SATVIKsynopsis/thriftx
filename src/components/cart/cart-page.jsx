@@ -11,8 +11,7 @@ import {
 } from "../../../lib/cartService";
 import { Anton } from "next/font/google";
 import { Sansation } from "next/font/google";
-
-
+import { ShoppingBag } from "lucide-react";
 
 const anton = Anton({
   weight: "400",
@@ -20,7 +19,7 @@ const anton = Anton({
 });
 
 const sansation = Sansation({
-  weight: ["400", "700"],   // adjust weights you need
+  weight: ["400", "700"],
   subsets: ["latin"],
 });
 
@@ -63,20 +62,23 @@ export default function CartPage() {
   const total = subtotal - discount + deliveryFee;
 
   return (
-    <main className="flex-1 bg-black px-4 sm:px-8 py-12 min-h-screen">
+    <main className="flex-1 bg-gray-50 dark:bg-black px-4 sm:px-8 py-12 min-h-screen transition-colors">
       <div className="max-w-6xl mx-auto">
-        <h1 className={`text-4xl font-bold text-white mb-8 ${anton.className}`}>Your Cart</h1>
+        <h1 className={`text-4xl font-bold text-gray-900 dark:text-white mb-8 ${anton.className}`}>
+          Your Cart
+        </h1>
 
         {loading ? (
-          <p className="text-gray-400">Loading your cart...</p>
+          <p className="text-gray-500 dark:text-gray-400">Loading your cart...</p>
         ) : items.length === 0 ? (
-          <div className="text-center py-12 text-gray-400">
+          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+            <ShoppingBag className="mx-auto mb-4 w-12 h-12 text-gray-400 dark:text-gray-500" />
             <p>Your cart is empty</p>
           </div>
         ) : (
           <div className="grid lg:grid-cols-[2fr_1fr] gap-8">
             {/* Cart Items Container */}
-            <div className="bg-[#0f0f0f] border-2 border-gray-300 rounded-3xl p-6 md:p-8 space-y-6 shadow-lg">
+            <div className="bg-white dark:bg-[#0f0f0f] border-2 border-gray-300 dark:border-gray-700 rounded-3xl p-6 md:p-8 space-y-6 shadow-lg transition-colors">
               {items.map((item) => (
                 <CartItem
                   key={item.id}
@@ -88,7 +90,7 @@ export default function CartPage() {
             </div>
 
             {/* Order Summary Container */}
-            <div className="bg-[#0f0f0f] border-2 border-gray-200 rounded-3xl p-6 md:p-8 shadow-lg self-start">
+            <div className="bg-white dark:bg-[#0f0f0f] border-2 border-gray-200 dark:border-gray-700 rounded-3xl p-6 md:p-8 shadow-lg self-start transition-colors">
               <OrderSummary
                 subtotal={subtotal}
                 discount={discount}

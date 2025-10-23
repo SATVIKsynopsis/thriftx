@@ -33,7 +33,7 @@ const RatingSection = ({
     return stars;
   };
 
-  // Mock reviews data - in real app this would come from props or API
+  // Mock reviews data
   const mockReviews = [
     {
       name: 'Samantha D.',
@@ -56,7 +56,7 @@ const RatingSection = ({
   return (
     <div className={className}>
       {/* Tab Navigation */}
-      <div className="border-b border-gray-800 mb-6 lg:mb-8">
+      <div className="border-b border-gray-300 dark:border-gray-800 mb-6 lg:mb-8 transition-colors">
         <div className="flex gap-4 sm:gap-8 overflow-x-auto">
           {[
             { id: 'details', label: 'Product Details' },
@@ -68,8 +68,8 @@ const RatingSection = ({
               onClick={() => onTabChange(tab.id)}
               className={`pb-3 sm:pb-4 px-1 whitespace-nowrap text-sm sm:text-base font-medium transition-all ${
                 activeTab === tab.id
-                  ? 'border-b-2 border-white text-white'
-                  : 'text-gray-500 hover:text-gray-300'
+                  ? 'border-b-2 border-indigo-500 dark:border-white text-gray-900 dark:text-white'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300'
               }`}
             >
               {tab.label}
@@ -78,29 +78,29 @@ const RatingSection = ({
         </div>
       </div>
 
-      {/* Reviews Tab Content */}
+      {/* Reviews Tab */}
       {activeTab === 'reviews' && (
         <div className="mb-12">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-            <h2 className="text-xl font-bold">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
               Seller Reviews ({product.reviewCount || 0})
             </h2>
 
-            {/* Desktop: Show controls */}
+            {/* Desktop Controls */}
             <div className="hidden sm:flex items-center gap-4">
-              <select className="bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 text-sm">
+              <select className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-sm transition-colors">
                 <option>Latest</option>
                 <option>Highest Rated</option>
                 <option>Lowest Rated</option>
               </select>
-              <button className="bg-gray-800 text-white px-6 py-2 rounded-lg border border-gray-700 text-sm">
+              <button className="bg-indigo-600 dark:bg-lime-500 dark:font-bold dark:text-black text-white px-6 py-2 rounded-lg border border-indigo-600 dark:border-gray-700 text-sm hover:bg-indigo-700 dark:hover:bg-gray-700 transition">
                 Write a Review
               </button>
             </div>
 
-            {/* Mobile: Show simplified controls */}
+            {/* Mobile Controls */}
             <div className="flex sm:hidden items-center gap-2">
-              <button className="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm">
+              <button className="bg-indigo-600 dark:bg-gray-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-indigo-700 dark:hover:bg-gray-700 transition">
                 Write Review
               </button>
             </div>
@@ -109,15 +109,18 @@ const RatingSection = ({
           {/* Reviews Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             {mockReviews.map((review, idx) => (
-              <div key={idx} className="bg-gray-900 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-800">
+              <div
+                key={idx}
+                className="bg-gray-100 dark:bg-gray-900 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-300 dark:border-gray-800 transition-colors"
+              >
                 <div className="flex items-start justify-between mb-3 sm:mb-4">
                   <div className="flex">{renderStars(review.rating)}</div>
-                  <button className="text-gray-400 hover:text-white transition-colors">
+                  <button className="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white transition-colors">
                     <MoreVertical className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                 </div>
                 <div className="flex items-center gap-2 mb-3 sm:mb-4">
-                  <span className="font-semibold text-sm sm:text-base">
+                  <span className="font-semibold text-sm sm:text-base text-gray-900 dark:text-white">
                     {review.name}
                   </span>
                   {review.verified && (
@@ -126,27 +129,29 @@ const RatingSection = ({
                     </div>
                   )}
                 </div>
-                <p className="text-gray-400 text-xs sm:text-sm mb-3 sm:mb-4 leading-relaxed">
+                <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mb-3 sm:mb-4 leading-relaxed">
                   "{review.text}"
                 </p>
-                <p className="text-xs text-gray-500">Posted on {review.date}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-500">
+                  Posted on {review.date}
+                </p>
               </div>
             ))}
           </div>
 
-          {/* Load More Button */}
+          {/* Load More */}
           <div className="flex justify-center mt-6 sm:mt-8">
-            <button className="border border-gray-700 text-white px-6 sm:px-8 py-2 sm:py-3 rounded-full hover:bg-gray-900 transition text-sm">
+            <button className="border border-gray-400 dark:border-gray-700 text-gray-800 dark:text-white px-6 sm:px-8 py-2 sm:py-3 rounded-full hover:bg-gray-200 dark:hover:bg-gray-900 transition text-sm">
               Load More Reviews
             </button>
           </div>
         </div>
       )}
 
-      {/* Rating Section (when not on reviews tab) */}
+      {/* Rating (when not in reviews tab) */}
       {activeTab !== 'reviews' && (
         <div className="mb-8">
-          <h3 className="text-xl font-semibold mb-4">
+          <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
             Rate this product
           </h3>
           {currentUser ? (
@@ -169,8 +174,15 @@ const RatingSection = ({
               )}
             </div>
           ) : (
-            <p className="text-gray-400">
-              Please <Link href="/login" className="text-blue-600 hover:underline">login</Link> to rate this product.
+            <p className="text-gray-600 dark:text-gray-400">
+              Please{' '}
+              <Link
+                href="/login"
+                className="text-indigo-600 dark:text-indigo-400 hover:underline"
+              >
+                login
+              </Link>{' '}
+              to rate this product.
             </p>
           )}
         </div>

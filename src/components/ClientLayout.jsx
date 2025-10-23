@@ -29,7 +29,9 @@ export default function ClientLayout({ children }) {
   return (
     <div>
       {!hideHeaderFooter && <Header />}
+      {/* <Header /> */}
       {children}
+      {/* <Footer /> */}
       {!hideHeaderFooter && <Footer />}
     </div>
   );

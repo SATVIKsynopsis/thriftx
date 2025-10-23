@@ -12,6 +12,7 @@ import Brand from '@/components/home/Brand';
 import CustomerReviews from './CustomerReviews';
 import TrendingFind from '@/components/home/TrendingFind';
 import NewArrival from '@/components/home/NewArrival';
+import Details from '@/components/home/Details';
 
 const Home_Page = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -63,11 +64,12 @@ const Home_Page = () => {
       {/* Add Header component here */}
       <Hero />
       <Brand />
-      <section className="py-16 bg-black">
+      
+      {/* <section className="py-16 bg-black">
         <div className="max-w-6xl mx-auto px-4 md:px-2">
           <CategoryGrid />
         </div>
-      </section>
+      </section> */}
 
       {/* Featured Products */}
       <TrendingFind loading={loading} featuredProducts={featuredProducts} />
@@ -77,6 +79,9 @@ const Home_Page = () => {
 
      {/* customer review */}
       <CustomerReviews  />
+
+      {/* Details dropdown */}
+      <Details />
     </div>
   );
 };

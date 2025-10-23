@@ -92,24 +92,32 @@ const SellerRegister = () => {
 
     return (
         <div
+            // Light Mode: bg-gray-50, Dark Mode: bg-gradient-to-br from-[#0a0a0a]...
             className="min-h-screen flex items-center justify-center 
-      bg-gradient-to-br from-[#0a0a0a] via-[#121212] to-[#1a1a1a]
-      px-6 py-12"
+            bg-gray-50 dark:bg-gradient-to-br dark:from-[#0a0a0a] dark:via-[#121212] dark:to-[#1a1a1a]
+            px-4 sm:px-6 py-12 transition-colors"
         >
             <div
-                className="w-full max-w-3xl border border-gray-800 bg-gradient-to-br 
-        from-neutral-950/95 via-black/90 to-neutral-900/95 rounded-3xl 
-        shadow-[0_0_25px_rgba(255,255,255,0.05)] p-8 backdrop-blur-md"
+                // Light Mode: bg-white border-gray-200 shadow-xl, Dark Mode: border-gray-800 bg-gradient-to-br...
+                className="w-full max-w-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gradient-to-br 
+                dark:bg-black rounded-3xl 
+                shadow-xl dark:shadow-[0_0_25px_rgba(255,255,255,0.05)] p-5 sm:p-8 backdrop-blur-md transition-colors"
             >
                 {/* HEADER */}
                 <div className="text-center mb-8">
-                    <h1 className="text-4xl font-extrabold text-white tracking-tight">
+                    <h1 
+                        // Light Mode: text-gray-900, Dark Mode: text-white
+                        className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight"
+                    >
                         Join as{" "}
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
+                        <span className="text-transparent bg-clip-text bg-rose-500">
                             Seller
                         </span>
                     </h1>
-                    <p className="text-gray-400 mt-2 text-sm font-light">
+                    <p 
+                        // Light Mode: text-gray-600, Dark Mode: text-gray-400
+                        className="text-gray-600 dark:text-gray-400 mt-2 text-sm font-light"
+                    >
                         Start selling your thrift treasures ✨
                     </p>
                 </div>
@@ -185,14 +193,15 @@ const SellerRegister = () => {
                         />
                     </div>
 
+                    {/* Submit button - uses the seller accent color (Rose-500) */}
                     <div className="md:col-span-2">
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-3 bg-gradient-to-r from-purple-500 via-pink-400 to-orange-400 
-              text-black font-semibold rounded-full shadow-lg hover:scale-[1.02] 
-              hover:opacity-90 transition-all duration-300 flex items-center 
-              justify-center gap-2"
+                            className="w-full py-3 bg-rose-500
+                            text-black font-semibold rounded-full shadow-lg hover:scale-[1.02] 
+                            hover:opacity-90 transition-all duration-300 flex items-center 
+                            justify-center gap-2"
                         >
                             {loading && <Loader2 className="animate-spin" size={18} />}
                             {loading ? "Creating Seller Account..." : "Register as Seller"}
@@ -201,12 +210,16 @@ const SellerRegister = () => {
                 </form>
 
                 {/* FOOTER */}
-                <div className="text-center text-gray-400 mt-8 text-sm">
+                <div 
+                    // Light Mode: text-gray-500, Dark Mode: text-gray-400
+                    className="text-center text-gray-500 dark:text-gray-400 mt-8 text-sm"
+                >
                     <p>
                         Want to become a{" "}
                         <Link
                             href="/register/buyer"
-                            className="text-purple-400 hover:text-pink-400 font-semibold transition-colors"
+                            // Light Mode: text-purple-600, Dark Mode: text-purple-400
+                            className="text-purple-600 dark:text-purple-400 hover:text-blue-500 font-semibold transition-colors hover:underline"
                         >
                             Buyer?
                         </Link>
@@ -215,7 +228,8 @@ const SellerRegister = () => {
                         Already have an account?{" "}
                         <Link
                             href="/login"
-                            className="text-pink-400 hover:text-purple-400 font-semibold transition-colors"
+                            // Light Mode: text-pink-600, Dark Mode: text-pink-400
+                            className="text-pink-600 dark:text-pink-400 hover:text-blue-500 font-semibold transition-colors hover:underline"
                         >
                             Sign in
                         </Link>
@@ -226,9 +240,7 @@ const SellerRegister = () => {
     );
 };
 
-
-
-/* ------------------------ INPUT COMPONENT ------------------------ */
+// ------------------------ INPUT COMPONENT ------------------------
 const InputField = ({
     label,
     name,
@@ -241,12 +253,23 @@ const InputField = ({
     setToggle,
 }) => (
     <div className="relative group">
-        <label className="block text-gray-300 font-medium mb-1">{label}</label>
-        <div
-            className={`relative rounded-full overflow-hidden border ${error ? "border-red-500" : "border-gray-700"
-                } bg-neutral-900/50 transition-all group-hover:border-purple-400`}
+        <label 
+            // Light Mode: text-gray-700, Dark Mode: text-gray-300
+            className="block text-gray-700 dark:text-gray-300 font-medium mb-1"
         >
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+            {label}
+        </label>
+        <div
+            // Light Mode: border-gray-300 bg-white, Dark Mode: border-gray-700 bg-neutral-900/50
+            // Light Mode hover:border-rose-500, Dark Mode hover:border-rose-400
+            className={`relative rounded-full overflow-hidden border ${
+                error ? "border-red-500" : "border-gray-300 dark:border-gray-700"
+            } bg-white dark:bg-neutral-900/50 transition-all group-hover:border-rose-500 dark:group-hover:border-rose-400`}
+        >
+            <div 
+                // Light Mode: text-gray-400, Dark Mode: text-gray-500
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"
+            >
                 {icon}
             </div>
             <input
@@ -254,13 +277,16 @@ const InputField = ({
                 name={name}
                 value={value}
                 onChange={onChange}
-                className="w-full bg-transparent text-white placeholder-gray-500 pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 rounded-full"
+                // Light Mode: text-gray-900 placeholder-gray-400 focus:ring-rose-500
+                // Dark Mode: text-white placeholder-gray-500 focus:ring-purple-500
+                className="w-full bg-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-rose-500 dark:focus:ring-purple-500 rounded-full"
             />
             {toggle !== undefined && (
                 <button
                     type="button"
                     onClick={() => setToggle(!toggle)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
+                    // Light Mode: text-gray-400 hover:text-gray-900, Dark Mode: text-gray-500 hover:text-white
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white"
                 >
                     {toggle ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>

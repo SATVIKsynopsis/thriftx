@@ -17,7 +17,9 @@ const TrendingFind = ({ loading, featuredProducts }) => {
       if (window.innerWidth >= 1024) return 4;
       if (window.innerWidth >= 768) return 3;
       if (window.innerWidth >= 640) return 2;
-      return 1;
+      // *** MODIFICATION HERE ***
+      // This line now returns 2 for screens smaller than 640px (e.g., mobile)
+      return 2; 
     }
     return 4;
   };
@@ -57,20 +59,24 @@ const TrendingFind = ({ loading, featuredProducts }) => {
   };
 
   return (
-    <section className="py-16 bg-black">
-      <div className="max-w-[1100px] mx-auto px-4 md:px-2">
-        {/* Header with arrows */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-12 gap-4 sm:gap-0">
-          <h2 className="text-5xl text-white md:text-7xl font-bold fontAnton flex items-center gap-2">
+    <section className="pt-10 bg-white dark:bg-black">
+      <div className="max-w-[1100px] mx-auto px-2 md:px-2">
+        <p className='border-t-2 border-gray-200 dark:border-neutral-700 mb-4 sm:mb-10' />
+
+        <div className="flex sm:flex-row justify-between items-center mb-5 md:mb-12  gap-4 sm:gap-0">
+          <h2 className="text-2xl sm:text-4xl text-gray-900 dark:text-white md:text-7xl font-bold fontAnton flex items-center gap-2">
             TRENDING <span className="text-lime-400 tracking-wider">FINDS</span>
           </h2>
 
-          {/* Navigation Arrows */}
           <div className="flex gap-3">
             <button
               onClick={handlePrev}
               disabled={currentIndex === 0}
-              className={`p-3 rounded-full transition-colors ${currentIndex === 0 ? 'text-gray-600 cursor-not-allowed' : 'text-white hover:bg-gray-800'}`}
+              className={`p-3 rounded-full transition-colors ${
+                currentIndex === 0 
+                ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed' 
+                : 'text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-800'
+              }`}
               aria-label="Previous products"
             >
               <ChevronLeft size={24} />
@@ -78,7 +84,11 @@ const TrendingFind = ({ loading, featuredProducts }) => {
             <button
               onClick={handleNext}
               disabled={currentIndex >= maxIndex}
-              className={`p-3 rounded-full transition-colors ${currentIndex >= maxIndex ? 'text-gray-600 cursor-not-allowed' : 'text-white hover:bg-gray-800'}`}
+              className={`p-3 rounded-full transition-colors ${
+                currentIndex >= maxIndex 
+                ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed' 
+                : 'text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-800'
+              }`}
               aria-label="Next products"
             >
               <ChevronRight size={24} />
@@ -88,13 +98,13 @@ const TrendingFind = ({ loading, featuredProducts }) => {
 
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mb-12">
-            {[...Array(8)].map((_, index) => (
+            {/* The placeholder will now show the correct number of visible items */}
+            {[...Array(getVisibleProducts())].map((_, index) => (
               <div key={index} className="bg-gray-200 rounded-xl h-72 animate-pulse" />
             ))}
           </div>
         ) : (
           <>
-            {/* Scrollable Products */}
             <div className="relative overflow-hidden">
               <div
                 className="flex transition-transform duration-500 ease-in-out"
@@ -106,7 +116,7 @@ const TrendingFind = ({ loading, featuredProducts }) => {
                 {featuredProducts.map((product) => (
                   <div
                     key={product.id}
-                    className={`flex-shrink-0 w-full p-2 sm:w-1/2 md:w-1/3 lg:w-1/4`}
+                    className={`flex-shrink-0 w-auto p-2 sm:w-1/3 md:w-1/3 lg:w-1/4`} 
                   >
                     <ProductCard
                       product={product}
@@ -117,7 +127,6 @@ const TrendingFind = ({ loading, featuredProducts }) => {
               </div>
             </div>
 
-            {/* Mobile Dots */}
             <div className="flex justify-center mt-6 sm:hidden">
               {Array.from({ length: Math.ceil(featuredProducts.length / visibleProducts) }).map((_, idx) => {
                 const slideValue = idx * visibleProducts;
@@ -126,23 +135,23 @@ const TrendingFind = ({ loading, featuredProducts }) => {
                   <button
                     key={idx}
                     onClick={() => setCurrentIndex(actualIndex)}
-                    className={`w-2 h-2 rounded-full transition-colors mx-1 ${idx === Math.floor(currentIndex / visibleProducts) ? 'bg-white' : 'bg-gray-600'}`}
+                    className={`w-2 h-2 rounded-full transition-colors mx-1 ${
+                      idx === Math.floor(currentIndex / visibleProducts) 
+                      ? 'bg-gray-900 dark:bg-white' 
+                      : 'bg-gray-400 dark:bg-gray-600'
+                    }`}
                     aria-label={`Go to product set ${idx + 1}`}
                   />
                 );
               })}
             </div>
 
-            {/* View All Button */}
             {featuredProducts.length > 0 && (
               <div className="text-center mt-8">
                 <Link
                   href="/browse"
-                  onClick={() => {
-                    // Set navigation context for proper breadcrumb and back navigation
-                    setNavigationContext(NAVIGATION_CONTEXTS.TRENDING_FINDS);
-                  }}
-                  className="inline-flex items-center gap-2 border rounded-full text-white px-8 py-4 font-semibold hover:bg-gray-800 transition-transform transform hover:-translate-y-1"
+                  onClick={() => setNavigationContext(NAVIGATION_CONTEXTS.TRENDING_FINDS)}
+                  className="inline-flex items-center gap-2 border rounded-full text-gray-900 border-gray-900 px-8 py-4 font-semibold hover:bg-gray-100 transition-transform transform hover:-translate-y-1 dark:text-white dark:border dark:hover:bg-gray-800"
                 >
                   View All Products <ArrowRight size={20} />
                 </Link>
