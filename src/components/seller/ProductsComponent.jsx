@@ -253,7 +253,7 @@ const ProductActions = ({ children }) => (
 
 const ActionButton = ({ to, variant, children }) => (
   <Link
-    to={to}
+    href={to}
     className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg text-sm font-medium no-underline transition-colors duration-200
       ${variant === 'primary'
         ? 'bg-blue-600 text-white hover:bg-blue-700'
