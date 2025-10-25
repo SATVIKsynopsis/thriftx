@@ -4,23 +4,23 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import LoadingSpinner from '../components/common/LoadingSpinner';
-import { useProductDetails } from '../hooks/useProductDetails';
-import { useResponsive } from '../hooks/useResponsive';
-import { useCarousel } from '../hooks/useCarousel';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { useProductDetails } from '../../hooks/useProductDetails';
+import { useResponsive } from '../../hooks/useResponsive';
+import { useCarousel } from '../../hooks/useCarousel';
 import {
   getSmartBackPath,
   trackNavigation,
   getCurrentPath,
-} from '../utils/navigationUtils';
+} from '../../utils/navigationUtils';
 import {
   getNavigationContext,
   getSmartBackPath as getContextualBackPath,
-} from '../utils/navigationContextUtils';
-import ProductImageGallery from '../components/products/ProductImageGallery';
-import ProductInfo from '../components/products/ProductInfo';
-import RatingSection from '../components/products/RatingSection';
-import ProductCarousel from '../components/products/ProductCarousel';
+} from '../../utils/navigationContextUtils';
+import ProductImageGallery from '../products/ProductImageGallery';
+import ProductInfo from '../products/ProductInfo';
+import RatingSection from '../products/RatingSection';
+import ProductCarousel from '../products/ProductCarousel';
 
 const ProductDetailComponent = () => {
   const params = useParams();

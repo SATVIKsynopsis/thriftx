@@ -1,5 +1,5 @@
 import "./globals.css";
-import { Anton } from "next/font/google";
+import { Anton, Poppins } from "next/font/google";
 import AccessComponent from "./AccessComponent";
 import { sansation } from "./fonts/Sansation";
 

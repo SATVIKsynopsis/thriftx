@@ -9,6 +9,7 @@ import { formatPrice } from '../../utils/formatters';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { Listbox, Transition } from '@headlessui/react';
 import { Link } from 'next/link';
+import Image from 'next/image';
 
 const statusOptions = ['all', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 
@@ -184,7 +185,7 @@ const ManageOrders = () => {
                     <ul className="space-y-3 border-l-2 border-gray-200 pl-4">
                       {order.items.map((item, index) => (
                         <li key={index} className="flex gap-4 items-center">
-                          <img 
+                          <Image
                             src={item.productImage} 
                             alt={item.productName} 
                             className="w-16 h-16 object-cover rounded-lg border border-gray-200"

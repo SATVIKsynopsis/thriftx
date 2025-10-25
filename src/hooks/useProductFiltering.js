@@ -59,7 +59,7 @@ export const useProductFiltering = () => {
     }
 
     return filterProducts(products, appliedFilters, appliedFilters.priceRange);
-  }, [products, appliedFilters, PRICE_RANGE]);
+  }, [products, appliedFilters]);
 
   // Filter management functions
   const updateFilters = (filterType, value) => {
@@ -88,7 +88,7 @@ export const useProductFiltering = () => {
   // Active filter count for UI
   const activeFilterCount = useMemo(() => {
     return getActiveFilterCount(appliedFilters, appliedFilters.priceRange, PRICE_RANGE);
-  }, [appliedFilters, PRICE_RANGE]);
+  }, [appliedFilters]);
 
   return {
     // Data
