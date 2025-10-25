@@ -1,5 +1,5 @@
 import React from 'react'
-import Reports from '../../../pages/admin/Reports'  // ./ means same directory
+import Reports from "../../../components/admin/Reports";
 
 const ReportsPage = () => {
   return (

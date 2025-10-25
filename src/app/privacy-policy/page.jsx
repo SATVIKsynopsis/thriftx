@@ -1,4 +1,4 @@
-import PrivacyPolicyComponent from '@/pages/PrivacyPolicy'
+import PrivacyPolicyComponent from '@/components/routes/PrivacyPolicy'
 import React from 'react'
 
 const PrivacyPolicy = () => {

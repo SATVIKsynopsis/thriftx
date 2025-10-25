@@ -127,7 +127,7 @@ const SearchResultsPage = () => {
         {[1, 2, 3, 4, 5].map((star) => (
           <svg
             key={star}
-            className={`w-3 h-3 ${star <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-600 fill-gray-600'}`}
+            className={`w-3 h-3 ${star <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-neutral-600 fill-neutral-600'}`}
             viewBox="0 0 20 20"
           >
             <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
@@ -159,7 +159,7 @@ const SearchResultsPage = () => {
           <div className="flex items-center gap-4 mb-4">
             <button
               onClick={handleBackNavigation}
-              className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+              className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
               aria-label="Go back"
             >
               <ArrowLeft size={20} />
@@ -170,7 +170,7 @@ const SearchResultsPage = () => {
           <h1 className="text-3xl font-bold mb-2 text-black dark:text-white">
             {getDisplayTitle()}
           </h1>
-          <p className="text-gray-700 dark:text-gray-400">
+          <p className="text-neutral-700 dark:text-neutral-400">
             {paginationInfo.totalProducts > 0
               ? `Found ${paginationInfo.totalProducts} product${paginationInfo.totalProducts !== 1 ? 's' : ''}`
               : 'No products found'
@@ -180,12 +180,12 @@ const SearchResultsPage = () => {
 
         {/* Controls */}
         {searchResults.length > 0 && (
-          <div className="flex items-center justify-between mb-6 p-4 bg-gray-100 dark:bg-gray-900 rounded-xl">
-            <span className="text-sm text-gray-700 dark:text-gray-400">
+          <div className="flex items-center justify-between mb-6 p-4 bg-neutral-100 dark:bg-neutral-900 rounded-xl">
+            <span className="text-sm text-neutral-700 dark:text-neutral-400">
               Showing {paginationInfo.startProduct}-{paginationInfo.endProduct} of {paginationInfo.totalProducts} products
             </span>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-700 dark:text-gray-400">Sort by:</span>
+              <span className="text-sm text-neutral-700 dark:text-neutral-400">Sort by:</span>
 
               <Popover open={sortPopoverOpen} onOpenChange={setSortPopoverOpen}>
                 <PopoverTrigger asChild>
@@ -259,17 +259,17 @@ const SearchResultsPage = () => {
           /* No Results */
           <div className="text-center py-16">
             <div className="mb-6">
-              <svg className="mx-auto h-24 w-24 text-gray-400 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="mx-auto h-24 w-24 text-neutral-400 dark:text-neutral-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
-            <h3 className="text-xl font-medium text-gray-700 dark:text-gray-100 mb-2">No products found</h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-6">
+            <h3 className="text-xl font-medium text-neutral-700 dark:text-neutral-100 mb-2">No products found</h3>
+            <p className="text-neutral-500 dark:text-neutral-400 mb-6">
               We couldn't find any products matching "{searchQuery}". Try different keywords or browse our categories.
             </p>
             <div className="space-y-3">
-              <p className="text-sm text-gray-700 dark:text-gray-400">Suggestions:</p>
-              <ul className="text-sm text-gray-500 dark:text-gray-400 space-y-1">
+              <p className="text-sm text-neutral-700 dark:text-neutral-400">Suggestions:</p>
+              <ul className="text-sm text-neutral-500 dark:text-neutral-400 space-y-1">
                 <li>• Check your spelling</li>
                 <li>• Try different keywords</li>
                 <li>• Browse by category instead</li>
@@ -278,7 +278,7 @@ const SearchResultsPage = () => {
             <div className="mt-8">
               <button
                 onClick={handleBackNavigation}
-                className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                className="inline-flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
               >
                 <ArrowLeft size={16} />
                 Go Back

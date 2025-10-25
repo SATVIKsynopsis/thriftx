@@ -1,4 +1,4 @@
-import ProductsPage from '@/pages/ProductCategory'
+import ProductsPage from '@/components/routes/ProductCategory'
 
 const page = () => {
   return <ProductsPage />

@@ -1,4 +1,4 @@
-import ProductsComponent from '@/pages/seller/ProductsComponent'
+import ProductsComponent from '@/components/seller/ProductsComponent'
 import React from 'react'
 
 const Products = () => {

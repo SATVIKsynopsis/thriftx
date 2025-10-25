@@ -1,4 +1,4 @@
-import SuperAdminDashboardComponent from '@/pages/admin/SuperAdminDashboardComponent'
+import SuperAdminDashboardComponent from '@/components/admin/SuperAdminDashboardComponent'
 import React from 'react'
 
 const SuperAdminDashboard = () => {

@@ -37,7 +37,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
-import AdminLayout from '../../pages/admin/AdminLayout';
+import AdminLayout from '../admin/AdminLayout';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import toast from 'react-hot-toast';
 import { formatPrice } from '@/utils/formatters';

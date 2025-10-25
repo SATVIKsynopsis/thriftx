@@ -1,4 +1,4 @@
-import AboutUsComponent from '@/pages/AboutUs'
+import AboutUsComponent from '@/components/routes/AboutUs'
 import React from 'react'
 
 const AboutUsPage = () => {

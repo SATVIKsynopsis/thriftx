@@ -1,4 +1,4 @@
-import DashboardComponent from '@/pages/seller/DashboardComponent'
+import DashboardComponent from '@/components/seller/DashboardComponent'
 import React from 'react'
 
 const Dashboard = () => {

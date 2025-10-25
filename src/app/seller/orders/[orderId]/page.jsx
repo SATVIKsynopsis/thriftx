@@ -1,4 +1,4 @@
-import OrderDetailsComponent from '@/pages/seller/OrderDetails';
+import OrderDetailsComponent from '@/components/seller/OrderDetails';
 import React from 'react'
 
 const OrderDetails = () => {

@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 import { adminAPI } from '../../../../lib/adminService';
-import AdminLayout from '../../../pages/admin/AdminLayout';
+import AdminLayout from '../../../components/admin/AdminLayout';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { formatPrice } from '@/utils/formatters';
 import toast from 'react-hot-toast';

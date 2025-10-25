@@ -1,4 +1,4 @@
-import OrdersComponent from '@/pages/OrdersComponent'
+import OrdersComponent from '@/components/routes/OrdersComponent'
 import React from 'react'
 
 const Orders = () => {

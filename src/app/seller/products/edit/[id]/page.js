@@ -1,4 +1,4 @@
-import EditProductComponent from '@/pages/seller/EditProductComponent'
+import EditProductComponent from '@/components/seller/EditProductComponent'
 import React from 'react'
 
 const EditProduct = () => {

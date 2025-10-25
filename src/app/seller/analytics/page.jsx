@@ -1,4 +1,4 @@
-import SellerAnalyticsComponent from '@/pages/seller/AnalyticsComponent'
+import SellerAnalyticsComponent from '@/components/seller/AnalyticsComponent'
 import React from 'react'
 
 const SellerAnalytics = () => {

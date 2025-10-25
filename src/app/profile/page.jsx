@@ -1,4 +1,4 @@
-import ProfileComponent from '@/pages/ProfileComponent'
+import ProfileComponent from '@/components/routes/ProfileComponent'
 import React from 'react'
 
 const ProfilePage = () => {

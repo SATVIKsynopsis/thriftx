@@ -4,10 +4,10 @@ export function middleware(request) {
   const url = request.nextUrl.pathname;
   const cookieValue = request.cookies.get('__session')?.value;
 
-  // Protected routes (require authentication)
+  // Protected routes
   const protectedRoutes = ['/cart', '/admin', '/profile', '/seller'];
   
-  // Auth routes (should not be accessible when logged in)
+  // Auth routes 
   const authRoutes = ['/login', '/register/customer', '/signup', '/register/seller'];
 
   // Check if user is authenticated

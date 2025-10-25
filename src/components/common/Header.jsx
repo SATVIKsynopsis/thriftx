@@ -31,6 +31,7 @@ import { ModeToggle } from "@/ThemeProvider/ModeToggle";
 import { searchProducts } from "@/utils/fuzzySearch";
 import { collection, query, orderBy, getDocs } from "firebase/firestore";
 import { db } from "@/firebase/config";
+import LoginWithDialog from "../auth/Login";
 
 export default function Header() {
   const [showPromo, setShowPromo] = useState(true);
@@ -378,7 +379,7 @@ export default function Header() {
                       <Link href="/wishlist" className="flex items-center gap-2 px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition dark:text-gray-200 dark:hover:bg-neutral-800 dark:hover:text-white"> <Heart size={16} className="text-gray-500 dark:text-gray-400" />Wishlist</Link>
                       <Link href="/profile" className="flex items-center gap-2 px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition dark:text-gray-200 dark:hover:bg-neutral-800 dark:hover:text-white"> <User size={16} className="text-gray-500 dark:text-gray-400" />Profile</Link>
                       {userProfile?.role === "seller" && <Link href="/seller/products" className="flex items-center gap-2 px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition dark:text-gray-200 dark:hover:bg-neutral-800 dark:hover:text-white"><Package size={16} className="text-gray-500 dark:text-gray-400" />My Products</Link>}
-                      {isSuperAdmin(currentUser) && <Link href="/admin/super" className="flex items-center gap-2 px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition dark:text-gray-200 dark:hover:bg-neutral-800 dark:hover:text-white"><Shield size={16} className="text-gray-500 dark:text-gray-400" />Super Admin</Link>}
+                      {isSuperAdmin(currentUser) && <Link href="/admin" className="flex items-center gap-2 px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition dark:text-gray-200 dark:hover:bg-neutral-800 dark:hover:text-white"><Shield size={16} className="text-gray-500 dark:text-gray-400" />Super Admin</Link>}
                       <div className="border-t border-gray-300 my-1 dark:border-gray-700"></div>
                       <button onClick={handleLogout} className="flex items-center gap-2 px-5 py-2.5 text-sm text-red-600 hover:bg-gray-100 hover:text-red-700 transition w-full text-left dark:text-red-400 dark:hover:bg-neutral-800 dark:hover:text-red-300"><LogOut size={16} className="text-gray-500 dark:text-gray-500" />Logout</button>
                     </div>
@@ -387,7 +388,8 @@ export default function Header() {
               </div>
             ) : (
               <div className="hidden md:flex items-center gap-2 sm:gap-3">
-                <Link href="/login" className="px-3 py-1 sm:px-4 sm:py-2 text-sm sm:text-base font-bold border border-gray-300 bg-rose-500 text-black rounded-full hover:opacity-70 transition-all duration-200 dark:border-gray-900">Login</Link>
+                {/* <Link href="/login" className="px-3 py-1 sm:px-4 sm:py-2 text-sm sm:text-base font-bold border border-gray-300 bg-rose-500 text-black rounded-full hover:opacity-70 transition-all duration-200 dark:border-gray-900">Login</Link> */}
+                <LoginWithDialog />
                 <Link href="/register/customer" className="px-3 py-1 sm:px-4 sm:py-2 text-sm sm:text-base font-bold bg-lime-400 text-black rounded-full hover:opacity-70 transition-all duration-200 shadow-md">Register</Link>
               </div>
             )}
@@ -433,13 +435,14 @@ export default function Header() {
               <Link href="/wishlist" className="flex items-center gap-3 px-6 py-3 text-lg text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition dark:text-gray-200 dark:hover:bg-neutral-800 dark:hover:text-white"> <Heart size={20} className="text-lime-500" />Wishlist</Link>
               <Link href="/profile" className="flex items-center gap-3 px-6 py-3 text-lg text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition dark:text-gray-200 dark:hover:bg-neutral-800 dark:hover:text-white"> <User size={20} className="text-lime-500" />Profile</Link>
               {userProfile?.role === "seller" && <Link href="/seller/products" className="flex items-center gap-3 px-6 py-3 text-lg text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition dark:text-gray-200 dark:hover:bg-neutral-800 dark:hover:text-white"><Package size={20} className="text-lime-500" />My Products</Link>}
-              {isSuperAdmin(currentUser) && <Link href="/admin/super" className="flex items-center gap-3 px-6 py-3 text-lg text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition dark:text-gray-200 dark:hover:bg-neutral-800 dark:hover:text-white"><Shield size={20} className="text-lime-500" />Super Admin</Link>}
+              {isSuperAdmin(currentUser) && <Link href="/admin" className="flex items-center gap-3 px-6 py-3 text-lg text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition dark:text-gray-200 dark:hover:bg-neutral-800 dark:hover:text-white"><Shield size={20} className="text-lime-500" />Super Admin</Link>}
               <button onClick={handleLogout} className="flex items-center gap-3 px-6 py-3 text-lg text-red-600 hover:bg-gray-100 hover:text-red-700 transition w-full text-left dark:text-red-400 dark:hover:bg-neutral-800 dark:hover:text-red-300"> <LogOut size={20} className="text-red-600 dark:text-red-400" />Logout </button>
             </>}
 
             {!currentUser && (
               <div className="flex flex-col gap-3 p-4">
-                <Link href="/login" className="text-center px-4 py-3 text-lg font-bold bg-rose-500 border-none text-black rounded-lg hover:opacity-90" onClick={toggleMobileMenu}>Login</Link>
+                {/* <Link href="/login" className="text-center px-4 py-3 text-lg font-bold bg-rose-500 border-none text-black rounded-lg hover:opacity-90" onClick={toggleMobileMenu}>Login</Link> */}
+                <LoginWithDialog />
                 <Link href="/register/customer" className="text-center px-4 py-3 text-lg font-bold bg-lime-500 hover:opacity-90 text-black rounded-lg" onClick={toggleMobileMenu}>Register</Link>
               </div>
             )}

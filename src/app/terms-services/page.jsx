@@ -1,4 +1,4 @@
-import TermServiceComponent from '@/pages/TermService'
+import TermServiceComponent from '@/components/routes/TermService'
 import React from 'react'
 
 const TermAndServices = () => {

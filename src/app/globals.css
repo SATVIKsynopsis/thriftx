@@ -1,11 +1,13 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-/* @import url('https://fonts.googleapis.com/css2?family=Sansation:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap'); */
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Sansation:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap');
+
 
 /* ==============================
    🌙 Custom Theme Variables
    ============================== */
-@custom-variant dark (&:is(.dark *));
+
+   @custom-variant dark (&:is(.dark *));
 
 :root {
   --card: oklch(1 0 0);
@@ -105,7 +107,7 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: "Sansation", sans-serif;
+    font-family: var(--font-sans), sans-serif;
     font-size: 16px;
     font-weight: 400;
     line-height: 24px;
@@ -214,14 +216,16 @@
 /* Glowing Circle Trail */
 .blend-glow {
   border: 4px solid transparent;
-  border-top-color: #7CFC00; /* Neon Green */
+  border-top-color: #7CFC00;
+  /* Neon Green */
   filter: drop-shadow(0 0 10px #7CFC00) drop-shadow(0 0 20px #7CFC00);
   mix-blend-mode: screen;
 }
 
 .blend-glow-reverse {
   border: 4px solid transparent;
-  border-top-color: #FF007F; /* Neon Pink/Red */
+  border-top-color: #FF007F;
+  /* Neon Pink/Red */
   filter: drop-shadow(0 0 10px #FF007F) drop-shadow(0 0 20px #FF007F);
   mix-blend-mode: screen;
 }
@@ -231,6 +235,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -245,6 +250,7 @@
   from {
     transform: rotate(360deg);
   }
+
   to {
     transform: rotate(0deg);
   }
@@ -255,10 +261,10 @@
 }
 
 /* Hover speed-up effect */
-div:hover > .animate-spin-slow-green {
+div:hover>.animate-spin-slow-green {
   animation-duration: 1.2s;
 }
 
-div:hover > .animate-spin-slow-pink {
+div:hover>.animate-spin-slow-pink {
   animation-duration: 1.2s;
 }

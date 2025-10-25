@@ -13,8 +13,8 @@ import { usePathname } from "next/navigation";
 export default function AccessComponent({ children }) {
 
     const pathName = usePathname();
-    const paths = ['/admin'];
-    const handleAccess = paths.some((path) => path);
+    const hiddenPaths = ["/admin"];
+    const handleAccess = hiddenPaths.some((path) => pathName.startsWith(path));
 
     return (
 

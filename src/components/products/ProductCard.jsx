@@ -73,7 +73,7 @@ const ProductCard = ({ product, isFavorite, renderStars, sectionContext }) => {
       {[1, 2, 3, 4, 5].map((star) => (
         <svg
           key={star}
-          className={`w-3 h-3 ${star <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-400 fill-gray-400 dark:text-gray-600 dark:fill-gray-600'}`}
+          className={`w-3 h-3 ${star <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-neutral-400 fill-neutral-400 dark:text-neutral-600 dark:fill-neutral-600'}`}
           viewBox="0 0 20 20"
         >
           <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
@@ -86,7 +86,7 @@ const ProductCard = ({ product, isFavorite, renderStars, sectionContext }) => {
 
   return (
     <div
-      className="bg-neutral-100 w-48 dark:bg-gray-900 rounded-2xl sm:w-48 md:w-full overflow-hidden hover:transform hover:scale-105 transition-transform duration-200 cursor-pointer shadow-sm dark:shadow-md"
+      className="bg-neutral-100 w-48 dark:bg-neutral-900 rounded-2xl sm:w-48 md:w-full overflow-hidden hover:transform hover:scale-105 transition-transform duration-200 cursor-pointer shadow-sm dark:shadow-md"
       onClick={handleViewProduct}
     >
       <div className="relative w-full h-48 sm:h-64 overflow-hidden">
@@ -102,7 +102,7 @@ const ProductCard = ({ product, isFavorite, renderStars, sectionContext }) => {
           />
         ) : null}
         <div
-          className={`absolute inset-0 flex items-center justify-center text-white text-sm bg-gradient-to-br from-gray-300 to-gray-400 dark:from-slate-600 dark:to-slate-700 ${
+          className={`absolute inset-0 flex items-center justify-center text-white text-sm bg-gradient-to-br from-neutral-300 to-neutral-400 dark:from-slate-600 dark:to-slate-700 ${
             product.images && product.images.length > 0 ? 'hidden' : 'flex'
           }`}
         >
@@ -118,26 +118,26 @@ const ProductCard = ({ product, isFavorite, renderStars, sectionContext }) => {
         <button
           onClick={handleWishlistToggle}
           aria-label={`${isInWishlistCheck ? 'Remove from' : 'Add to'} wishlist`}
-          className="absolute top-3 right-3 w-9 h-9 bg-white dark:bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors shadow-md"
+          className="absolute top-3 right-3 w-9 h-9 bg-white dark:bg-neutral-700 rounded-full flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-600 transition-colors shadow-md"
         >
           <Heart
-            className={`w-5 h-5 ${isInWishlistCheck ? 'fill-red-500 text-red-500' : 'text-gray-800 dark:text-gray-400'}`}
+            className={`w-5 h-5 ${isInWishlistCheck ? 'fill-red-500 text-red-500' : 'text-neutral-800 dark:text-neutral-400'}`}
           />
         </button>
       </div>
 
       <div className="p-4">
-        <h3 className="font-semibold text-base mb-1 text-gray-900 dark:text-white">{product.name}</h3>
-        <p className="text-gray-500 dark:text-gray-400 text-xs mb-3">{product.condition}</p>
+        <h3 className="font-semibold text-base mb-1 text-neutral-900 dark:text-white">{product.name}</h3>
+        <p className="text-neutral-500 dark:text-neutral-400 text-xs mb-3">{product.condition}</p>
 
         <div className="flex items-center justify-between mb-2">
           <span className="text-lime-600 dark:text-lime-400 text-xl font-bold">{product.price}</span>
-          <span className="text-gray-400 dark:text-gray-600 text-sm line-through">{product.originalPrice}</span>
+          <span className="text-neutral-400 dark:text-neutral-600 text-sm line-through">{product.originalPrice}</span>
         </div>
 
         <div className="flex items-center gap-2">
           {starsFunction(product.rating)}
-          <span className="text-gray-500 dark:text-gray-400 text-xs">({product.reviews})</span>
+          <span className="text-neutral-500 dark:text-neutral-400 text-xs">({product.reviews})</span>
         </div>
       </div>
     </div>
