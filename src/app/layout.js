@@ -1,17 +1,11 @@
 import "./globals.css";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { CartProvider } from "@/contexts/CartContext";
-import { Toaster } from "react-hot-toast";
-// import ClientLayout from "../components/ClientLayout";
 import { Anton } from "next/font/google";
-import { ThemeProvider } from "@/ThemeProvider/ThemeProvider";
-import Header from "@/components/common/Header";
-import FooterComponent from "@/components/common/Footer";
-import Breadcrumb from "@/components/common/Breadcrumb";
+import AccessComponent from "./AccessComponent";
 
 const anton = Anton({
   weight: "400",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata = {
@@ -22,33 +16,17 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={`${anton.className}`} suppressHydrationWarning>
       <head>
-        {/* ADD THE LINK TAG HERE */}
         <link
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Sansation:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap"
         />
       </head>
       <body>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <AuthProvider>
-            <CartProvider>
-              {/* <ClientLayout> */}
-              <Header />
-              <Breadcrumb />
-              {children}
-              <FooterComponent />
-              {/* </ClientLayout> */}
-              <Toaster position="top-right" />
-            </CartProvider>
-          </AuthProvider>
-        </ThemeProvider>
+        <AccessComponent>
+          {children}
+        </AccessComponent>
       </body>
     </html>
   );

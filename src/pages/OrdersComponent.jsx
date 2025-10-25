@@ -18,6 +18,7 @@ import { db } from '@/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { formatPrice } from '@/utils/formatters';
+import Image from 'next/image';
 
 // --- Tailwind Wrapper Components (Replacements for Styled Components) ---
 
@@ -166,15 +167,15 @@ const OrderItem = ({ children }) => (
 );
 
 const ItemImage = ({ alt, ...props }) => (
-  <img
-    className="w-16 h-16 object-cover rounded-md flex-shrink-0"
+  <Image
+    className="w-16 h-16 object-cover rounded-md shrink-0"
     alt={alt}
     {...props}
   />
 );
 
 const ItemImagePlaceholder = ({ children, isVisible }) => (
-  <div className={`w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center text-gray-500 text-xs flex-shrink-0 ${isVisible ? 'flex' : 'hidden'}`}>
+  <div className={`w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center text-gray-500 text-xs shrink-0 ${isVisible ? 'flex' : 'hidden'}`}>
     {children}
   </div>
 );
@@ -198,7 +199,7 @@ const ItemPrice = ({ children }) => (
 );
 
 const ItemQuantity = ({ children }) => (
-  <div className="text-sm text-gray-600 font-semibold flex-shrink-0">
+  <div className="text-sm text-gray-600 font-semibold shrink-0">
     {children}
   </div>
 );
@@ -404,7 +405,7 @@ const OrdersComponent = () => {
                         const hasImage = !!item.productImage;
                         return (
                           <OrderItem key={index}>
-                            <div className="relative w-16 h-16 flex-shrink-0">
+                            <div className="relative w-16 h-16 shrink-0">
                               <ItemImage
                                 src={item.productImage}
                                 alt={item.productName}

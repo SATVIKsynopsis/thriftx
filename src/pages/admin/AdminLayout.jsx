@@ -60,7 +60,7 @@ export default function AdminLayout({ children, title, description, breadcrumb }
 
   // widths: collapsed=80px (~w-20), expanded=280px (~w-72/18rem)
   const sidebarWidthDesktop = sidebarCollapsed ? "md:w-20" : "md:w-72";
-  const headerLeftOffset = sidebarCollapsed ? "md:ml-20" : "md:ml-72";
+  const headerLeftOffset = sidebarCollapsed ? "md:ml-20" : "md:ml-48";
   const mainLeftOffset = headerLeftOffset;
 
   return (
@@ -250,14 +250,14 @@ export default function AdminLayout({ children, title, description, breadcrumb }
         ].join(" ")}
       >
         
-        <div className="max-w-7xl mx-auto">
+        <div className=" mx-auto">
           {/* Content header */}
           <div className="mb-8">
             {breadcrumb && (
               <div className="flex items-center text-sm text-gray-500 mb-2">
                 <span>Admin</span>
                 <ChevronRight className="w-4 h-4 mx-1.5" />
-                <span>{breadcrumb}</span>
+                <span className="py-2">{breadcrumb}</span>
               </div>
             )}
 
