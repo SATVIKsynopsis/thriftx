@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
-const images = ["/im2.png", "/im1.png", "/im4.png", "/im3.png"];
+const images = ["/LandingPageAssets/im1.webp", "/LandingPageAssets/im1.webp", "/LandingPageAssets/im4.webp", "/LandingPageAssets/im3.webp"];
 
 const Hero = () => {
   const cardVariants = {

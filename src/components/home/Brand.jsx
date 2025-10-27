@@ -44,7 +44,7 @@ const Brand = () => {
 
       {/* Arrow icon */}
       <motion.div
-        className="absolute top-11 right-6 bg-gray-200 dark:bg-neutral-800 p-3 rounded-full shadow-md cursor-pointer z-10"
+        className= "absolute top-11 dark:text-black opacity-90 right-6 bg-gray-200 dark:bg-lime-600 p-3 rounded-full shadow-md cursor-pointer z-10"
         whileHover={{
           scale: 1.2,
           backgroundColor: "#84cc16",
@@ -53,7 +53,7 @@ const Brand = () => {
         }}
         transition={{ type: "spring", stiffness: 200, damping: 10 }}
       >
-        <ArrowRight className="w-6 h-6" />
+        <ArrowRight size={30} />
       </motion.div>
 
       {/* Marquee container */}
