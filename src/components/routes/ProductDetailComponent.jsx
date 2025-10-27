@@ -24,7 +24,8 @@ import ProductCarousel from '../products/ProductCarousel';
 
 const ProductDetailComponent = () => {
   const params = useParams();
-  if (!params || !params.id) {
+  const id = params?.id;
+  if (!id) {
     // This handles the server prerender where params might be null/undefined,
     return (
       <div className="max-w-7xl mx-auto p-8 md:p-12 text-center py-16">

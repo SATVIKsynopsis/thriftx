@@ -27,7 +27,6 @@ const ProfileComponent = () => {
   });
 
   const { currentUser, userProfile, fetchUserProfile } = useAuth();
-
   const { register, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {
       name: userProfile?.name || currentUser?.displayName || "",
@@ -48,7 +47,9 @@ const ProfileComponent = () => {
     setLoading(true);
     try {
       await updateProfile(currentUser, { displayName: data.name });
+      await currentUser.reload();
       const userDocRef = doc(db, "users", currentUser.uid);
+      console.log("user profile fetched : ", currentUser);
 
       await updateDoc(userDocRef, {
         name: data.name,
@@ -106,7 +107,7 @@ const ProfileComponent = () => {
             {/* Profile Image */}
             <div className="flex items-center gap-4 mb-6">
               <div className="relative">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 text-white flex items-center justify-center text-2xl font-bold">
+                <div className="w-20 h-20 rounded-full bg-linear-to-tr from-blue-500 to-purple-600 text-white flex items-center justify-center text-2xl font-bold">
                   {getInitials(userProfile?.name || currentUser?.displayName)}
                 </div>
                 <button className="absolute -bottom-1 -right-1 bg-blue-600 border-2 border-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-blue-700 transition">
@@ -147,6 +148,10 @@ const ProfileComponent = () => {
                     type="email"
                     disabled
                     {...register("email")}
+                    value={
+                      userProfile?.email ||
+                      "No Email link"
+                    }
                     className="w-full border-2 rounded-lg p-3 mt-1 bg-gray-100 text-gray-500 cursor-not-allowed"
                   />
                 </div>
@@ -156,9 +161,15 @@ const ProfileComponent = () => {
                 <div>
                   <label className="font-medium text-gray-700">Phone Number</label>
                   <input
+                    type="text"
+                    disabled
                     {...register("phone")}
-                    placeholder="(555) 123-4567"
-                    className="w-full border-2 rounded-lg p-3 mt-1 border-gray-200"
+                    value={
+                      userProfile?.phone ||
+                      currentUser?.phoneNumber ||
+                      "No Phone Number link"
+                    }
+                    className="w-full border-2 rounded-lg p-3 mt-1 bg-gray-100 text-gray-500 cursor-not-allowed"
                   />
                 </div>
 

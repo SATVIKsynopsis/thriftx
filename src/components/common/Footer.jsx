@@ -14,8 +14,8 @@ const footerItems = [
       { name: "Sell on ThriftX", link: "/register/seller" },
       { name: "About Us", link: "/about-us" },
       { name: "Help Center", link: "/help" },
-      { name: "Terms of Service", link: "/terms" },
-      { name: "Privacy Policy", link: "/privacy" },
+      { name: "Terms of Service", link: "/terms-services" },
+      { name: "Privacy Policy", link: "/privacy-policy" },
     ],
   },
   {

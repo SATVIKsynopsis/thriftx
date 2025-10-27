@@ -1,17 +1,21 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
   updateProfile,
-  getIdToken
+  getIdToken,
+  sendEmailVerification,
+  signInWithPhoneNumber
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/firebase/config';
 import { setCookie, deleteCookie } from 'cookies-next';
+import toast from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
 
 // Define the shape of the default value with all expected properties
 const defaultAuthContextValue = {
@@ -37,12 +41,12 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const recaptchaVerifierRef = useRef(null);
+  const route = useRouter();
 
-  // ✅ CONSISTENT: Always set cookie as JSON object
   const setSessionCookie = async (user, role = null) => {
     const token = await getIdToken(user, true);
-    
-    // If role not provided, fetch it from Firestore
+
     let userRole = role;
     if (!userRole) {
       const userRef = doc(db, 'users', user.uid);
@@ -50,8 +54,8 @@ export const AuthProvider = ({ children }) => {
       userRole = userSnap.exists() ? userSnap.data().role : 'buyer';
     }
 
-    const sessionData = { 
-      token, 
+    const sessionData = {
+      token,
       role: userRole,
       email: user.email // Optional: include email for easier debugging
     };
@@ -67,22 +71,22 @@ export const AuthProvider = ({ children }) => {
     return userRole;
   };
 
-  // ✅ UPDATED: Login uses consistent cookie setting
   const login = async (email, password) => {
     const result = await signInWithEmailAndPassword(auth, email, password);
     const user = result.user;
 
-    // ✅ Firestore reference to get user role
+    if (!user.emailVerified) {
+      await signOut(auth);
+      throw { code: "auth/email-not-verified", message: "Please verify your email or phone number" };
+    }
+
     const userRef = doc(db, 'users', user.uid);
     const userSnap = await getDoc(userRef);
-
     let role;
 
     if (userSnap.exists()) {
-      // ✅ If user exists in Firestore, use their stored role
       role = userSnap.data().role;
     } else {
-      // ✅ If no Firestore doc exists, auto-create one
       role = email === 'admin@thriftx.com' ? 'superadmin' : 'buyer';
 
       await setDoc(userRef, {
@@ -93,37 +97,76 @@ export const AuthProvider = ({ children }) => {
       });
     }
 
-    // ✅ Use consistent cookie setting function
     await setSessionCookie(user, role);
     return result;
   };
 
-  // ✅ UPDATED: Logout removes session cookie
   const logout = async () => {
     await signOut(auth);
     deleteCookie('__session', { path: '/' });
   };
 
   const signup = async (email, password, userData) => {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+    try {
+      // 1️⃣ Create user in Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-    await updateProfile(user, { displayName: userData.name });
+      // 2️⃣ Set display name
+      await updateProfile(user, { displayName: userData.name });
 
-    // Determine role - allow superadmin creation only for specific email
-    const role = email === 'admin@thriftx.com' ? 'superadmin' : (userData.role || 'buyer');
+      // 3️⃣ Send verification email (⚠️ Do NOT auto-login yet)
+      await sendEmailVerification(user);
+      console.log("✅ Verification email sent to:", user.email);
 
-    await setDoc(doc(db, 'users', user.uid), {
-      name: userData.name,
-      email: userData.email,
-      role: role,
-      createdAt: new Date(),
-      ...userData
-    });
+      // (Optional) You can use toast instead of alert for better UX
+      alert(`Verification email sent to ${email}. Please check your inbox.`);
 
-    // Set initial cookie after signup
-    await setSessionCookie(user, role);
-    return userCredential;
+      // 4️⃣ Store user details in Firestore
+      const role =
+        email === "admin@thriftx.com"
+          ? "superadmin"
+          : userData.role || "buyer";
+
+      await setDoc(doc(db, "users", user.uid), {
+        name: userData.name,
+        email: userData.email,
+        role,
+        createdAt: new Date(),
+        ...userData,
+        emailVerified: false, // ✅ track verification status if you want
+      });
+
+      await signOut(auth);
+      return userCredential;
+    } catch (error) {
+      console.error("❌ Error during signup:", error);
+      throw error;
+    }
+  };
+
+  // Add at the bottom of AuthProvider before `return`
+  const sendPhoneOTP = async (phoneNumber) => {
+    if (!phoneNumber) throw new Error("Phone number is required");
+
+    if (phoneNumber.length < 10) {
+      toast.error('Please enter a valid 10-digit phone number.');
+      return;
+    }
+
+    try {
+      const formattedPhoneNumber = `+${phoneNumber.replace(/\D/g, '')}`;
+      if (recaptchaVerifierRef.current) {
+        const confirmation = await signInWithPhoneNumber(auth, formattedPhoneNumber, recaptchaVerifierRef.current);
+        toast.success("OTP has been sent.");
+        console.log("confirmation : ", confirmation);
+        return confirmation;
+      }
+    } catch (error) {
+      console.error('Error sending OTP:', error);
+      toast.error("Error sending OTP");
+      recaptchaVerifierRef.current?.clear();
+    }
   };
 
   const fetchUserProfile = async (uid) => {
@@ -151,7 +194,7 @@ export const AuthProvider = ({ children }) => {
 
   const hasRole = (requiredRole) => {
     if (!userProfile?.role) return false;
-    
+
     const roleHierarchy = {
       'superadmin': ['superadmin', 'admin', 'seller', 'buyer'],
       'admin': ['admin', 'seller', 'buyer'],
@@ -165,18 +208,16 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // User logged in: set state
         setCurrentUser(user);
         const profile = await fetchUserProfile(user.uid);
-
-        // ✅ Use consistent cookie setting function
         await setSessionCookie(user, profile?.role);
-
         console.log("🔄 Session refreshed with role:", profile?.role);
+        route.push('/');
       } else {
         // ✅ User signed out: remove token + cookie
         setCurrentUser(null);
         setUserProfile(null);
+        // route.push('/login');
 
         // Destroy token persistence
         if (typeof window !== 'undefined') {
@@ -203,7 +244,8 @@ export const AuthProvider = ({ children }) => {
     isSuperAdmin,
     isAdmin,
     isSeller,
-    hasRole
+    hasRole,
+    sendPhoneOTP,
   };
 
   return (

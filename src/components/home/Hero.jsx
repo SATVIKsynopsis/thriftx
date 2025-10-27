@@ -52,7 +52,7 @@ const Hero = () => {
   };
 
   return (
-    <section className="bg-white text-gray-900 dark:bg-black dark:text-white overflow-hidden py-20 md:py-2 lg:pt-5 relative">
+    <section className="bg-white text-gray-900 dark:bg-black dark:text-white overflow-hidden py-20 md:py-2 lg:pt-7 relative">
       <div className="max-w-[1100px] mx-auto flex flex-col lg:flex-row justify-between gap-8 px-4 sm:px-6 lg:px-5 md:mb-5">
 
         {/* LEFT SIDE */}

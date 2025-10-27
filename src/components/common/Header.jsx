@@ -58,6 +58,7 @@ export default function Header() {
   const { currentUser, userProfile, isSuperAdmin } = useAuth();
   const { getItemCount } = useCart();
   const router = useRouter();
+  console.log("Current User in header :", currentUser);
 
   const toggleMobileMenu = () => setShowMobileMenu(prev => !prev);
 
@@ -388,8 +389,7 @@ export default function Header() {
               </div>
             ) : (
               <div className="hidden md:flex items-center gap-2 sm:gap-3">
-                {/* <Link href="/login" className="px-3 py-1 sm:px-4 sm:py-2 text-sm sm:text-base font-bold border border-gray-300 bg-rose-500 text-black rounded-full hover:opacity-70 transition-all duration-200 dark:border-gray-900">Login</Link> */}
-                <LoginWithDialog />
+                <Link href="/login" className="px-3 py-1 sm:px-4 sm:py-2 text-sm sm:text-base font-bold border border-gray-300 bg-rose-500 text-black rounded-full hover:opacity-70 transition-all duration-200 dark:border-gray-900">Login</Link>
                 <Link href="/register/customer" className="px-3 py-1 sm:px-4 sm:py-2 text-sm sm:text-base font-bold bg-lime-400 text-black rounded-full hover:opacity-70 transition-all duration-200 shadow-md">Register</Link>
               </div>
             )}
@@ -441,8 +441,8 @@ export default function Header() {
 
             {!currentUser && (
               <div className="flex flex-col gap-3 p-4">
-                {/* <Link href="/login" className="text-center px-4 py-3 text-lg font-bold bg-rose-500 border-none text-black rounded-lg hover:opacity-90" onClick={toggleMobileMenu}>Login</Link> */}
-                <LoginWithDialog />
+                <Link href="/login" className="text-center px-4 py-3 text-lg font-bold bg-rose-500 border-none text-black rounded-lg hover:opacity-90" onClick={toggleMobileMenu}>Login</Link>
+                {/* <LoginWithDialog /> */}
                 <Link href="/register/customer" className="text-center px-4 py-3 text-lg font-bold bg-lime-500 hover:opacity-90 text-black rounded-lg" onClick={toggleMobileMenu}>Register</Link>
               </div>
             )}

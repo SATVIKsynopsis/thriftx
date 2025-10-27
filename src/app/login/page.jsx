@@ -1,10 +1,10 @@
 import React from 'react'
-import LoginWithDialog from '@/components/auth/Login'
+import LoginComponent from '@/components/auth/Login'
 
 const Login = () => {
   return (
     <div>     
-      <LoginWithDialog />
+      <LoginComponent />
     </div>
   )
 }

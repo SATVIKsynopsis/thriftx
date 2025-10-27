@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { collection, query, getDocs, limit, orderBy } from 'firebase/firestore';
-import { ArrowLeft, Filter } from 'lucide-react';
+import { ArrowLeft, Check, ChevronsUpDown, Filter } from 'lucide-react';
 import { db } from '@/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
 import useWishlistStore from '@/stores/wishlistStore';
@@ -14,6 +14,15 @@ import { getSortedProducts } from '@/utils/productUtils';
 import { getSmartBackPath } from '@/utils/navigationUtils';
 import { NAVIGATION_CONTEXTS } from '@/utils/navigationContextUtils';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../ui/command';
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { Button } from '../ui/button';
+
 
 const BrowseAllProducts = () => {
   const router = useRouter();
@@ -21,6 +30,7 @@ const BrowseAllProducts = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState('Most Popular');
+  const [sortPopoverOpen, setSortPopoverOpen] = useState(false);
 
   const { currentUser } = useAuth();
   const { getWishlistItems, setCurrentUser, clearCurrentUser } = useWishlistStore();
@@ -137,7 +147,7 @@ const BrowseAllProducts = () => {
         {[1, 2, 3, 4, 5].map((star) => (
           <svg
             key={star}
-            className={`w-3 h-3 ${star <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-600 fill-gray-600'}`}
+            className={`w-3 h-3 ${star <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-neutral-600 fill-neutral-600'}`}
             viewBox="0 0 20 20"
           >
             <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
@@ -169,7 +179,7 @@ const BrowseAllProducts = () => {
           <div className="flex items-center gap-4 mb-4">
             <button
               onClick={handleBackNavigation}
-              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+              className="flex items-center gap-2 text-neutral-400 hover:text-white transition-colors"
               aria-label="Go back"
             >
               <ArrowLeft size={20} />
@@ -180,28 +190,61 @@ const BrowseAllProducts = () => {
           <h1 className="text-3xl font-bold mb-2">
             All Products
           </h1>
-          <p className="text-gray-400">
+          <p className="text-neutral-400">
             Discover all available products
           </p>
         </div>
 
         {/* Controls */}
         {products.length > 0 && (
-          <div className="flex items-center justify-between mb-6 p-4 bg-gray-900 rounded-xl">
-            <span className="text-sm text-gray-400">
+          <div className="flex items-center justify-between mb-6 p-4 bg-neutral-900 rounded-xl">
+            <span className="text-sm text-neutral-400">
               Showing {paginationInfo.startProduct}-{paginationInfo.endProduct} of {paginationInfo.totalProducts} products
             </span>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-400">Sort by:</span>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="bg-black text-white border border-gray-700 rounded px-3 py-1 text-sm focus:outline-none focus:border-gray-500"
-              >
-                {SORT_OPTIONS.map(option => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
+              <span className="text-sm text-neutral-400">Sort by:</span>
+              <Popover open={sortPopoverOpen} onOpenChange={setSortPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={sortPopoverOpen}
+                    className="w-40 lg:w-[200px] justify-between text-xs lg:text-sm"
+                  >
+                    {sortBy || "Sort by..."}
+                    <ChevronsUpDown className="ml-2 opacity-50 w-4 h-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-40 lg:w-[200px] p-0">
+                  <Command>
+                    <CommandInput placeholder="Search options..." className="h-9" />
+                    <CommandList>
+                      <CommandEmpty>No options found.</CommandEmpty>
+                      <CommandGroup>
+                        {SORT_OPTIONS.map(option => (
+                          <CommandItem
+                            key={option}
+                            value={option}
+                            onSelect={(currentValue) => {
+                              setSortBy(currentValue);
+                              setSortPopoverOpen(false); // close after select
+                            }}
+                          >
+                            {option}
+                            <Check
+                              className={cn(
+                                "ml-auto",
+                                sortBy === option ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+
             </div>
           </div>
         )}
@@ -214,7 +257,7 @@ const BrowseAllProducts = () => {
               loading={loading}
               favorites={favorites}
               renderStars={renderStars}
-              onClearFilters={() => {}} // Not needed for browse all
+              onClearFilters={() => { }} // Not needed for browse all
               sectionContext={NAVIGATION_CONTEXTS.BROWSE}
             />
 
@@ -232,18 +275,18 @@ const BrowseAllProducts = () => {
           /* No Products */
           <div className="text-center py-16">
             <div className="mb-6">
-              <svg className="mx-auto h-24 w-24 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="mx-auto h-24 w-24 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
               </svg>
             </div>
-            <h3 className="text-xl font-medium text-gray-300 mb-2">No products available</h3>
-            <p className="text-gray-500 mb-6">
+            <h3 className="text-xl font-medium text-neutral-300 mb-2">No products available</h3>
+            <p className="text-neutral-500 mb-6">
               There are currently no products to display. Please check back later.
             </p>
             <div className="mt-8">
               <button
                 onClick={handleBackNavigation}
-                className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+                className="inline-flex items-center gap-2 text-neutral-400 hover:text-white transition-colors"
               >
                 <ArrowLeft size={16} />
                 Go Back

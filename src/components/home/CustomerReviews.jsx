@@ -86,10 +86,10 @@ const CustomerReviews = () => {
   return (
     <div className="bg-white dark:bg-black py-5 sm:py-12 lg:pt-16 sm:pb-32 lg:pb-20 px-2 sm:px-4 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <p className="border-t-2 border-gray-300 dark:border-neutral-600 pb-10" />
+        <p className="border-t-2 border-neutral-300 dark:border-neutral-600 pb-10" />
         
         <div className="flex flex-row justify-between items-center mb-5 sm:mb-12 gap-4 sm:gap-0">
-          <h2 className=" text-gray-900 dark:text-neutral-200 text-xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold fontAnton uppercase tracking-normal sm:text-left">
+          <h2 className=" text-neutral-900 dark:text-neutral-200 text-xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold fontAnton uppercase tracking-normal sm:text-left">
             OUR HAPPY <span className='text-lime-500 dark:text-lime-400'>CUSTOMERS</span>
           </h2>
           <div className="flex sm:gap-3">
@@ -97,8 +97,8 @@ const CustomerReviews = () => {
               onClick={handlePrev}
               disabled={currentIndex === 0}
               className={`p-3 rounded-full transition-colors ${currentIndex === 0
-                  ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                  : 'text-gray-900 hover:bg-gray-100 active:bg-gray-200 dark:text-white dark:hover:bg-gray-800 dark:active:bg-gray-700'
+                  ? 'text-neutral-400 dark:text-neutral-600 cursor-not-allowed'
+                  : 'text-neutral-900 hover:bg-neutral-100 active:bg-neutral-200 dark:text-white dark:hover:bg-neutral-800 dark:active:bg-neutral-700'
                 }`}
               aria-label="Previous reviews"
             >
@@ -108,8 +108,8 @@ const CustomerReviews = () => {
               onClick={handleNext}
               disabled={currentIndex >= maxIndex}
               className={`p-3 rounded-full transition-colors ${currentIndex >= maxIndex
-                  ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                  : 'text-gray-900 hover:bg-gray-100 active:bg-gray-200 dark:text-white dark:hover:bg-gray-800 dark:active:bg-gray-700'
+                  ? 'text-neutral-400 dark:text-neutral-600 cursor-not-allowed'
+                  : 'text-neutral-900 hover:bg-neutral-100 active:bg-neutral-200 dark:text-white dark:hover:bg-neutral-800 dark:active:bg-neutral-700'
                 }`}
               aria-label="Next reviews"
             >
@@ -127,21 +127,21 @@ const CustomerReviews = () => {
           >
             {reviews.map((review, idx) => (
               <div key={idx} className="w-full sm:w-1/2 lg:w-1/3 flex-shrink-0 px-2 sm:px-3">
-                <div className="bg-neutral-200 dark:bg-neutral-900 rounded-[15px] sm:rounded-[20px] p-4 sm:p-6 lg:p-7 h-auto sm:h-[180px] border border-gray-200 dark:border-neutral-800">
+                <div className="bg-neutral-200 dark:bg-neutral-900 rounded-[15px] sm:rounded-[20px] p-4 sm:p-6 lg:p-7 h-auto sm:h-[180px] border border-neutral-200 dark:border-neutral-800">
                   <div className="flex gap-1 mb-3 sm:mb-4">
                     {[...Array(review.rating)].map((_, i) => (
                       <Star key={i} className="w-5 h-5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 fill-yellow-400 text-yellow-400" />
                     ))}
                   </div>
                   <div className="flex items-center gap-2 mb-3 sm:mb-4">
-                    <h3 className="text-gray-900 dark:text-white font-semibold text-base sm:text-lg">{review.name}</h3>
+                    <h3 className="text-neutral-900 dark:text-white font-semibold text-base sm:text-lg">{review.name}</h3>
                     {review.verified && (
                       <div className="w-4 h-4 sm:w-5 sm:h-5 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
                         <CheckCircle className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-white" />
                       </div>
                     )}
                   </div>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-sm leading-relaxed">"{review.text}"</p>
+                  <p className="text-neutral-600 dark:text-neutral-400 text-sm sm:text-sm leading-relaxed">"{review.text}"</p>
                 </div>
               </div>
             ))}
@@ -157,8 +157,8 @@ const CustomerReviews = () => {
                   key={idx}
                   onClick={() => setCurrentIndex(actualIndex)}
                   className={`w-2 h-2 rounded-full transition-colors ${idx === Math.floor(currentIndex / visibleReviews)
-                    ? 'bg-gray-900 dark:bg-white'
-                    : 'bg-gray-400 dark:bg-gray-600'
+                    ? 'bg-neutral-900 dark:bg-white'
+                    : 'bg-neutral-400 dark:bg-neutral-600'
                   }`}
                   aria-label={`Go to review set ${idx + 1}`}
                 />
