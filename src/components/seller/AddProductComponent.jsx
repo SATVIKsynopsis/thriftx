@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+
+import toast from "react-hot-toast";
 // Removed styled-components import
 import { useForm } from 'react-hook-form';
 import {
@@ -19,7 +21,6 @@ import { db, storage } from '@/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
 import { CATEGORIES, PRODUCT_CONDITIONS } from '@/utils/constants';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
-import toast from 'react-hot-toast';
 import { v4 as uuidv4 } from 'uuid';
 
 // --- Tailwind Wrapper Components (Replacing Styled Components) ---
@@ -289,68 +290,85 @@ const AddProductComponent = () => {
     setImages(prev => prev.filter(img => img.id !== imageId));
   };
 
-  const uploadImages = async () => {
-    if (images.length === 0) return [];
+  const uploadImages = async (images, currentUser) => {
+  if (!images.length) return [];
 
-    try {
-      const uploadPromises = images.map(async (image) => {
-        const imageRef = ref(storage, `products/${currentUser.uid}/${uuidv4()}`);
-        await uploadBytes(imageRef, image.file);
-        return getDownloadURL(imageRef);
+  const compressedImages = [];
+
+  try {
+    // Step 1: Compress each image before upload
+    for (const image of images) {
+      const compressedFile = await imageCompression(image.file, {
+        maxSizeMB: 1, // target max size per image (you can change this)
+        maxWidthOrHeight: 1200,
+        useWebWorker: true,
+        fileType: "image/webp", // convert to WebP
       });
 
-      return Promise.all(uploadPromises);
-    } catch (error) {
-      console.error('Storage upload failed:', error);
-      // Fallback to placeholder if storage upload fails critically
-      toast.error('Image upload failed. Submitting product without images.', { id: 'img-fail' });
-      return []; // Return empty array if upload fails to prevent broken links
+      compressedImages.push({ ...image, file: compressedFile });
     }
-  };
+
+    // Step 2: Upload compressed images to Firebase Storage
+    const uploadPromises = compressedImages.map(async (img) => {
+      const fileName = `products/${currentUser.uid}/${uuidv4()}.webp`;
+      const imageRef = ref(storage, fileName);
+
+      await uploadBytes(imageRef, img.file, { contentType: "image/webp" });
+      const url = await getDownloadURL(imageRef);
+      return url;
+    });
+
+    const imageUrls = await Promise.all(uploadPromises);
+    toast.success("Images uploaded successfully ✅");
+    return imageUrls;
+  } catch (err) {
+    console.error("Image upload failed:", err);
+    toast.error("Image optimization or upload failed");
+    return [];
+  }
+};
+
 
   const onSubmit = async (data) => {
-    if (!currentUser) {
-      toast.error('You must be logged in to add a product.');
-      return;
-    }
+  if (!currentUser) {
+    toast.error("You must be logged in to add a product.");
+    return;
+  }
 
-    setUploading(true);
+  setUploading(true);
 
-    // Validate that at least one image is uploaded
-    if (images.length === 0) {
-      toast.error('Please upload at least one product image.');
-      setUploading(false);
-      return;
-    }
+  if (images.length === 0) {
+    toast.error("Please upload at least one product image.");
+    setUploading(false);
+    return;
+  }
 
-    try {
-      const imageUrls = await uploadImages();
+  try {
+    const imageUrls = await uploadImages(images, currentUser); // <— use the new function
 
-      // Create product document
-      const productData = {
-        ...data,
-        price: parseFloat(data.price),
-        originalPrice: data.originalPrice ? parseFloat(data.originalPrice) : null,
-        stock: parseInt(data.stock),
-        images: imageUrls,
-        sellerId: currentUser.uid,
-        sellerName: userProfile?.name || currentUser.displayName || 'Unknown Seller',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      };
+    const productData = {
+      ...data,
+      price: parseFloat(data.price),
+      originalPrice: data.originalPrice ? parseFloat(data.originalPrice) : null,
+      stock: parseInt(data.stock),
+      images: imageUrls,
+      sellerId: currentUser.uid,
+      sellerName: userProfile?.name || currentUser.displayName || "Unknown Seller",
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    };
 
-      await addDoc(collection(db, 'products'), productData);
+    await addDoc(collection(db, "products"), productData);
 
-      toast.success('Product added successfully! 🎉');
-      navigate.push('/seller/products');
-
-    } catch (error) {
-      console.error('Error adding product:', error);
-      toast.error('Failed to add product. Please check your data and try again.');
-    } finally {
-      setUploading(false);
-    }
-  };
+    toast.success("Product added successfully! 🎉");
+    navigate.push("/seller/products");
+  } catch (error) {
+    console.error("Error adding product:", error);
+    toast.error("Failed to add product. Please try again.");
+  } finally {
+    setUploading(false);
+  }
+};
 
   return (
     <AddProductContainer>
