@@ -112,7 +112,7 @@ const Hero = () => {
           >
             <motion.div whileHover="hover" whileTap="tap">
               <Link
-                href="/category"
+                href="/search"
                 className="inline-flex items-center justify-center font-semibold px-6 sm:px-8 py-3 rounded-full text-sm sm:text-base relative overflow-hidden group"
                 style={{
                   backgroundColor: "#bdf800",

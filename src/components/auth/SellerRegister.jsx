@@ -144,7 +144,7 @@ const SellerRegister = () => {
                         {
                             name: formData.name.trim(),
                             email: formData.email,
-                            role: "seller",
+                            role: "buyer",
                             location: formData.location.trim(),
                             favoriteStyles: formData.favoriteStyles.trim(),
                             sustainabilityGoals: formData.sustainabilityGoals.trim(),

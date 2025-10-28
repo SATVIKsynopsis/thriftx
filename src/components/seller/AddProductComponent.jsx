@@ -2,8 +2,6 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-
-import toast from "react-hot-toast";
 // Removed styled-components import
 import { useForm } from 'react-hook-form';
 import {
@@ -16,10 +14,13 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/firebase/config';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '@/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
+
 import { CATEGORIES, PRODUCT_CONDITIONS } from '@/utils/constants';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import toast from 'react-hot-toast';
 import { v4 as uuidv4 } from 'uuid';
 
 // --- Tailwind Wrapper Components (Replacing Styled Components) ---
@@ -293,72 +294,96 @@ const AddProductComponent = () => {
     if (images.length === 0) return [];
 
     try {
-      const formData = new FormData();
-      images.forEach((image) => {
-        formData.append('images', image.file);
-      });
-      formData.append('userId', currentUser.uid);
-
-      const response = await fetch('/api/upload-images', {
+      // Send current previews (data URLs) to the server API for sharp optimization
+      const payload = images.map(img => ({ id: img.id, filename: img.file?.name || `${img.id}.jpg`, dataUrl: img.preview }));
+      const res = await fetch('/api/optimize', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ images: payload })
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Upload failed');
+      if (!res.ok) {
+        throw new Error('Image optimization failed');
       }
 
-      const data = await response.json();
-      return data.urls || [];
+      const json = await res.json();
+      const optimized = json.images || [];
+
+      const uploadPromises = optimized.map(async (opt) => {
+        if (opt.error) return null;
+        // Convert dataUrl back to Blob and upload to Firebase Storage
+        const fetchRes = await fetch(opt.dataUrl);
+        const blob = await fetchRes.blob();
+        const ext = opt.filename?.split('.').pop() || 'webp';
+        const imageRef = ref(storage, `products/${currentUser.uid}/${uuidv4()}.${ext}`);
+        await uploadBytes(imageRef, blob);
+        return getDownloadURL(imageRef);
+      });
+
+      const urls = await Promise.all(uploadPromises);
+      // filter nulls/errors
+      return urls.filter(Boolean);
     } catch (error) {
-      console.error('Image upload failed:', error);
-      // Fallback to placeholder if upload fails critically
-      toast.error('Image processing failed. Submitting product without images.', { id: 'img-fail' });
-      return []; // Return empty array if upload fails to prevent broken links
+      console.error('Storage upload failed:', error);
+      // Fallback to uploading original files if optimization fails
+      try {
+        const uploadPromises = images.map(async (image) => {
+          const imageRef = ref(storage, `products/${currentUser.uid}/${uuidv4()}`);
+          await uploadBytes(imageRef, image.file);
+          return getDownloadURL(imageRef);
+        });
+        return Promise.all(uploadPromises);
+      } catch (err) {
+        console.error('Fallback upload also failed:', err);
+        toast.error('Image upload failed. Submitting product without images.', { id: 'img-fail' });
+        return [];
+      }
     }
   };
 
   const onSubmit = async (data) => {
-  if (!currentUser) {
-    toast.error("You must be logged in to add a product.");
-    return;
-  }
+    if (!currentUser) {
+      toast.error('You must be logged in to add a product.');
+      return;
+    }
 
-  setUploading(true);
+    setUploading(true);
 
-  if (images.length === 0) {
-    toast.error("Please upload at least one product image.");
-    setUploading(false);
-    return;
-  }
+    // Validate that at least one image is uploaded
+    if (images.length === 0) {
+      toast.error('Please upload at least one product image.');
+      setUploading(false);
+      return;
+    }
 
-  try {
-    const imageUrls = await uploadImages(images, currentUser); // <— use the new function
+    try {
+      const imageUrls = await uploadImages();
 
-    const productData = {
-      ...data,
-      price: parseFloat(data.price),
-      originalPrice: data.originalPrice ? parseFloat(data.originalPrice) : null,
-      stock: parseInt(data.stock),
-      images: imageUrls,
-      sellerId: currentUser.uid,
-      sellerName: userProfile?.name || currentUser.displayName || "Unknown Seller",
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    };
+      // Create product document
+      const productData = {
+        ...data,
+        price: parseFloat(data.price),
+        originalPrice: data.originalPrice ? parseFloat(data.originalPrice) : null,
+        stock: parseInt(data.stock),
+        images: imageUrls,
+        sellerId: currentUser.uid,
+        sellerName: userProfile?.name || currentUser.displayName || 'Unknown Seller',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
 
-    await addDoc(collection(db, "products"), productData);
+      await addDoc(collection(db, 'products'), productData);
 
-    toast.success("Product added successfully! 🎉");
-    navigate.push("/seller/products");
-  } catch (error) {
-    console.error("Error adding product:", error);
-    toast.error("Failed to add product. Please try again.");
-  } finally {
-    setUploading(false);
-  }
-};
+      toast.success('Product added successfully! 🎉');
+      navigate.push('/seller/products');
+
+    } catch (error) {
+      console.error('Error adding product:', error);
+      toast.error('Failed to add product. Please check your data and try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
     <AddProductContainer>
