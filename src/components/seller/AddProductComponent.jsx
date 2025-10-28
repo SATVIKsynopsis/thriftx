@@ -14,9 +14,9 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '@/firebase/config';
+import { db } from '@/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 import { CATEGORIES, PRODUCT_CONDITIONS } from '@/utils/constants';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -294,50 +294,18 @@ const AddProductComponent = () => {
     if (images.length === 0) return [];
 
     try {
-      // Send current previews (data URLs) to the server API for sharp optimization
-      const payload = images.map(img => ({ id: img.id, filename: img.file?.name || `${img.id}.jpg`, dataUrl: img.preview }));
-      const res = await fetch('/api/optimize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ images: payload })
-      });
-
-      if (!res.ok) {
-        throw new Error('Image optimization failed');
-      }
-
-      const json = await res.json();
-      const optimized = json.images || [];
-
-      const uploadPromises = optimized.map(async (opt) => {
-        if (opt.error) return null;
-        // Convert dataUrl back to Blob and upload to Firebase Storage
-        const fetchRes = await fetch(opt.dataUrl);
-        const blob = await fetchRes.blob();
-        const ext = opt.filename?.split('.').pop() || 'webp';
-        const imageRef = ref(storage, `products/${currentUser.uid}/${uuidv4()}.${ext}`);
-        await uploadBytes(imageRef, blob);
+      const uploadPromises = images.map(async (image) => {
+        const imageRef = ref(storage, `products/${currentUser.uid}/${uuidv4()}`);
+        await uploadBytes(imageRef, image.file);
         return getDownloadURL(imageRef);
       });
 
-      const urls = await Promise.all(uploadPromises);
-      // filter nulls/errors
-      return urls.filter(Boolean);
+      return Promise.all(uploadPromises);
     } catch (error) {
       console.error('Storage upload failed:', error);
-      // Fallback to uploading original files if optimization fails
-      try {
-        const uploadPromises = images.map(async (image) => {
-          const imageRef = ref(storage, `products/${currentUser.uid}/${uuidv4()}`);
-          await uploadBytes(imageRef, image.file);
-          return getDownloadURL(imageRef);
-        });
-        return Promise.all(uploadPromises);
-      } catch (err) {
-        console.error('Fallback upload also failed:', err);
-        toast.error('Image upload failed. Submitting product without images.', { id: 'img-fail' });
-        return [];
-      }
+      // Fallback to placeholder if storage upload fails critically
+      toast.error('Image upload failed. Submitting product without images.', { id: 'img-fail' });
+      return []; // Return empty array if upload fails to prevent broken links
     }
   };
 

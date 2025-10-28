@@ -1,15 +1,18 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
-import { auth, db } from '@/firebase/config';
+// Firebase will be dynamically imported and initialized on-demand to reduce
+// initial JS and to support mobile-only lazy init. See lazyInitializeFirebase.
+import { lazyInitializeFirebase } from '@/firebase/lazyInit';
 import { setCookie, deleteCookie } from 'cookies-next';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 
+// Define the shape of the default value with all expected properties
 const defaultAuthContextValue = {
-  currentUser: null, 
-  userProfile: null, 
-  logout: () => Promise.resolve(), 
+  currentUser: null, // <-- Must be present!
+  userProfile: null, // <-- Must be present!
+  logout: () => Promise.resolve(), // Add dummy function for safety
   signup: () => Promise.resolve(),
   login: () => Promise.resolve(),
   fetchUserProfile: () => Promise.resolve(null),
@@ -30,16 +33,18 @@ export const AuthProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const recaptchaVerifierRef = useRef(null);
+  const authRef = useRef(null);
+  const dbRef = useRef(null);
   const route = useRouter();
 
   const setSessionCookie = async (user, role = null) => {
-    const { getIdToken } = await import('firebase/auth');
-    const token = await getIdToken(user, true);
+    // Prefer the instance method to avoid importing helpers synchronously
+    const token = await user.getIdToken(true);
 
     let userRole = role;
     if (!userRole) {
       const { doc, getDoc } = await import('firebase/firestore');
-      const userRef = doc(db, 'users', user.uid);
+      const userRef = doc(dbRef.current, 'users', user.uid);
       const userSnap = await getDoc(userRef);
       userRole = userSnap.exists() ? userSnap.data().role : 'buyer';
     }
@@ -47,14 +52,14 @@ export const AuthProvider = ({ children }) => {
     const sessionData = {
       token,
       role: userRole,
-      email: user.email 
+      email: user.email // Optional: include email for easier debugging
     };
 
     setCookie('__session', JSON.stringify(sessionData), {
       path: '/',
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 
+      maxAge: 60 * 60 * 24 // 24 hours
     });
 
     console.log("✅ Cookie set with role:", userRole);
@@ -65,15 +70,15 @@ export const AuthProvider = ({ children }) => {
     const { signInWithEmailAndPassword, signOut } = await import('firebase/auth');
     const { doc, getDoc, setDoc } = await import('firebase/firestore');
 
-    const result = await signInWithEmailAndPassword(auth, email, password);
+    const result = await signInWithEmailAndPassword(authRef.current, email, password);
     const user = result.user;
 
     if (!user.emailVerified) {
-      await signOut(auth);
+      await signOut(authRef.current);
       throw { code: "auth/email-not-verified", message: "Please verify your email or phone number" };
     }
 
-    const userRef = doc(db, 'users', user.uid);
+    const userRef = doc(dbRef.current, 'users', user.uid);
     const userSnap = await getDoc(userRef);
     let role;
 
@@ -96,7 +101,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     const { signOut } = await import('firebase/auth');
-    await signOut(auth);
+    await signOut(authRef.current);
     deleteCookie('__session', { path: '/' });
   };
 
@@ -105,34 +110,36 @@ export const AuthProvider = ({ children }) => {
       const { createUserWithEmailAndPassword, updateProfile, sendEmailVerification, signOut } = await import('firebase/auth');
       const { doc, setDoc } = await import('firebase/firestore');
 
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      // 1️⃣ Create user in Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(authRef.current, email, password);
       const user = userCredential.user;
 
+      // 2️⃣ Set display name
       await updateProfile(user, { displayName: userData.name });
 
-      
+      // 3️⃣ Send verification email (⚠️ Do NOT auto-login yet)
       await sendEmailVerification(user);
       console.log("✅ Verification email sent to:", user.email);
 
-      
+      // (Optional) You can use toast instead of alert for better UX
       alert(`Verification email sent to ${email}. Please check your inbox.`);
 
-      
+      // 4️⃣ Store user details in Firestore
       const role =
         email === "admin@thriftx.com"
           ? "superadmin"
           : userData.role || "buyer";
 
-      await setDoc(doc(db, "users", user.uid), {
+      await setDoc(doc(dbRef.current, "users", user.uid), {
         name: userData.name,
         email: userData.email,
         role,
         createdAt: new Date(),
         ...userData,
-        emailVerified: false, 
+        emailVerified: false, // ✅ track verification status if you want
       });
 
-      await signOut(auth);
+      await signOut(authRef.current);
       return userCredential;
     } catch (error) {
       console.error("❌ Error during signup:", error);
@@ -140,7 +147,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  
+  // Add at the bottom of AuthProvider before `return`
   const sendPhoneOTP = async (phoneNumber) => {
     if (!phoneNumber) throw new Error("Phone number is required");
 
@@ -153,7 +160,7 @@ export const AuthProvider = ({ children }) => {
       const formattedPhoneNumber = `+${phoneNumber.replace(/\D/g, '')}`;
       if (recaptchaVerifierRef.current) {
         const { signInWithPhoneNumber } = await import('firebase/auth');
-        const confirmation = await signInWithPhoneNumber(auth, formattedPhoneNumber, recaptchaVerifierRef.current);
+        const confirmation = await signInWithPhoneNumber(authRef.current, formattedPhoneNumber, recaptchaVerifierRef.current);
         toast.success("OTP has been sent.");
         console.log("confirmation : ", confirmation);
         return confirmation;
@@ -167,7 +174,7 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserProfile = async (uid) => {
     const { doc, getDoc } = await import('firebase/firestore');
-    const userDoc = await getDoc(doc(db, 'users', uid));
+    const userDoc = await getDoc(doc(dbRef.current, 'users', uid));
     if (userDoc.exists()) {
       const profileData = userDoc.data();
       setUserProfile(profileData);
@@ -176,7 +183,7 @@ export const AuthProvider = ({ children }) => {
     return null;
   };
 
-  
+  // ✅ Role checking functions
   const isSuperAdmin = () => {
     return userProfile?.role === 'superadmin';
   };
@@ -203,36 +210,57 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    let unsubscribe = () => {};
+    let unsub = null;
     (async () => {
-      const { onAuthStateChanged } = await import('firebase/auth');
-      unsubscribe = onAuthStateChanged(auth, async (user) => {
-        if (user) {
-          setCurrentUser(user);
-          const profile = await fetchUserProfile(user.uid);
-          await setSessionCookie(user, profile?.role);
-          console.log("🔄 Session refreshed with role:", profile?.role);
-          route.push('/');
+      // Decide mobile vs desktop. Only perform the idle/lazy initialization on mobile.
+      const isClient = typeof window !== 'undefined';
+      const isMobile = isClient && window.matchMedia && window.matchMedia('(max-width: 767px)').matches;
+
+      if (isClient) {
+        if (isMobile) {
+          const initialized = await lazyInitializeFirebase();
+          authRef.current = initialized.auth;
+          dbRef.current = initialized.db;
         } else {
-         
-          setCurrentUser(null);
-          setUserProfile(null);
-
-          
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('firebase:authUser');
-            sessionStorage.clear();
-          }
-
-          deleteCookie('__session', { path: '/' });
+          // For desktop keep behavior close to original: import the eager config at mount
+          const mod = await import('@/firebase/config');
+          authRef.current = mod.auth;
+          dbRef.current = mod.db;
         }
 
+        const { onAuthStateChanged } = await import('firebase/auth');
+        unsub = onAuthStateChanged(authRef.current, async (user) => {
+          if (user) {
+            setCurrentUser(user);
+            const profile = await fetchUserProfile(user.uid);
+            await setSessionCookie(user, profile?.role);
+            console.log("🔄 Session refreshed with role:", profile?.role);
+            route.push('/');
+          } else {
+            // ✅ User signed out: remove token + cookie
+            setCurrentUser(null);
+            setUserProfile(null);
+            // route.push('/login');
+
+            // Destroy token persistence
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem('firebase:authUser');
+              sessionStorage.clear();
+            }
+
+            deleteCookie('__session', { path: '/' });
+          }
+
+          setLoading(false);
+        });
+      } else {
+        // Server: nothing to do
         setLoading(false);
-      });
+      }
     })();
 
     return () => {
-      try { unsubscribe(); } catch (e) { }
+      if (typeof unsub === 'function') unsub();
     };
   }, []);
 

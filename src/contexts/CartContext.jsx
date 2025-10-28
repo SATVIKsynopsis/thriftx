@@ -6,10 +6,10 @@ import {
   addDoc, 
   deleteDoc, 
   doc, 
+  onSnapshot, 
   updateDoc,
   query,
-  where,
-  getDocs
+  where 
 } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 import { useAuth } from './AuthContext';
@@ -44,24 +44,20 @@ export const CartProvider = ({ children }) => {
       return;
     }
 
-    // Use one-time fetch instead of real-time listener on initial load to reduce network & main-thread cost.
-    const fetchCart = async () => {
-      try {
-        const cartRef = collection(db, 'carts', currentUser.uid, 'items');
-        const snapshot = await getDocs(cartRef);
-        const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setCartItems(items);
-      } catch (error) {
-        console.error('Error fetching cart items:', error);
-      }
-    };
+    const cartRef = collection(db, 'carts', currentUser.uid, 'items');
+    const unsubscribe = onSnapshot(cartRef, (snapshot) => {
+      const items = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setCartItems(items);
+    });
 
-    fetchCart();
-
-    // NOTE: if you want realtime updates only on the cart page, enable an explicit listener there.
+    return unsubscribe;
   }, [currentUser]);
 
-  const addToCart = async (product, quantity = 1) => {
+  // Accepts: product, quantity, color, productSize
+  const addToCart = async (product, quantity = 1, color = null, productSize = null) => {
     if (!currentUser) {
       toast.error('Please login to add items to cart');
       return;
@@ -69,16 +65,20 @@ export const CartProvider = ({ children }) => {
 
     setLoading(true);
     try {
-      // Check if item already exists in cart
-      const existingItem = cartItems.find(item => item.productId === product.id);
-      
+      // Check if item already exists in cart (match by productId, color, size)
+      const existingItem = cartItems.find(item =>
+        item.productId === product.id &&
+        (color == null || item.color === color) &&
+        (productSize == null || item.productSize === productSize)
+      );
+
       if (existingItem) {
         // Update quantity
         await updateDoc(doc(db, 'carts', currentUser.uid, 'items', existingItem.id), {
           quantity: existingItem.quantity + quantity
         });
       } else {
-        // Add new item
+        // Add new item with color and size
         await addDoc(collection(db, 'carts', currentUser.uid, 'items'), {
           productId: product.id,
           productName: product.name,
@@ -86,10 +86,12 @@ export const CartProvider = ({ children }) => {
           price: product.price,
           sellerId: product.sellerId,
           quantity: quantity,
+          color: color,
+          productSize: productSize,
           addedAt: new Date()
         });
       }
-      
+
       toast.success('Item added to cart');
     } catch (error) {
       console.error('Error adding to cart:', error);

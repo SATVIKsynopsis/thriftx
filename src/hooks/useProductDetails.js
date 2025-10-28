@@ -72,7 +72,8 @@ export const useProductDetails = (productId) => {
 
     if (!product) return;
 
-    addToCart(product, quantity);
+    // Pass selectedColor and selectedSize to addToCart
+    addToCart(product, quantity, selectedColor, selectedSize);
   };
 
   const handleQuantityChange = (delta) => {

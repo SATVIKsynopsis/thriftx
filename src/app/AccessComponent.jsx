@@ -3,15 +3,12 @@
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
+import { Toaster } from "react-hot-toast";
 import { ThemeProvider } from "@/ThemeProvider/ThemeProvider";
-import dynamic from "next/dynamic";
+import Header from "@/components/common/Header";
+import FooterComponent from "@/components/common/Footer";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import { usePathname } from "next/navigation";
- 
-
-const Header = dynamic(() => import("@/components/common/Header"), { ssr: false, loading: () => null });
-const FooterComponent = dynamic(() => import("@/components/common/Footer"), { ssr: false, loading: () => null });
-const ToastLoader = dynamic(() => import("@/components/common/ToastLoader"), { ssr: false, loading: () => null });
 
 export default function AccessComponent({ children }) {
 
@@ -33,7 +30,7 @@ export default function AccessComponent({ children }) {
                     <Breadcrumb />
                     {children}
                     {!handleAccess && <FooterComponent />}
-                    <ToastLoader />
+                    <Toaster position="top-right" />
                 </CartProvider>
             </AuthProvider>
         </ThemeProvider>

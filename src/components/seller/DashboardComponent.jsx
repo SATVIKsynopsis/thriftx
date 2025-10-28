@@ -23,6 +23,7 @@ import {
   DollarSign,
   RefreshCw
 } from 'lucide-react';
+import Image from 'next/image';
 import { db } from '../../firebase/config';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatPrice } from '../../utils/formatters';
@@ -214,12 +215,10 @@ const ProductItem = ({ children }) => (
   </div>
 );
 
-const ProductImage = ({ alt, ...props }) => (
-  <img
-    className="w-12 h-12 object-cover rounded-md flex-shrink-0"
-    alt={alt}
-    {...props}
-  />
+const ProductImage = ({ alt, src }) => (
+  <div className="w-12 h-12 rounded-md overflow-hidden shrink-0">
+    <Image src={src} alt={alt || ''} width={48} height={48} className="object-cover" />
+  </div>
 );
 
 const ProductImagePlaceholder = ({ children }) => (
@@ -257,6 +256,7 @@ const IconButton = React.forwardRef(({ to, title, children, ...props }, ref) => 
     href={to}
     ref={ref}
     title={title}
+    aria-label={title}
     className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-md text-gray-600 transition-all hover:bg-blue-600 hover:text-white"
     {...props}
   >
@@ -288,7 +288,7 @@ const DashboardComponent = () => {
 
   const fetchDashboardData = async () => {
     if (!currentUser) {
-      console.log('No current user, skipping dashboard data fetch');
+      // No current user - skip fetch
       return;
     }
 
@@ -304,7 +304,7 @@ const DashboardComponent = () => {
       setLoading(true);
       setError(null);
 
-      console.log('Fetching dashboard data for user:', currentUser.uid);
+  // fetching dashboard data for user
 
       // Fetch products with error handling
       let products = [];
@@ -318,7 +318,7 @@ const DashboardComponent = () => {
           id: doc.id,
           ...doc.data()
         }));
-        console.log('Products fetched successfully:', products.length);
+  // products fetched
       } catch (productError) {
         console.warn('Could not fetch products:', productError);
         products = [];
@@ -338,7 +338,7 @@ const DashboardComponent = () => {
           id: doc.id,
           ...doc.data()
         }));
-        console.log('Recent products fetched successfully:', recentProds.length);
+  // recent products fetched
       } catch (recentError) {
         console.warn('Could not fetch recent products:', recentError);
         recentProds = [];
@@ -401,17 +401,17 @@ const DashboardComponent = () => {
         avgRating: Math.round(avgRating * 10) / 10
       };
 
-      console.log('Calculated stats:', newStats);
+  // calculated stats
 
       setStats(newStats);
       setRecentProducts(recentProds);
       setRecentOrders(orders.slice(0, 5));
 
-      console.log('Dashboard data loaded successfully');
+  // dashboard data loaded
 
       // Set default values if no data was found
       if (totalProducts === 0 && totalOrders === 0) {
-        console.log('No data found, setting default empty state');
+  // no data found - default empty state
       }
 
     } catch (error) {
