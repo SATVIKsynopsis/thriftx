@@ -1,10 +1,7 @@
-// Mobile-only lazy initializer for Firebase
-// This file intentionally duplicates the firebaseConfig to avoid importing
-// the eager `src/firebase/config.js` which initializes Firebase at module load.
+
 export async function lazyInitializeFirebase() {
   if (typeof window === 'undefined') return {};
 
-  // Wait until the browser is idle (after first paint) to avoid blocking FCP/LCP
   await new Promise((resolve) => {
     if ('requestIdleCallback' in window) requestIdleCallback(resolve);
     else setTimeout(resolve, 200);
