@@ -14,8 +14,7 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '@/firebase/config';
+import { db } from '@/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
 import { CATEGORIES, PRODUCT_CONDITIONS } from '@/utils/constants';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -293,17 +292,28 @@ const AddProductComponent = () => {
     if (images.length === 0) return [];
 
     try {
-      const uploadPromises = images.map(async (image) => {
-        const imageRef = ref(storage, `products/${currentUser.uid}/${uuidv4()}`);
-        await uploadBytes(imageRef, image.file);
-        return getDownloadURL(imageRef);
+      const formData = new FormData();
+      images.forEach((image) => {
+        formData.append('images', image.file);
+      });
+      formData.append('userId', currentUser.uid);
+
+      const response = await fetch('/api/upload-images', {
+        method: 'POST',
+        body: formData,
       });
 
-      return Promise.all(uploadPromises);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Upload failed');
+      }
+
+      const data = await response.json();
+      return data.urls || [];
     } catch (error) {
-      console.error('Storage upload failed:', error);
-      // Fallback to placeholder if storage upload fails critically
-      toast.error('Image upload failed. Submitting product without images.', { id: 'img-fail' });
+      console.error('Image upload failed:', error);
+      // Fallback to placeholder if upload fails critically
+      toast.error('Image processing failed. Submitting product without images.', { id: 'img-fail' });
       return []; // Return empty array if upload fails to prevent broken links
     }
   };
@@ -506,7 +516,7 @@ const AddProductComponent = () => {
                 <Upload size={24} />
               </UploadIcon>
               <UploadText>Click to upload or drag and drop</UploadText>
-              <UploadSubtext>PNG, JPG, GIF up to 10MB (max 5 images)</UploadSubtext>
+              <UploadSubtext>PNG, JPG, GIF up to 10MB (max 5 images) - Images will be optimized automatically</UploadSubtext>
 
               <HiddenInput
                 id="imageInput"
