@@ -17,7 +17,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
-import { getAuth, signOut } from "firebase/auth";
 import {
   Select,
   SelectContent,
@@ -29,7 +28,6 @@ import {
 } from "@/components/ui/select";
 import { ModeToggle } from "@/ThemeProvider/ModeToggle";
 import { searchProducts } from "@/utils/fuzzySearch";
-import { collection, query, orderBy, getDocs } from "firebase/firestore";
 import { db } from "@/firebase/config";
 import LoginWithDialog from "../auth/Login";
 
@@ -137,8 +135,9 @@ export default function Header() {
   }, [showMobileMenu]);
 
   const handleLogout = async () => {
-    const auth = getAuth();
     try {
+      const { getAuth, signOut } = await import('firebase/auth');
+      const auth = getAuth();
       await signOut(auth);
       setShowUserMenu(false);
       setShowMobileMenu(false);
@@ -146,29 +145,39 @@ export default function Header() {
     } catch (error) { console.error("Logout error:", error); }
   };
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
-        const snapshot = await getDocs(q);
-        const products = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        setAllProducts(products);
-      } catch (error) {
-        console.error('Error fetching products for suggestions:', error);
-      }
-    };
-    fetchProducts();
-  }, []);
+  // Fetch a small, recent sample of products on demand (not on mount)
+  const fetchProducts = async (max = 200) => {
+    try {
+      setLoadingSuggestions(true);
+      const { collection, query, orderBy, getDocs, limit } = await import('firebase/firestore');
+      const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'), limit(max));
+      const snapshot = await getDocs(q);
+      const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setAllProducts(products);
+    } catch (error) {
+      console.error('Error fetching products for suggestions:', error);
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  };
 
   // Debounced search for suggestions
   const debouncedSearch = useCallback(
-    debounce((query) => {
-      if (query.trim() && allProducts.length > 0) {
+    debounce(async (qstr) => {
+      if (!qstr.trim()) {
+        setSuggestions([]);
+        setShowSuggestions(false);
+        return;
+      }
+
+      // If we haven't loaded a product sample yet, fetch a small set first
+      if (allProducts.length === 0) {
+        await fetchProducts(200);
+      }
+
+      if (allProducts.length > 0) {
         setLoadingSuggestions(true);
-        const results = searchProducts(allProducts, query).slice(0, 8);
+        const results = searchProducts(allProducts, qstr).slice(0, 8);
         setSuggestions(results);
         setShowSuggestions(true);
         setLoadingSuggestions(false);

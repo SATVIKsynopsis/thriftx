@@ -1,16 +1,19 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { Line, Doughnut, Bar, Pie } from 'react-chartjs-2';
+import dynamic from 'next/dynamic';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { formatPrice } from '@/utils/formatters';
 import { Star } from 'lucide-react';
-import { Chart as ChartJS, Title, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, ArcElement, BarElement } from 'chart.js';
 
-ChartJS.register(Title, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, ArcElement, BarElement);
+const Line = dynamic(() => import('react-chartjs-2').then(mod => mod.Line), { ssr: false, loading: () => null });
+const Doughnut = dynamic(() => import('react-chartjs-2').then(mod => mod.Doughnut), { ssr: false, loading: () => null });
+const Bar = dynamic(() => import('react-chartjs-2').then(mod => mod.Bar), { ssr: false, loading: () => null });
+const Pie = dynamic(() => import('react-chartjs-2').then(mod => mod.Pie), { ssr: false, loading: () => null });
+
 
 const SellerAnalyticsComponent = () => {
   const { currentUser } = useAuth();
@@ -19,6 +22,15 @@ const SellerAnalyticsComponent = () => {
   const [dateFilter, setDateFilter] = useState('30');
 
   useEffect(() => {
+    (async () => {
+      try {
+        const { Chart } = await import('chart.js/auto');
+        
+      } catch (e) {
+        console.error('Failed to load chart.js on client:', e);
+      }
+    })();
+
     if (!currentUser) return;
     const fetchOrders = async () => {
       setLoading(true);
@@ -48,7 +60,7 @@ const SellerAnalyticsComponent = () => {
     return true;
   });
 
-  // KPIs 
+  
   const totalRevenue = filteredOrders.reduce((sum, order) => sum + order.total, 0);
   const totalOrders = filteredOrders.length;
   const pendingOrders = filteredOrders.filter(order => order.status === 'pending').length;
@@ -56,7 +68,7 @@ const SellerAnalyticsComponent = () => {
   const avgRating = ratings.length ? (ratings.reduce((a,b) => a+b,0)/ratings.length).toFixed(1) : 0;
   const deliveryRate = totalOrders ? (filteredOrders.filter(o => o.status === 'delivered').length / totalOrders) * 100 : 0;
 
-  // Revenue chart
+  
   const revenueByDay = filteredOrders.reduce((acc, order) => {
     const day = order.createdAt?.toDate().toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
     if (!day) return acc;

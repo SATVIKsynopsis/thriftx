@@ -6,10 +6,10 @@ import {
   addDoc, 
   deleteDoc, 
   doc, 
-  onSnapshot, 
   updateDoc,
   query,
-  where 
+  where,
+  getDocs
 } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 import { useAuth } from './AuthContext';
@@ -44,16 +44,21 @@ export const CartProvider = ({ children }) => {
       return;
     }
 
-    const cartRef = collection(db, 'carts', currentUser.uid, 'items');
-    const unsubscribe = onSnapshot(cartRef, (snapshot) => {
-      const items = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setCartItems(items);
-    });
+    // Use one-time fetch instead of real-time listener on initial load to reduce network & main-thread cost.
+    const fetchCart = async () => {
+      try {
+        const cartRef = collection(db, 'carts', currentUser.uid, 'items');
+        const snapshot = await getDocs(cartRef);
+        const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setCartItems(items);
+      } catch (error) {
+        console.error('Error fetching cart items:', error);
+      }
+    };
 
-    return unsubscribe;
+    fetchCart();
+
+    // NOTE: if you want realtime updates only on the cart page, enable an explicit listener there.
   }, [currentUser]);
 
   const addToCart = async (product, quantity = 1) => {
