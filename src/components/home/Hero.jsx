@@ -3,8 +3,11 @@
 import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
-const images = ["/LandingPageAssets/im1.webp", "/LandingPageAssets/im1.webp", "/LandingPageAssets/im4.webp", "/LandingPageAssets/im3.webp"];
+const images = ["/LandingPageAssets/im1.webp", "/LandingPageAssets/im2.webp", "/LandingPageAssets/im4.webp", "/LandingPageAssets/im3.webp"];
+
+const MotionImage = motion(Image);
 
 const Hero = () => {
   const cardVariants = {
@@ -105,7 +108,7 @@ const Hero = () => {
             variants={buttonVariants}
             initial="hidden"
             animate="show"
-            className="mt-6 lg:mt-4 sm:flex sm:items-center sm:justify-center lg:justify-start" 
+            className="mt-6 lg:mt-4 sm:flex sm:items-center sm:justify-center lg:justify-start"
           >
             <motion.div whileHover="hover" whileTap="tap">
               <Link
@@ -150,12 +153,14 @@ const Hero = () => {
                   }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <motion.img
+                  <MotionImage
                     src={images[i]}
                     alt={`Card ${i + 1}`}
-                    className="absolute inset-0 w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                     whileHover={{ scale: 1.15 }}
                     transition={{ duration: 0.4 }}
+                    priority={i === 0}
                   />
                 </motion.div>
               ))}
@@ -178,12 +183,15 @@ const Hero = () => {
                   }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <motion.img
+                  <MotionImage
                     src={images[i]}
                     alt={`Card ${i + 1}`}
-                    className="absolute inset-0 w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                     whileHover={{ scale: 1.15 }}
                     transition={{ duration: 0.4 }}
+                    sizes="(max-width: 668px) 100vw, 50vw"
+                    priority={i === 0}
                   />
                 </motion.div>
               ))}
