@@ -16,8 +16,7 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '@/firebase/config';
+import { db } from '@/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
 import { CATEGORIES, PRODUCT_CONDITIONS } from '@/utils/constants';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -290,44 +289,35 @@ const AddProductComponent = () => {
     setImages(prev => prev.filter(img => img.id !== imageId));
   };
 
-  const uploadImages = async (images, currentUser) => {
-  if (!images.length) return [];
+  const uploadImages = async () => {
+    if (images.length === 0) return [];
 
-  const compressedImages = [];
+    try {
+      const formData = new FormData();
+      images.forEach((image) => {
+        formData.append('images', image.file);
+      });
+      formData.append('userId', currentUser.uid);
 
-  try {
-    // Step 1: Compress each image before upload
-    for (const image of images) {
-      const compressedFile = await imageCompression(image.file, {
-        maxSizeMB: 1, // target max size per image (you can change this)
-        maxWidthOrHeight: 1200,
-        useWebWorker: true,
-        fileType: "image/webp", // convert to WebP
+      const response = await fetch('/api/upload-images', {
+        method: 'POST',
+        body: formData,
       });
 
-      compressedImages.push({ ...image, file: compressedFile });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Upload failed');
+      }
+
+      const data = await response.json();
+      return data.urls || [];
+    } catch (error) {
+      console.error('Image upload failed:', error);
+      // Fallback to placeholder if upload fails critically
+      toast.error('Image processing failed. Submitting product without images.', { id: 'img-fail' });
+      return []; // Return empty array if upload fails to prevent broken links
     }
-
-    // Step 2: Upload compressed images to Firebase Storage
-    const uploadPromises = compressedImages.map(async (img) => {
-      const fileName = `products/${currentUser.uid}/${uuidv4()}.webp`;
-      const imageRef = ref(storage, fileName);
-
-      await uploadBytes(imageRef, img.file, { contentType: "image/webp" });
-      const url = await getDownloadURL(imageRef);
-      return url;
-    });
-
-    const imageUrls = await Promise.all(uploadPromises);
-    toast.success("Images uploaded successfully ✅");
-    return imageUrls;
-  } catch (err) {
-    console.error("Image upload failed:", err);
-    toast.error("Image optimization or upload failed");
-    return [];
-  }
-};
-
+  };
 
   const onSubmit = async (data) => {
   if (!currentUser) {
@@ -524,7 +514,7 @@ const AddProductComponent = () => {
                 <Upload size={24} />
               </UploadIcon>
               <UploadText>Click to upload or drag and drop</UploadText>
-              <UploadSubtext>PNG, JPG, GIF up to 10MB (max 5 images)</UploadSubtext>
+              <UploadSubtext>PNG, JPG, GIF up to 10MB (max 5 images) - Images will be optimized automatically</UploadSubtext>
 
               <HiddenInput
                 id="imageInput"
