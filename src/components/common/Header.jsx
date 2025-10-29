@@ -11,6 +11,7 @@ import {
   Shield,
   Package,
   Heart,
+  Store,
   Menu as MenuIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -365,6 +366,16 @@ export default function Header() {
                 )}
               </Link>
             )}
+            {/* Vendor Dashboard Icon */}
+            {userProfile?.role === "seller" && (
+              <Link href="/seller/dashboard" className="relative hidden md:block">
+                <Store
+                size={22}
+                className="text-gray-600 hover:text-gray-800 cursor-pointer transition dark:text-gray-200 dark:hover:text-white"
+                />
+              </Link>
+             )}
+
 
             {/* User Menu */}
             {currentUser ? (
@@ -435,6 +446,9 @@ export default function Header() {
               <Link href="/wishlist" className="flex items-center gap-3 px-6 py-3 text-lg text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition dark:text-gray-200 dark:hover:bg-neutral-800 dark:hover:text-white"> <Heart size={20} className="text-lime-500" />Wishlist</Link>
               <Link href="/profile" className="flex items-center gap-3 px-6 py-3 text-lg text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition dark:text-gray-200 dark:hover:bg-neutral-800 dark:hover:text-white"> <User size={20} className="text-lime-500" />Profile</Link>
               {userProfile?.role === "seller" && <Link href="/seller/products" className="flex items-center gap-3 px-6 py-3 text-lg text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition dark:text-gray-200 dark:hover:bg-neutral-800 dark:hover:text-white"><Package size={20} className="text-lime-500" />My Products</Link>}
+              {userProfile?.role === "seller" && (
+                <Link href="/seller/dashboard"className="flex items-center gap-3 px-6 py-3 text-lg text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition dark:text-gray-200 dark:hover:bg-neutral-800 dark:hover:text-white"><Store size={20} className="text-lime-500" />Vendor Dashboard</Link>)}
+
               {isSuperAdmin(currentUser) && <Link href="/admin" className="flex items-center gap-3 px-6 py-3 text-lg text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition dark:text-gray-200 dark:hover:bg-neutral-800 dark:hover:text-white"><Shield size={20} className="text-lime-500" />Super Admin</Link>}
               <button onClick={handleLogout} className="flex items-center gap-3 px-6 py-3 text-lg text-red-600 hover:bg-gray-100 hover:text-red-700 transition w-full text-left dark:text-red-400 dark:hover:bg-neutral-800 dark:hover:text-red-300"> <LogOut size={20} className="text-red-600 dark:text-red-400" />Logout </button>
             </>}

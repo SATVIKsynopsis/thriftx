@@ -17,10 +17,10 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import toast from "react-hot-toast";
-import { RecaptchaVerifier, signInWithPhoneNumber, updateProfile } from "firebase/auth";
+import { RecaptchaVerifier, signInWithPhoneNumber, updateProfile, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth, db } from "@/firebase/config";
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "../ui/input-otp";
-import { collection, doc, getDocs, query, setDoc, where } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 const SellerRegister = () => {
     const [formData, setFormData] = useState({
@@ -205,6 +205,41 @@ const SellerRegister = () => {
             setLoading(false);
         }
     };
+    // Google Sign-In
+    const handleGoogleSignIn = async () => {
+      setLoading(true);
+      try {
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+    
+        // If user doesn't exist, create new one
+        if (!userSnap.exists()) {
+          await setDoc(userRef, {
+            uid: user.uid,
+            name: user.displayName || "",
+            email: user.email,
+            role: "seller",
+            location: "",
+            favoriteStyles: "",
+            sustainabilityGoals: "",
+            createdAt: new Date().toISOString(),
+            provider: "google",
+          });
+        }
+    
+        toast.success(`Welcome, ${user.displayName || "Buyer"}! `);
+        router.push("/");
+      } catch (error) {
+        console.error("Google sign-in error:", error);
+        toast.error("Google Sign-In failed. Try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-linear-to-br dark:from-[#0a0a0a] dark:via-[#121212] dark:to-[#1a1a1a] px-4 sm:px-6 py-12 transition-colors">
             <div className="w-full max-w-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-black rounded-3xl shadow-xl dark:shadow-[0_0_25px_rgba(255,255,255,0.05)] p-5 sm:p-8 backdrop-blur-md transition-colors">
@@ -298,6 +333,24 @@ const SellerRegister = () => {
                             {loading ? (otpSent ? "Verifying..." : "Creating Account...") : (otpSent ? "Verify Phone & Finish" : "Register as Seller")}
                         </button>
                     </div>
+                    {/* OR: Google Sign-In */}
+                    <div className="md:col-span-2 flex flex-col items-center gap-3 mt-4">
+                        <p className="text-gray-500 dark:text-gray-400 text-sm">or</p>
+                        <button
+                        type="button"
+                        onClick={handleGoogleSignIn}
+                        disabled={loading}
+                        className="w-full py-3 bg-white dark:bg-neutral-900 border border-gray-300 dark:border-gray-700 rounded-full shadow-md flex items-center justify-center gap-3 hover:scale-[1.02] transition-all"
+                        >
+                            <img
+                            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                            alt="Google"
+                            className="w-5 h-5"
+                            />
+                            <span className="text-gray-700 dark:text-gray-200 font-medium">Continue with Google</span>
+                        </button>
+                    </div>
+
                 </form>
 
                 {/* FOOTER */}
