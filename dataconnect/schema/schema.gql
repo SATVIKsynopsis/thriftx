@@ -42,3 +42,16 @@ type Review @table {
   reviewer: User
   product: Product
 }
+
+# example schema for coupon
+# {
+#   code: "WELCOME10",
+#   description: "Get 10% off on your first order",
+#   discountType: "percent", // or "flat"
+#   discountValue: 10,
+#   minOrderValue: 200,
+#   maxDiscount: 100,
+#   expiryDate: "2025-12-31",
+#   active: true,
+#   createdAt: "2025-10-30",
+# }

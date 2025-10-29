@@ -5,7 +5,11 @@ export function middleware(req) {
   console.log("✅ Middleware triggered on:", pathname);
 
   // Paths that require authentication
-  const protectedRoutes = ['/cart', '/admin', '/category'];
+  const protectedRoutes = [
+    '/cart', 
+    // '/admin', 
+    '/category'
+  ];
 
   // Check if current path starts with any protected route
   const isProtected = protectedRoutes.some((route) => pathname.startsWith(route));
@@ -29,5 +33,9 @@ export function middleware(req) {
 }
 
 export const config = {
-  matcher: ['/cart', '/admin/:path*', '/category'],
+  matcher: [
+    '/cart',
+    // '/admin/:path*', 
+    '/category'
+  ],
 };

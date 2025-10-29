@@ -409,7 +409,9 @@ const handleGoogleSignIn = async () => {
             disabled={loading}
             className="w-full py-3 bg-white dark:bg-neutral-900 border border-gray-300 dark:border-gray-700 rounded-full shadow-md flex items-center justify-center gap-3 hover:scale-[1.02] transition-all"
             >
-              <img src="/google-icon.svg" alt="Google" className="w-5 h-5" />
+              <img 
+              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+              alt="Google" className="w-5 h-5" />
               <span className="text-gray-700 dark:text-gray-200 font-medium">Continue with Google</span>
             </button>
           </div>

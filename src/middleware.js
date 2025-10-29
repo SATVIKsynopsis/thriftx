@@ -5,7 +5,9 @@ export function middleware(request) {
   const cookieValue = request.cookies.get('__session')?.value;
 
   // Protected routes
-  const protectedRoutes = ['/cart', '/admin', '/profile', '/seller'];
+  const protectedRoutes = ['/cart', 
+    // '/admin', 
+    '/profile', '/seller'];
   
   // Auth routes 
   const authRoutes = ['/login', '/register/customer', '/signup', '/register/seller'];
@@ -125,7 +127,7 @@ export function middleware(request) {
 export const config = {
   matcher: [
     '/cart', 
-    '/admin/:path*', 
+    // '/admin/:path*', 
     '/profile',
     '/login',
     '/register/customer',
