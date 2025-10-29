@@ -9,6 +9,8 @@ import toast from "react-hot-toast";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db, auth } from "@/firebase/config";
+import Image from "next/image";
+
 
 const LoginComponent = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -177,10 +179,12 @@ const LoginComponent = () => {
             disabled={loading}
             className="w-full py-3 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-semibold rounded-full shadow-md hover:bg-gray-100 dark:hover:bg-neutral-800 flex items-center justify-center gap-3 transition-all duration-300"
           >
-            <img
-              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-              alt="Google"
-              className="w-5 h-5"
+            <Image
+            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+            alt="Google"
+            width={20}
+            height={20}
+            className="w-5 h-5"
             />
             Continue with Google
           </button>
