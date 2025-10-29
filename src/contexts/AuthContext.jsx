@@ -99,6 +99,49 @@ export const AuthProvider = ({ children }) => {
     return result;
   };
 
+    const loginWithGoogle = async () => {
+    try {
+      const { signInWithPopup, GoogleAuthProvider } = await import('firebase/auth');
+      const { doc, getDoc, setDoc, serverTimestamp } = await import('firebase/firestore');
+
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(authRef.current, provider);
+      const user = result.user;
+
+      
+      const userRef = doc(dbRef.current, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+
+      let role = 'buyer'; 
+      if (!userSnap.exists()) {
+
+        await setDoc(userRef, {
+          uid: user.uid,
+          name: user.displayName || 'Unknown User',
+          email: user.email,
+          role,
+          createdAt: serverTimestamp(),
+          provider: 'google',
+          emailVerified: user.emailVerified,
+        });
+      } else {
+        role = userSnap.data().role;
+      }
+
+      await setSessionCookie(user, role);
+      setCurrentUser(user);
+      setUserProfile({ ...userSnap.data(), role });
+      toast.success(`Welcome ${user.displayName || 'back'} 👋`);
+
+      return { user, role };
+    } catch (error) {
+      console.error('Google login error:', error);
+      toast.error('Google Sign-In failed.');
+      throw error;
+    }
+  };
+
+
   const logout = async () => {
     const { signOut } = await import('firebase/auth');
     await signOut(authRef.current);
@@ -269,6 +312,7 @@ export const AuthProvider = ({ children }) => {
     userProfile,
     signup,
     login,
+    loginWithGoogle,
     logout,
     fetchUserProfile,
     isSuperAdmin,
@@ -276,6 +320,7 @@ export const AuthProvider = ({ children }) => {
     isSeller,
     hasRole,
     sendPhoneOTP,
+
   };
 
   return (

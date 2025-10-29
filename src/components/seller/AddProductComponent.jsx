@@ -14,7 +14,8 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/firebase/config';
+
+import { db, storage } from '@/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
