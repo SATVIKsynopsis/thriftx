@@ -1,7 +1,5 @@
 import React from "react";
-import ApplyCoupon from "./components/ApplyCoupon";
 import CouponList from "./components/CouponList";
-import CreateCouponForm from "./components/CreateCouponForm";
 import AdminLayout from "../admin/AdminLayout";
 
 const CouponsPage = () => {
@@ -13,7 +11,6 @@ const CouponsPage = () => {
     >
       <div className="space-y-10">
         <CouponList />
-        <ApplyCoupon />
       </div>
     </AdminLayout>
   )

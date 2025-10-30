@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState } from "react";
 import { db } from "@/firebase/config";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
@@ -63,96 +62,112 @@ const CreateCouponForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 p-2 dark:text-white text-black ">
-      {/* Coupon Code */}
-      <div className="space-y-2">
-        <Label htmlFor="code">Coupon Code</Label>
-        <Input
-          id="code"
-          name="code"
-          placeholder="e.g. SAVE10"
-          value={coupon.code}
-          onChange={handleChange}
-          required
-        />
-      </div>
+    <div
+      className="flex justify-center items-center bg-white text-black"
+      // Ensures white background and light theme even if app is dark
+    >
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white border border-gray-200 shadow-md rounded-2xl p-6 w-full max-w-md space-y-5"
+      >
+        {/* Coupon Code */}
+        <div className="space-y-2">
+          <Label htmlFor="code">Coupon Code</Label>
+          <Input
+            id="code"
+            name="code"
+            placeholder="e.g. SAVE10"
+            value={coupon.code}
+            onChange={handleChange}
+            required
+            className="text-black border-gray-300 focus:border-blue-500"
+          />
+        </div>
 
-      {/* Description */}
-      <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
-        <Input
-          id="description"
-          name="description"
-          placeholder="Short description"
-          value={coupon.description}
-          onChange={handleChange}
-          required
-        />
-      </div>
+        {/* Description */}
+        <div className="space-y-2">
+          <Label htmlFor="description">Description</Label>
+          <Input
+            id="description"
+            name="description"
+            placeholder="Short description"
+            value={coupon.description}
+            onChange={handleChange}
+            required
+            className="text-black border-gray-300"
+          />
+        </div>
 
-      {/* Discount Type */}
-      <div className="space-y-2">
-        <Label htmlFor="discountType">Discount Type</Label>
-        <Select
-          onValueChange={handleSelectChange}
-          defaultValue={coupon.discountType}
+        {/* Discount Type */}
+        <div className="space-y-2">
+          <Label htmlFor="discountType">Discount Type</Label>
+          <Select
+            onValueChange={handleSelectChange}
+            defaultValue={coupon.discountType}
+          >
+            <SelectTrigger className="w-full border-gray-300">
+              <SelectValue placeholder="Select type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="flat">Flat</SelectItem>
+              <SelectItem value="percent">Percent</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Discount Value */}
+        <div className="space-y-2">
+          <Label htmlFor="discountValue">Discount Value</Label>
+          <Input
+            type="number"
+            id="discountValue"
+            name="discountValue"
+            placeholder="Enter value"
+            value={coupon.discountValue}
+            onChange={handleChange}
+            required
+            className="text-black border-gray-300"
+          />
+        </div>
+
+        {/* Minimum Order Value */}
+        <div className="space-y-2">
+          <Label htmlFor="minOrderValue">Minimum Order Value</Label>
+          <Input
+            type="number"
+            id="minOrderValue"
+            name="minOrderValue"
+            placeholder="e.g. 500"
+            value={coupon.minOrderValue}
+            onChange={handleChange}
+            required
+            className="text-black border-gray-300"
+          />
+        </div>
+
+        {/* Expiry Date */}
+        <div className="space-y-2">
+          <Label htmlFor="expiryDate">Expiry Date</Label>
+          <Input
+            type="date"
+            id="expiryDate"
+            name="expiryDate"
+            value={coupon.expiryDate}
+            onChange={handleChange}
+            required
+            className="text-black border-gray-300"
+          />
+        </div>
+
+        {/* Submit Button */}
+        <Button
+          type="submit"
+          className="w-full mt-4 bg-blue-600 text-white hover:bg-blue-700 transition"
         >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="flat">Flat</SelectItem>
-            <SelectItem value="percent">Percent</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Discount Value */}
-      <div className="space-y-2">
-        <Label htmlFor="discountValue">Discount Value</Label>
-        <Input
-          type="number"
-          id="discountValue"
-          name="discountValue"
-          placeholder="Enter value"
-          value={coupon.discountValue}
-          onChange={handleChange}
-          required
-        />
-      </div>
-
-      {/* Minimum Order Value */}
-      <div className="space-y-2">
-        <Label htmlFor="minOrderValue">Minimum Order Value</Label>
-        <Input
-          type="number"
-          id="minOrderValue"
-          name="minOrderValue"
-          placeholder="e.g. 500"
-          value={coupon.minOrderValue}
-          onChange={handleChange}
-          required
-        />
-      </div>
-
-      {/* Expiry Date */}
-      <div className="space-y-2">
-        <Label htmlFor="expiryDate">Expiry Date</Label>
-        <Input
-          type="date"
-          id="expiryDate"
-          name="expiryDate"
-          value={coupon.expiryDate}
-          onChange={handleChange}
-          required
-        />
-      </div>
-
-      {/* Submit Button */}
-      <Button type="submit" className="w-full mt-4">
-        Create Coupon
-      </Button>
-    </form>
+          Create Coupon
+        </Button>
+      </form>
+    </div>
   );
 };
 

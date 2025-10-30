@@ -26,12 +26,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
 import CreateCouponForm from "./CreateCouponForm";
 import Pagination from "@/components/common/Pagination";
-import Link from "next/link";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-
 
 const getStatusStyle = (status) =>
 ({
@@ -39,7 +36,6 @@ const getStatusStyle = (status) =>
   expired: "bg-red-100 text-red-700 border border-red-300",
   disabled: "bg-gray-100 text-gray-700 border border-gray-300",
 }[status] || "");
-
 
 const CouponList = () => {
   const [coupons, setCoupons] = useState([]);
@@ -52,9 +48,7 @@ const CouponList = () => {
   useEffect(() => {
     const q = query(collection(db, "coupons"), orderBy("createdDate", "desc"));
     const unsub = onSnapshot(q, (snapshot) => {
-      setCoupons(
-        snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
-      );
+      setCoupons(snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
     });
     return () => unsub();
   }, []);
@@ -63,10 +57,7 @@ const CouponList = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentCoupons = coupons.slice(startIndex, startIndex + itemsPerPage);
 
-  const paginationInfo = {
-    totalPages,
-    currentPage,
-  };
+  const paginationInfo = { totalPages, currentPage };
 
   const handleStatusChange = async (index, newStatus) => {
     const coupon = currentCoupons[index];
@@ -82,19 +73,19 @@ const CouponList = () => {
 
   const handleItemsPerPageChange = (value) => {
     setItemsPerPage(Number(value));
-    setCurrentPage(1); // reset to first page on change
+    setCurrentPage(1);
   };
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
-          Coupons
-        </h2>
-        {/* Dialog for popup */}
+        <h2 className="text-xl font-semibold text-gray-800">Coupons</h2>
+
+        {/* Dialog Popup */}
         <Dialog>
           <DialogTrigger asChild>
-            <Button className="flex items-center gap-2">
+            <Button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white">
               <Plus size={16} />
               Add Coupon
             </Button>
@@ -102,15 +93,14 @@ const CouponList = () => {
 
           <DialogContent
             className="max-w-2xl p-0 bg-transparent border-none shadow-none"
-            // Custom backdrop color
             style={{
-              backgroundColor: "rgba(0,0,0,0.85)", // black background with 85% opacity
-              backdropFilter: "blur(4px)", // optional subtle blur
+              backgroundColor: "rgba(0,0,0,0.5)",
+              backdropFilter: "blur(4px)",
             }}
           >
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 shadow-lg">
+            <div className="bg-white rounded-2xl p-6 shadow-lg">
               <DialogHeader>
-                <DialogTitle className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
+                <DialogTitle className="text-2xl font-semibold text-gray-800">
                   Create New Coupon
                 </DialogTitle>
               </DialogHeader>
@@ -120,10 +110,8 @@ const CouponList = () => {
         </Dialog>
       </div>
 
-
       {/* Coupon Table */}
-      {/* Coupon Table */}
-      <Card className="p-4 border border-gray-200">
+      <Card className="p-4 border border-gray-200 bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="min-w-full border border-gray-200 rounded-lg text-sm">
             <thead className="bg-gray-100 text-gray-700">
@@ -141,29 +129,37 @@ const CouponList = () => {
             </thead>
             <tbody>
               {currentCoupons.map((coupon, i) => {
-                const globalIndex = startIndex + i; // absolute index across pages
-                const serialNumber = globalIndex + 1; // starts from 1
+                const globalIndex = startIndex + i;
+                const serialNumber = globalIndex + 1;
 
                 return (
                   <tr
                     key={globalIndex}
                     className="border-t border-gray-200 hover:bg-gray-50 transition"
                   >
-                    {/* Number Column */}
                     <td className="px-4 py-2 text-gray-600 font-medium">
                       {serialNumber}
                     </td>
-
-                    <td className="px-4 py-2 font-medium">{coupon.code}</td>
-                    <td className="px-4 py-2">{coupon.description}</td>
-                    <td className="px-4 py-2">
+                    <td className="px-4 py-2 font-medium text-gray-800">
+                      {coupon.code}
+                    </td>
+                    <td className="px-4 py-2 text-gray-700">
+                      {coupon.description}
+                    </td>
+                    <td className="px-4 py-2 text-gray-700">
                       {coupon.discountType === "percent"
                         ? `${coupon.discountValue}%`
                         : `₹${coupon.discountValue}`}
                     </td>
-                    <td className="px-4 py-2">₹{coupon.minOrderValue}</td>
-                    <td className="px-4 py-2">{coupon.createdDate}</td>
-                    <td className="px-4 py-2">{coupon.expiryDate}</td>
+                    <td className="px-4 py-2 text-gray-700">
+                      ₹{coupon.minOrderValue}
+                    </td>
+                    <td className="px-4 py-2 text-gray-700">
+                      {coupon.createdDate}
+                    </td>
+                    <td className="px-4 py-2 text-gray-700">
+                      {coupon.expiryDate}
+                    </td>
                     <td className="px-4 py-2">
                       <span
                         className={cn(
@@ -175,7 +171,7 @@ const CouponList = () => {
                       </span>
                     </td>
 
-                    {/* Action Menu */}
+                    {/* Actions */}
                     <td className="px-4 py-2 text-center">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -226,7 +222,7 @@ const CouponList = () => {
           </table>
         </div>
 
-        {/* Pagination Footer (same as before) */}
+        {/* Pagination Footer */}
         <div className="flex flex-col sm:flex-row justify-between items-center mt-4 gap-4">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <span>Rows per page:</span>
@@ -250,6 +246,7 @@ const CouponList = () => {
             <Pagination
               paginationInfo={paginationInfo}
               onPageChange={(page) => setCurrentPage(page)}
+              forceLight
             />
           )}
         </div>
