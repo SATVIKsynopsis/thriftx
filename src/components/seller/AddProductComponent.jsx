@@ -335,6 +335,8 @@ const AddProductComponent = () => {
         originalPrice: data.originalPrice ? parseFloat(data.originalPrice) : null,
         stock: parseInt(data.stock),
         images: imageUrls,
+        sizes: data.sizes.split(',').map(size => size.trim()),
+        colors: data.colors.split(',').map(color => color.trim()),
         sellerId: currentUser.uid,
         sellerName: userProfile?.name || currentUser.displayName || 'Unknown Seller',
         createdAt: serverTimestamp(),
@@ -397,15 +399,43 @@ const AddProductComponent = () => {
             </FormGroup>
 
             <FormGroup>
-  <Label htmlFor="brand">Brand</Label>
-  <Input
-    id="brand"
-    {...register('brand', { required: 'Brand is required' })}
-    error={!!errors.brand}
-    placeholder="Enter brand name"
-  />
-  {errors.brand && <ErrorMessage>{errors.brand.message}</ErrorMessage>}
-</FormGroup>
+              <Label htmlFor="brand">Brand</Label>
+              <Input
+              id="brand"
+              {...register('brand', { required: 'Brand is required' })}
+              error={!!errors.brand}
+              placeholder="Enter brand name"
+              />
+              {errors.brand && <ErrorMessage>{errors.brand.message}</ErrorMessage>}
+            </FormGroup>
+            <FormRow columns="1fr 1fr">
+  <FormGroup>
+    <Label htmlFor="sizes">Available Sizes</Label>
+    <Input
+      id="sizes"
+      {...register('sizes', {
+        required: 'Please specify available sizes',
+      })}
+      error={!!errors.sizes}
+      placeholder="e.g. S, M, L, XL"
+    />
+    {errors.sizes && <ErrorMessage>{errors.sizes.message}</ErrorMessage>}
+  </FormGroup>
+
+  <FormGroup>
+    <Label htmlFor="colors">Available Colors</Label>
+    <Input
+      id="colors"
+      {...register('colors', {
+        required: 'Please specify available colors',
+      })}
+      error={!!errors.colors}
+      placeholder="e.g. Red, Blue, Black"
+    />
+    {errors.colors && <ErrorMessage>{errors.colors.message}</ErrorMessage>}
+  </FormGroup>
+</FormRow>
+
 
 
             <FormRow columns="1fr 1fr">

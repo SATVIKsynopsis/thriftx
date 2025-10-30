@@ -271,6 +271,10 @@ const EditProductComponent = () => {
   const [loading, setLoading] = useState(true);
   const [dragOver, setDragOver] = useState(false);
 
+  const [selectedColor, setSelectedColor] = useState('');
+  const [selectedSize, setSelectedSize] = useState('');
+
+
   const { currentUser } = useAuth();
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm();
@@ -303,7 +307,9 @@ const EditProductComponent = () => {
             price: productData.price,
             originalPrice: productData.originalPrice || '',
             stock: productData.stock,
-            brand: productData.brand || ''
+            brand: productData.brand || '',
+            colors: productData.colors || [],
+            sizes: productData.sizes || [],
           });
 
           // Set existing images
@@ -598,6 +604,7 @@ const EditProductComponent = () => {
                   placeholder="0.00"
                 />
               </FormGroup>
+              
 
               <FormGroup>
                 <Label htmlFor="stock">Stock Quantity</Label>
@@ -617,6 +624,36 @@ const EditProductComponent = () => {
               </FormGroup>
             </FormRow>
           </Section>
+          <Section>
+  <SectionTitle>
+    Product Variations
+  </SectionTitle>
+
+  <FormRow columns="1fr 1fr 1fr">
+    <FormGroup>
+      <Label htmlFor="colors">Available Colors</Label>
+      <Input
+        id="colors"
+        {...register('colors')}
+        placeholder="e.g. red, blue, black"
+      />
+      <p className="text-gray-500 text-sm">Enter multiple colors separated by commas.</p>
+    </FormGroup>
+
+    <FormGroup>
+      <Label htmlFor="sizes">Available Sizes</Label>
+      <Input
+        id="sizes"
+        {...register('sizes')}
+        placeholder="e.g. S, M, L, XL"
+      />
+      <p className="text-gray-500 text-sm">Enter multiple sizes separated by commas.</p>
+    </FormGroup>
+
+    
+  </FormRow>
+</Section>
+
 
           <Section>
             <SectionTitle>

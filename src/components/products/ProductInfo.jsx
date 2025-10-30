@@ -4,7 +4,16 @@ import React from "react";
 import Link from "next/link";
 import { Star, User, Package, Minus, Plus } from "lucide-react";
 import { formatPrice } from "../../utils/formatters";
-import { PRODUCT_COLORS, PRODUCT_SIZES } from "../../utils/productDetailConstants";
+
+//safe color validation
+const isValidColor = (color) => {
+  const s = new Option().style;
+  s.color = color;
+  return s.color !== "";
+};
+
+
+
 const ProductInfo = ({
   product,
   quantity,
@@ -88,24 +97,56 @@ const ProductInfo = ({
       </p>
 
       {/* Color Selection */}
-      <div className="mb-6">
-        <p className="text-sm text-gray-700 dark:text-gray-400 mb-3">
-          Select Color
-        </p>
-        <div className="flex flex-wrap gap-3">
-          {PRODUCT_COLORS.map((color, idx) => (
-            <button
-              key={idx}
-              onClick={() => onColorSelect(idx)}
-              className={`w-10 h-10 rounded-full border-2 transition-all duration-200 hover:scale-105 ${selectedColor === idx
+     <div className="mb-6">
+  <p className="text-sm text-gray-700 dark:text-gray-400 mb-3">
+    Select Color
+  </p>
+  <div className="flex flex-wrap gap-3">
+    {Array.isArray(product.colors) && product.colors.length > 0 ? (
+      product.colors.map((color, idx) => {
+        // Fallback if invalid color name — switch to hex
+        const displayColor = isValidColor(color) ? color : '#ccc';
+        return (
+          <button
+            key={idx}
+            onClick={() => onColorSelect(color)}
+            className={`w-10 h-10 rounded-full border-2 transition-all duration-200 hover:scale-105 ${
+              selectedColor === color
                 ? "border-gray-900 dark:border-white"
                 : "border-gray-300 dark:border-gray-600"
-                }`}
-              style={{ backgroundColor: color }}
-            />
-          ))}
-        </div>
-      </div>
+            }`}
+            style={{ backgroundColor: displayColor }}
+            title={color}
+          />
+        );
+      })
+    ) : typeof product.colors === "string" && product.colors.trim() ? (
+      // If colors come as a comma-separated string like "red, blue"
+      product.colors.split(',').map((color, idx) => {
+        const trimmed = color.trim();
+        const displayColor = isValidColor(trimmed) ? trimmed : '#ccc';
+        return (
+          <button
+            key={idx}
+            onClick={() => onColorSelect(trimmed)}
+            className={`w-10 h-10 rounded-full border-2 transition-all duration-200 hover:scale-105 ${
+              selectedColor === trimmed
+                ? "border-gray-900 dark:border-white"
+                : "border-gray-300 dark:border-gray-600"
+            }`}
+            style={{ backgroundColor: displayColor }}
+            title={trimmed}
+          />
+        );
+      })
+    ) : (
+      <p className="text-gray-500 text-sm italic">
+        No color options provided.
+      </p>
+    )}
+  </div>
+</div>
+
 
       {/* Size Selection */}
       <div className="mb-6">
@@ -113,18 +154,24 @@ const ProductInfo = ({
           Choose Size
         </p>
         <div className="flex flex-wrap gap-3">
-          {PRODUCT_SIZES.map((size) => (
+          {product.sizes && product.sizes.length > 0 ? (
+            product.sizes.map((size) => (
             <button
-              key={size}
-              onClick={() => onSizeSelect(size)}
-              className={`px-6 py-2 rounded-full border transition-all duration-200 text-sm sm:text-base ${selectedSize === size
-                ? "bg-gray-900 text-white dark:bg-white dark:text-black"
-                : "bg-transparent text-gray-800 dark:text-white border-gray-400 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800"
-                }`}
-            >
-              {size}
-            </button>
-          ))}
+            key={size}
+            onClick={() => onSizeSelect(size)}
+            className={`px-6 py-2 rounded-full border transition-all duration-200 text-sm sm:text-base ${
+            selectedSize === size
+            ? "bg-gray-900 text-white dark:bg-white dark:text-black"
+            : "bg-transparent text-gray-800 dark:text-white border-gray-400 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800"
+        }`}
+        >
+          {size}
+           </button>
+           ))
+          ) : (
+          <p className="text-gray-500 text-sm italic">No size options provided.</p>
+          )}
+
         </div>
       </div>
 
