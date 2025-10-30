@@ -1,27 +1,40 @@
 import "./globals.css";
-import { Anton, Poppins } from "next/font/google";
+import localFont from "next/font/local";
 import AccessComponent from "./AccessComponent";
-import { sansation } from "./fonts/Sansation";
 
-const anton = Anton({
+const anton = localFont({
+  src: "../app/fonts/Anton/Anton-Regular.ttf",
   weight: "400",
-  subsets: ["latin"],
+  style: "normal",
+  display: "swap",
+});
+
+const poppins = localFont({
+  src: [
+    { path: "../app/fonts/Poppins/Poppins-Regular.ttf", weight: "400", style: "normal" },
+    { path: "../app/fonts/Poppins/Poppins-Bold.ttf", weight: "700", style: "normal" },
+  ],
+  display: "swap",
+});
+
+const sansation = localFont({
+  src: "../app/fonts/Sansation/Sansation-Regular.ttf",
+  weight: "400",
+  style: "normal",
   display: "swap",
 });
 
 export const metadata = {
   title: "ThriftX",
   description:
-    "ThriftX - Your trusted sustainable fashion marketplace for buying and selling amazing pre-loved fashion pieces. Discover unique styles, connect with fashion lovers, and make sustainable choices.",
+    "ThriftX - Your trusted sustainable fashion marketplace for buying and selling amazing pre-loved fashion pieces.",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${anton.className} ${sansation.className}`} suppressHydrationWarning>
       <body>
-        <AccessComponent>
-          {children}
-        </AccessComponent>
+        <AccessComponent>{children}</AccessComponent>
       </body>
     </html>
   );

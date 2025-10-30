@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import * as SeparatorPrimitive from "@radix-ui/react-separator";
 import {
   CreditCard,
   MapPin,
@@ -23,6 +24,28 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { formatPrice } from "@/utils/formatters";
 import toast from "react-hot-toast";
+import { cn } from "@/lib/utils";
+
+// Separator Component
+function Separator({
+  className,
+  orientation = "horizontal",
+  decorative = true,
+  ...props
+}) {
+  return (
+    <SeparatorPrimitive.Root
+      data-slot="separator"
+      decorative={decorative}
+      orientation={orientation}
+      className={cn(
+        "bg-border shrink-0 data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-px",
+        className
+      )}
+      {...props}
+    />
+  );
+}
 
 const CheckoutComponent = () => {
   const [loading, setLoading] = useState(false);
@@ -246,12 +269,12 @@ const CheckoutComponent = () => {
 
   if (cartItems.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center text-center p-10">
+      <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center text-center p-10">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+          <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2">
             Your cart is empty
           </h2>
-          <p className="text-gray-500">Add items to proceed with checkout.</p>
+          <p className="text-gray-500 dark:text-gray-400">Add items to proceed with checkout.</p>
         </div>
       </div>
     );
@@ -272,7 +295,7 @@ const CheckoutComponent = () => {
             className="bg-white dark:bg-[#0f0f0f] border-2 border-gray-300 dark:border-gray-700 rounded-3xl p-6 md:p-8 space-y-6 shadow-lg transition-colors"
           >
             {/* Contact Info */}
-            <section className="mb-8">
+            <section>
               <h2 className="text-xl font-semibold flex items-center gap-2 text-gray-900 dark:text-white mb-4">
                 <User size={20} /> Contact Information
               </h2>
@@ -321,8 +344,10 @@ const CheckoutComponent = () => {
               </div>
             </section>
 
+            <Separator className="bg-gray-200 dark:bg-gray-700" />
+
             {/* Address */}
-            <section className="mb-8">
+            <section>
               <h2 className="text-xl font-semibold flex items-center gap-2 text-gray-900 dark:text-white mb-4">
                 <MapPin size={20} /> Shipping Address
               </h2>
@@ -378,34 +403,38 @@ const CheckoutComponent = () => {
               Order Summary
             </h2>
 
-            {cartItems.map((item) => (
-              <div
-                key={item.id}
-                className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 py-3"
-              >
-                <div>
-                  <div className="font-semibold text-gray-900 dark:text-white">
-                    {item.productName}
+            <div className="space-y-3 mb-4">
+              {cartItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex justify-between items-center pb-3 border-b border-gray-200 dark:border-gray-700"
+                >
+                  <div>
+                    <div className="font-semibold text-gray-900 dark:text-white text-sm">
+                      {item.productName}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      Qty: {item.quantity}
+                    </div>
                   </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                    Qty: {item.quantity}
+                  <div className="font-semibold text-green-600 dark:text-green-400 text-sm">
+                    {formatPrice(item.price * item.quantity)}
                   </div>
                 </div>
-                <div className="font-semibold text-green-600 dark:text-green-400">
-                  {formatPrice(item.price * item.quantity)}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
 
-            <div className="flex flex-col gap-2 mt-4">
-              <div className="flex justify-between text-gray-600 dark:text-gray-300">
+            <Separator className="bg-gray-300 dark:bg-gray-600 my-4" />
+
+            <div className="flex flex-col gap-3">
+              <div className="flex justify-between text-gray-600 dark:text-gray-300 text-sm">
                 <span>Subtotal</span>
                 <span>{formatPrice(subtotal)}</span>
               </div>
 
               {/* Fallback/Signup Discount */}
               {fallbackDiscount > 0 && (
-                <div className="flex justify-between text-green-600 dark:text-green-400">
+                <div className="flex justify-between text-green-600 dark:text-green-400 text-sm">
                   <span>Signup Discount (-20%)</span>
                   <span className="font-semibold">-{formatPrice(fallbackDiscount)}</span>
                 </div>
@@ -413,7 +442,7 @@ const CheckoutComponent = () => {
 
               {/* Individual Coupon Discounts */}
               {couponBreakdown.map((item) => (
-                <div key={item.code} className="flex justify-between text-green-600 dark:text-green-400">
+                <div key={item.code} className="flex justify-between text-green-600 dark:text-green-400 text-sm">
                   <span>
                     {item.code}
                     {item.type === 'percent' ? ` (-${item.value}%)` : ` (-₹${item.value})`}
@@ -422,43 +451,43 @@ const CheckoutComponent = () => {
                 </div>
               ))}
 
-              {/* Total Coupon Savings */}
-              {totalCouponDiscount > 0 && (
-                <div className="flex justify-between text-green-600 dark:text-green-400 text-sm">
-                  <span>Total Coupon Savings</span>
-                  <span className="font-semibold">-{formatPrice(totalCouponDiscount)}</span>
-                </div>
-              )}
-
-              <div className="flex justify-between text-gray-600 dark:text-gray-300">
+              <div className="flex justify-between text-gray-600 dark:text-gray-300 text-sm">
                 <span>Delivery Fee</span>
                 <span>{shipping === 0 ? "FREE" : formatPrice(shipping)}</span>
               </div>
 
-              {/* Total Savings */}
-              {discount > 0 && (
-                <div className="flex justify-between text-green-600 dark:text-green-400 font-semibold border-t border-gray-200 dark:border-gray-700 pt-2">
-                  <span>Total Savings</span>
-                  <span>-{formatPrice(discount)}</span>
-                </div>
-              )}
-
-              <div className="flex justify-between text-gray-600 dark:text-gray-300">
+              <div className="flex justify-between text-gray-600 dark:text-gray-300 text-sm">
                 <span>Tax (8%)</span>
                 <span>{formatPrice(tax)}</span>
               </div>
+
+              {/* Total Savings */}
+              {discount > 0 && (
+                <>
+                  <Separator className="bg-gray-200 dark:bg-gray-700" />
+                  <div className="flex justify-between text-green-600 dark:text-green-400 font-semibold text-sm">
+                    <span>Total Savings</span>
+                    <span>-{formatPrice(discount)}</span>
+                  </div>
+                </>
+              )}
             </div>
 
-            <div className="flex justify-between border-t-2 border-gray-300 dark:border-gray-600 pt-4 mt-4 text-lg font-bold text-gray-900 dark:text-white">
+            <Separator className="bg-gray-300 dark:bg-gray-600 my-4" />
+
+            <div className="flex justify-between text-lg font-bold text-gray-900 dark:text-white">
               <span>Total</span>
               <span>{formatPrice(total)}</span>
             </div>
 
             {appliedCoupons.length > 0 && (
-              <div className="mt-4 p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-sm text-green-800 dark:text-green-200">
-                <span className="font-semibold">Applied Coupons: </span>
-                <span>{appliedCoupons.map(c => c.code).join(", ")}</span>
-              </div>
+              <>
+                <Separator className="bg-gray-200 dark:bg-gray-700 my-4" />
+                <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-sm text-green-800 dark:text-green-200">
+                  <span className="font-semibold">Applied Coupons: </span>
+                  <span>{appliedCoupons.map(c => c.code).join(", ")}</span>
+                </div>
+              </>
             )}
 
             <button

@@ -35,7 +35,6 @@ export default function AdminLayout({ children, title, description, breadcrumb }
       { path: "/admin/vendors", label: "Vendors", icon: Users },
       { path: "/admin/orders", label: "Orders", icon: ShoppingBag },
       { path: "/admin/products", label: "Products", icon: Package },
-      { path: "/admin/coupon", label: "Coupons", icon: Package },
       { path: "/admin/reports", label: "Reports", icon: BarChart3 },
       { path: "/admin/coupons", label: "Coupons", icon: TicketPercent },
     ],
