@@ -234,8 +234,7 @@ export const AuthProvider = ({ children }) => {
             setCurrentUser(user);
             const profile = await fetchUserProfile(user.uid);
             await setSessionCookie(user, profile?.role);
-            console.log("🔄 Session refreshed with role:", profile?.role);
-            route.push('/');
+              console.log("🔄 Session refreshed with role:", profile?.role);
           } else {
             // ✅ User signed out: remove token + cookie
             setCurrentUser(null);

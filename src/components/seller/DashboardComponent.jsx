@@ -149,9 +149,9 @@ const ActionsGrid = ({ children }) => (
   </div>
 );
 
-const ActionButton = React.forwardRef(({ to, children, ...props }, ref) => (
+const ActionButton = React.forwardRef(({ href, children, ...props }, ref) => (
   <Link
-    href={to}
+    href={href}
     ref={ref}
     className="flex items-center gap-4 p-6 bg-gray-50 border-2 border-gray-200 rounded-lg text-gray-700 transition-all hover:border-blue-600 hover:bg-blue-50 hover:text-blue-600"
     {...props}
@@ -251,9 +251,9 @@ const ProductActions = ({ children }) => (
   </div>
 );
 
-const IconButton = React.forwardRef(({ to, title, children, ...props }, ref) => (
+const IconButton = React.forwardRef(({ href, title, children, ...props }, ref) => (
   <Link
-    href={to}
+    href={href}
     ref={ref}
     title={title}
     aria-label={title}
@@ -272,7 +272,7 @@ const EmptyState = ({ children }) => (
 );
 
 
-const DashboardComponent = () => {
+const DashboardComponent = ({ onShowCoupons }) => {
   const [stats, setStats] = useState({
     totalProducts: 0,
     totalOrders: 0,
@@ -575,7 +575,7 @@ const DashboardComponent = () => {
         <QuickActions>
           <ActionsTitle>Quick Actions</ActionsTitle>
           <ActionsGrid>
-            <ActionButton to="/seller/products/add">
+            <ActionButton href="/seller/products/add">
               <ActionIcon>
                 <Plus size={20} />
               </ActionIcon>
@@ -585,7 +585,7 @@ const DashboardComponent = () => {
               </ActionInfo>
             </ActionButton>
 
-            <ActionButton to="/seller/products">
+            <ActionButton href="/seller/products">
               <ActionIcon>
                 <Package size={20} />
               </ActionIcon>
@@ -595,7 +595,7 @@ const DashboardComponent = () => {
               </ActionInfo>
             </ActionButton>
 
-            <ActionButton to="/seller/orders">
+            <ActionButton href="/seller/orders">
               <ActionIcon>
                 <ShoppingCart size={20} />
               </ActionIcon>
@@ -605,7 +605,7 @@ const DashboardComponent = () => {
               </ActionInfo>
             </ActionButton>
 
-            <ActionButton to="/seller/analytics">
+            <ActionButton href="/seller/analytics">
               <ActionIcon>
                 <TrendingUp size={20} />
               </ActionIcon>
@@ -614,6 +614,20 @@ const DashboardComponent = () => {
                 <ActionDescription>View detailed reports</ActionDescription>
               </ActionInfo>
             </ActionButton>
+
+            <button
+              type="button"
+              onClick={onShowCoupons}
+              className="flex items-center gap-4 p-6 bg-yellow-50 border-2 border-yellow-400 rounded-lg text-yellow-800 font-semibold transition-all hover:border-yellow-600 hover:bg-yellow-100 hover:text-yellow-900"
+            >
+              <ActionIcon>
+                <Star size={20} />
+              </ActionIcon>
+              <ActionInfo>
+                <ActionTitle>Review Coupons</ActionTitle>
+                <ActionDescription>Approve or reject coupon requests</ActionDescription>
+              </ActionInfo>
+            </button>
           </ActionsGrid>
         </QuickActions>
 
@@ -647,10 +661,10 @@ const DashboardComponent = () => {
                     </ProductInfo>
 
                     <ProductActions>
-                      <IconButton to={`/product/${product.id}`} title="View">
+                      <IconButton href={`/product/${product.id}`} title="View">
                         <Eye size={16} />
                       </IconButton>
-                      <IconButton to={`/seller/products/edit/${product.id}`} title="Edit">
+                      <IconButton href={`/seller/products/edit/${product.id}`} title="Edit">
                         <Edit size={16} />
                       </IconButton>
                     </ProductActions>
@@ -664,7 +678,7 @@ const DashboardComponent = () => {
                 <p className="text-sm text-gray-400 mb-4">
                   Start your sustainable fashion journey by adding your first product
                 </p>
-                <Link to="/seller/products/add" className="text-blue-600 border border-blue-600 rounded-lg py-2 px-4 transition-all hover:bg-blue-50">
+                <Link href="/seller/products/add" className="text-blue-600 border border-blue-600 rounded-lg py-2 px-4 transition-all hover:bg-blue-50">
                   Add Your First Product
                 </Link>
               </EmptyState>
@@ -720,7 +734,7 @@ const DashboardComponent = () => {
                 <p className="text-sm text-gray-400 mb-4">
                   Orders will appear here once customers start buying your products
                 </p>
-                <Link to="/seller/products/add" className="text-blue-600 border border-blue-600 rounded-lg py-2 px-4 transition-all hover:bg-blue-50">
+                <Link href="/seller/products/add" className="text-blue-600 border border-blue-600 rounded-lg py-2 px-4 transition-all hover:bg-blue-50">
                   Add More Products
                 </Link>
               </EmptyState>

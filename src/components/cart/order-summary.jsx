@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { ArrowRight, Gift } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Sansation } from "next/font/google";
 
 const sansation = Sansation({
@@ -9,9 +8,7 @@ const sansation = Sansation({
   subsets: ["latin"],
 });
 
-export default function OrderSummary({ subtotal, discount, deliveryFee, total }) {
-  const [promoCode, setPromoCode] = useState("");
-
+export default function OrderSummary({ subtotal, discount, deliveryFee, total, appliedCoupon }) {
   return (
     <div className={`text-white ${sansation.className}`}>
       <h2 className="text-xl font-semibold mb-6">Order Summary</h2>
@@ -23,7 +20,11 @@ export default function OrderSummary({ subtotal, discount, deliveryFee, total })
         </div>
 
         <div className="flex justify-between text-sm">
-          <span className="text-gray-400">Discount (-20%)</span>
+          <span className="text-gray-400">
+            {appliedCoupon
+              ? `Coupon (${appliedCoupon.code})${appliedCoupon.discountType === 'percent' ? ` (-${appliedCoupon.value}%)` : ''}`
+              : 'Discount (-20%)'}
+          </span>
           <span className="text-red-500 font-semibold">-₹{discount}</span>
         </div>
 
@@ -38,22 +39,6 @@ export default function OrderSummary({ subtotal, discount, deliveryFee, total })
           <span className="font-semibold text-base">Total</span>
           <span className="font-bold text-xl">₹{total}</span>
         </div>
-      </div>
-
-      <div className="mb-6 flex gap-2">
-        <div className="flex-1 relative">
-          <Gift className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500" />
-          <input
-            type="text"
-            placeholder="Add promo code"
-            value={promoCode}
-            onChange={(e) => setPromoCode(e.target.value)}
-            className="w-full bg-white border border-gray-300 rounded-full pl-10 pr-4 py-2 text-sm text-black placeholder-gray-500 focus:outline-none"
-          />
-        </div>
-        <button className="bg-black border border-gray-600 text-white px-6 py-2 rounded-full hover:border-gray-500 transition text-sm font-medium">
-          Apply
-        </button>
       </div>
 
       <button className="w-full border border-gray-600 text-white py-3 rounded-full hover:border-gray-500 transition font-medium flex items-center justify-center gap-2 group">

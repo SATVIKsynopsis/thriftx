@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import CartItem from "./cart-item";
 import OrderSummary from "./order-summary";
+import dynamic from 'next/dynamic';
 import { useAuth } from "@/contexts/AuthContext";
 import {
   subscribeToCart,
@@ -23,10 +24,13 @@ const sansation = Sansation({
   subsets: ["latin"],
 });
 
+const CartCouponInput = dynamic(() => import('./CartCouponInput'), { ssr: false });
+
 export default function CartPage() {
   const { currentUser } = useAuth();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
 
   useEffect(() => {
     if (!currentUser) return;
@@ -57,7 +61,19 @@ export default function CartPage() {
     (sum, item) => sum + Number(item.price) * Number(item.quantity),
     0
   );
-  const discount = Math.floor(subtotal * 0.2);
+
+  // Coupon discount logic
+  let couponDiscount = 0;
+  if (appliedCoupon) {
+    if (appliedCoupon.discountType === 'percent') {
+      couponDiscount = Math.floor(subtotal * (appliedCoupon.value / 100));
+    } else if (appliedCoupon.discountType === 'amount') {
+      couponDiscount = Math.min(subtotal, Math.floor(appliedCoupon.value));
+    }
+  }
+
+  // Fallback: 20% discount if no coupon (legacy logic)
+  const discount = appliedCoupon ? couponDiscount : Math.floor(subtotal * 0.2);
   const deliveryFee = items.length > 0 ? 15 : 0;
   const total = subtotal - discount + deliveryFee;
 
@@ -91,11 +107,13 @@ export default function CartPage() {
 
             {/* Order Summary Container */}
             <div className="bg-white dark:bg-[#0f0f0f] border-2 border-gray-200 dark:border-gray-700 rounded-3xl p-6 md:p-8 shadow-lg self-start transition-colors">
+              <CartCouponInput onApply={setAppliedCoupon} />
               <OrderSummary
                 subtotal={subtotal}
                 discount={discount}
                 deliveryFee={deliveryFee}
                 total={total}
+                appliedCoupon={appliedCoupon}
               />
             </div>
           </div>
