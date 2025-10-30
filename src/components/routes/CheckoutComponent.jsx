@@ -15,6 +15,7 @@ import {
   serverTimestamp,
   doc,
   getDoc,
+  setDoc,
 } from "firebase/firestore";
 import { db } from "@/firebase/config";
 import Script from "next/script";
@@ -26,33 +27,70 @@ import toast from "react-hot-toast";
 const CheckoutComponent = () => {
   const [loading, setLoading] = useState(false);
   const { currentUser, userProfile } = useAuth();
-  const { cartItems, getCartTotal, clearCart, appliedCoupon, setAppliedCoupon, fallbackUsed, setFallbackUsed } = useCart();
+  const { 
+    cartItems, 
+    getCartTotal, 
+    clearCart, 
+    appliedCoupons, 
+    setAppliedCoupons,
+    fallbackUsed, 
+    setFallbackUsed, 
+    useFallback, 
+    setUseFallback 
+  } = useCart();
   const router = useRouter();
 
   const { register, handleSubmit, formState: { errors } } = useForm();
 
-
   // Calculate subtotal
   const subtotal = getCartTotal();
-  // Coupon discount logic
-        let couponDiscount = 0;
-        if (appliedCoupon && typeof appliedCoupon.discountValue === 'number' && subtotal > 0) {
-          if (appliedCoupon.discountType === 'percent') {
-            couponDiscount = Math.floor(subtotal * (appliedCoupon.discountValue / 100));
-          } else if (appliedCoupon.discountType === 'flat' || appliedCoupon.discountType === 'amount') {
-            couponDiscount = Math.min(subtotal, Math.floor(appliedCoupon.discountValue));
-          }
-        }
-        // Always show fallback (signup) discount for eligible new users
-        let fallbackDiscount = 0;
-        if (!fallbackUsed) {
-          fallbackDiscount = Math.floor(subtotal * 0.2);
-        }
-          const discount = couponDiscount + fallbackDiscount;
-    const shipping = subtotal > 50 ? 0 : 15; 
-    const preTaxTotal = subtotal - discount + shipping;
-    const tax = Math.round(preTaxTotal * 0.08); 
-    const total = preTaxTotal + tax;
+  
+  // Calculate fallback (signup) discount first
+  let fallbackDiscount = 0;
+  const hasSignupCoupon = appliedCoupons.some(coupon => 
+    coupon && typeof coupon.code === 'string' && 
+    ['SIGNUP', 'FALLBACK20'].includes(coupon.code.toUpperCase())
+  );
+
+  // Apply fallback discount if eligible
+  if (!fallbackUsed && !hasSignupCoupon) {
+    fallbackDiscount = Math.floor(subtotal * 0.2);
+  }
+
+  // Calculate cumulative coupon discounts on remaining amount after fallback
+  let remainingAmount = Math.max(0, subtotal - fallbackDiscount);
+  let totalCouponDiscount = 0;
+  const couponBreakdown = [];
+
+  appliedCoupons.forEach(coupon => {
+    if (coupon && typeof coupon.discountValue === 'number' && remainingAmount > 0) {
+      let couponDiscount = 0;
+      
+      if (coupon.discountType === 'percent') {
+        couponDiscount = Math.floor(remainingAmount * (coupon.discountValue / 100));
+      } else if (coupon.discountType === 'flat' || coupon.discountType === 'amount') {
+        couponDiscount = Math.min(remainingAmount, Math.floor(coupon.discountValue));
+      }
+      
+      if (couponDiscount > 0) {
+        couponBreakdown.push({
+          code: coupon.code,
+          type: coupon.discountType,
+          value: coupon.discountValue,
+          discount: couponDiscount
+        });
+      }
+      
+      totalCouponDiscount += couponDiscount;
+      remainingAmount = Math.max(0, remainingAmount - couponDiscount);
+    }
+  });
+
+  const discount = (fallbackDiscount || 0) + (totalCouponDiscount || 0);
+  const shipping = subtotal > 50 ? 0 : 15; 
+  const preTaxTotal = subtotal - discount + shipping;
+  const tax = Math.round(preTaxTotal * 0.08); 
+  const total = preTaxTotal + tax;
 
   const sellerId = cartItems.length > 0 ? cartItems[0].sellerId : null;
 
@@ -62,13 +100,12 @@ const CheckoutComponent = () => {
       return;
     }
     const options = {
-      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_YourKeyHere", // Use env variable for Razorpay key
-      amount: Math.round(orderData.total * 100), // in paise
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_YourKeyHere",
+      amount: Math.round(orderData.total * 100),
       currency: "INR",
       name: "ThriftX",
       description: `Order ${orderData.orderNumber}`,
       handler: async function (response) {
-        // Payment success
         await onSuccess(response);
       },
       prefill: {
@@ -91,7 +128,6 @@ const CheckoutComponent = () => {
     }
 
     try {
-      // ✅ Fetch complete user data from Firestore
       const userRef = doc(db, "users", currentUser.uid);
       const userDoc = await getDoc(userRef);
       
@@ -101,7 +137,6 @@ const CheckoutComponent = () => {
         phone: data.phone || ''
       };
       
-      // If user profile exists in Firestore, use that data
       if (userDoc.exists()) {
         const userInfo = userDoc.data();
         userData = {
@@ -153,32 +188,30 @@ const CheckoutComponent = () => {
         shipping,
         tax,
         total,
-  // paymentMethod removed
         status: "pending",
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-        appliedCoupon: appliedCoupon ? appliedCoupon.code : null,
-        fallbackUsed: !appliedCoupon && !fallbackUsed ? true : false,
+        appliedCoupons: appliedCoupons.map(c => c.code),
+        fallbackUsed: fallbackDiscount > 0 ? true : false,
       };
 
-      // Razorpay payment
       await new Promise((resolve, reject) => {
         handleRazorpayPayment(orderData, async (razorpayResponse) => {
           try {
-            // 1. Add order to Firestore
             const orderRef = await addDoc(collection(db, "orders"), orderData);
-            // 2. Mark coupon/fallback as used in Firestore
-            if (appliedCoupon) {
-              // Mark coupon as used
-              const usageRef = doc(db, "coupon_usages", `${currentUser.uid}_${appliedCoupon.code}`);
+            
+            // Mark all applied coupons as used
+            for (const coupon of appliedCoupons) {
+              const usageRef = doc(db, "coupon_usages", `${currentUser.uid}_${coupon.code}`);
               await setDoc(usageRef, {
                 userId: currentUser.uid,
-                couponCode: appliedCoupon.code,
+                couponCode: coupon.code,
                 usedAt: new Date().toISOString(),
               }, { merge: true });
-              setAppliedCoupon(null);
-            } else if (!appliedCoupon && !fallbackUsed) {
-              // Mark fallback as used
+            }
+
+            // Mark fallback as used if it was applied
+            if (fallbackDiscount > 0 && !fallbackUsed) {
               const usageRef = doc(db, "coupon_usages", `${currentUser.uid}_FALLBACK20`);
               await setDoc(usageRef, {
                 userId: currentUser.uid,
@@ -187,11 +220,17 @@ const CheckoutComponent = () => {
               }, { merge: true });
               setFallbackUsed(true);
             }
+
+            // Clear all coupons and cart
+            setAppliedCoupons([]);
+            setUseFallback(false);
             await clearCart();
+            
             toast.success("Order placed and payment successful!");
             router.push("/orders");
             resolve();
           } catch (err) {
+            console.error("Error updating coupon usage:", err);
             toast.error("Order placed but failed to update coupon usage.");
             resolve();
           }
@@ -219,15 +258,14 @@ const CheckoutComponent = () => {
   }
 
   return (
-  <main className="flex-1 bg-gray-50 dark:bg-black px-4 sm:px-8 py-12 min-h-screen transition-colors">
-      {/* Razorpay script */}
+    <main className="flex-1 bg-gray-50 dark:bg-black px-4 sm:px-8 py-12 min-h-screen transition-colors">
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
-  <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-8">
           Checkout
         </h1>
 
-  <div className="grid lg:grid-cols-[2fr_1fr] gap-8">
+        <div className="grid lg:grid-cols-[2fr_1fr] gap-8">
           {/* Checkout Form */}
           <form
             onSubmit={handleSubmit(onSubmit)}
@@ -235,49 +273,49 @@ const CheckoutComponent = () => {
           >
             {/* Contact Info */}
             <section className="mb-8">
-              <h2 className="text-xl font-semibold flex items-center gap-2 text-gray-100 dark:text-white mb-4">
+              <h2 className="text-xl font-semibold flex items-center gap-2 text-gray-900 dark:text-white mb-4">
                 <User size={20} /> Contact Information
               </h2>
 
               <div className="grid md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="font-medium text-gray-100 dark:text-white">First Name</label>
+                  <label className="font-medium text-gray-900 dark:text-white">First Name</label>
                   <input
                     {...register("firstName", { required: "Required" })}
-                    className={`w-full border-2 rounded-lg p-3 mt-1 ${
-                      errors.firstName ? "border-red-500" : "border-gray-200"
+                    className={`w-full border-2 rounded-lg p-3 mt-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${
+                      errors.firstName ? "border-red-500" : "border-gray-200 dark:border-gray-700"
                     }`}
                   />
                 </div>
                 <div>
-                  <label className="font-medium text-gray-100 dark:text-white">Last Name</label>
+                  <label className="font-medium text-gray-900 dark:text-white">Last Name</label>
                   <input
                     {...register("lastName", { required: "Required" })}
-                    className={`w-full border-2 rounded-lg p-3 mt-1 ${
-                      errors.lastName ? "border-red-500" : "border-gray-200"
+                    className={`w-full border-2 rounded-lg p-3 mt-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${
+                      errors.lastName ? "border-red-500" : "border-gray-200 dark:border-gray-700"
                     }`}
                   />
                 </div>
               </div>
 
               <div className="mb-4">
-                <label className="font-medium text-gray-100 dark:text-white">Email</label>
+                <label className="font-medium text-gray-900 dark:text-white">Email</label>
                 <input
                   type="email"
                   defaultValue={currentUser?.email}
                   {...register("email", { required: "Required" })}
-                  className={`w-full border-2 rounded-lg p-3 mt-1 ${
-                    errors.email ? "border-red-500" : "border-gray-200"
+                  className={`w-full border-2 rounded-lg p-3 mt-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${
+                    errors.email ? "border-red-500" : "border-gray-200 dark:border-gray-700"
                   }`}
                 />
               </div>
 
               <div className="mb-4">
-                <label className="font-medium text-gray-100 dark:text-white">Phone</label>
+                <label className="font-medium text-gray-900 dark:text-white">Phone</label>
                 <input
                   {...register("phone", { required: "Required" })}
-                  className={`w-full border-2 rounded-lg p-3 mt-1 ${
-                    errors.phone ? "border-red-500" : "border-gray-200"
+                  className={`w-full border-2 rounded-lg p-3 mt-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${
+                    errors.phone ? "border-red-500" : "border-gray-200 dark:border-gray-700"
                   }`}
                 />
               </div>
@@ -285,123 +323,143 @@ const CheckoutComponent = () => {
 
             {/* Address */}
             <section className="mb-8">
-              <h2 className="text-xl font-semibold flex items-center gap-2 text-gray-100 dark:text-white mb-4">
+              <h2 className="text-xl font-semibold flex items-center gap-2 text-gray-900 dark:text-white mb-4">
                 <MapPin size={20} /> Shipping Address
               </h2>
 
               <div className="mb-4">
-                <label className="font-medium text-gray-100 dark:text-white">Address</label>
+                <label className="font-medium text-gray-900 dark:text-white">Address</label>
                 <input
                   {...register("address", { required: "Required" })}
-                  className={`w-full border-2 rounded-lg p-3 mt-1 ${
-                    errors.address ? "border-red-500" : "border-gray-200"
+                  className={`w-full border-2 rounded-lg p-3 mt-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${
+                    errors.address ? "border-red-500" : "border-gray-200 dark:border-gray-700"
                   }`}
                 />
               </div>
 
               <div className="grid md:grid-cols-3 gap-4 mb-4">
                 <div>
-                  <label className="font-medium text-gray-100 dark:text-white">City</label>
+                  <label className="font-medium text-gray-900 dark:text-white">City</label>
                   <input
                     {...register("city", { required: "Required" })}
-                    className={`w-full border-2 rounded-lg p-3 mt-1 ${
-                      errors.city ? "border-red-500" : "border-gray-200"
+                    className={`w-full border-2 rounded-lg p-3 mt-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${
+                      errors.city ? "border-red-500" : "border-gray-200 dark:border-gray-700"
                     }`}
                   />
                 </div>
 
                 <div>
-                  <label className="font-medium text-gray-100 dark:text-white">State</label>
+                  <label className="font-medium text-gray-900 dark:text-white">State</label>
                   <input
                     {...register("state", { required: "Required" })}
                     placeholder="State"
-                    className={`w-full border-2 rounded-lg p-3 mt-1 ${
-                      errors.state ? "border-red-500" : "border-gray-200"
+                    className={`w-full border-2 rounded-lg p-3 mt-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${
+                      errors.state ? "border-red-500" : "border-gray-200 dark:border-gray-700"
                     }`}
                   />
                 </div>
 
                 <div>
-                  <label className="font-medium text-gray-100 dark:text-white">ZIP</label>
+                  <label className="font-medium text-gray-900 dark:text-white">ZIP</label>
                   <input
                     {...register("zipCode", { required: "Required" })}
-                    className={`w-full border-2 rounded-lg p-3 mt-1 ${
-                      errors.zipCode ? "border-red-500" : "border-gray-200"
+                    className={`w-full border-2 rounded-lg p-3 mt-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${
+                      errors.zipCode ? "border-red-500" : "border-gray-200 dark:border-gray-700"
                     }`}
                   />
                 </div>
               </div>
             </section>
-
-            {/* Payment method selection removed as per requirements */}
           </form>
 
           {/* Order Summary */}
           <div className="bg-white dark:bg-[#0f0f0f] border-2 border-gray-300 dark:border-gray-700 rounded-3xl p-6 md:p-8 h-fit sticky top-8 shadow-lg transition-colors">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
               Order Summary
             </h2>
 
             {cartItems.map((item) => (
               <div
                 key={item.id}
-                className="flex justify-between items-center border-b border-gray-200 py-3"
+                className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 py-3"
               >
                 <div>
-                  <div className="font-semibold text-gray-800">
+                  <div className="font-semibold text-gray-900 dark:text-white">
                     {item.productName}
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
                     Qty: {item.quantity}
                   </div>
                 </div>
-                <div className="font-semibold text-green-600">
+                <div className="font-semibold text-green-600 dark:text-green-400">
                   {formatPrice(item.price * item.quantity)}
                 </div>
               </div>
             ))}
 
             <div className="flex flex-col gap-2 mt-4">
-              <div className="flex justify-between text-gray-600">
+              <div className="flex justify-between text-gray-600 dark:text-gray-300">
                 <span>Subtotal</span>
                 <span>{formatPrice(subtotal)}</span>
               </div>
+
+              {/* Fallback/Signup Discount */}
               {fallbackDiscount > 0 && (
-                <div className="flex justify-between text-gray-600">
+                <div className="flex justify-between text-green-600 dark:text-green-400">
                   <span>Signup Discount (-20%)</span>
-                  <span className="text-red-500 font-semibold">- {formatPrice(fallbackDiscount)}</span>
+                  <span className="font-semibold">-{formatPrice(fallbackDiscount)}</span>
                 </div>
               )}
-              {appliedCoupon && couponDiscount > 0 && (
-                <div className="flex justify-between text-gray-600">
-                  <span>Coupon ({appliedCoupon.code})
-                    {appliedCoupon.discountType === 'percent'
-                      ? ` (-${appliedCoupon.discountValue}%)`
-                      : appliedCoupon.discountType === 'flat'
-                      ? ` (-${formatPrice(appliedCoupon.discountValue)})`
-                      : ''}
+
+              {/* Individual Coupon Discounts */}
+              {couponBreakdown.map((item) => (
+                <div key={item.code} className="flex justify-between text-green-600 dark:text-green-400">
+                  <span>
+                    {item.code}
+                    {item.type === 'percent' ? ` (-${item.value}%)` : ` (-₹${item.value})`}
                   </span>
-                  <span className="text-red-500 font-semibold">- {formatPrice(couponDiscount)}</span>
+                  <span className="font-semibold">-{formatPrice(item.discount)}</span>
+                </div>
+              ))}
+
+              {/* Total Coupon Savings */}
+              {totalCouponDiscount > 0 && (
+                <div className="flex justify-between text-green-600 dark:text-green-400 text-sm">
+                  <span>Total Coupon Savings</span>
+                  <span className="font-semibold">-{formatPrice(totalCouponDiscount)}</span>
                 </div>
               )}
-              <div className="flex justify-between text-gray-600">
+
+              <div className="flex justify-between text-gray-600 dark:text-gray-300">
                 <span>Delivery Fee</span>
                 <span>{shipping === 0 ? "FREE" : formatPrice(shipping)}</span>
               </div>
-              <div className="flex justify-between text-gray-600">
-                <span>Pre-Tax Total</span>
-                <span>{formatPrice(preTaxTotal)}</span>
-              </div>
-              <div className="flex justify-between text-gray-600">
-                <span>Tax</span>
+
+              {/* Total Savings */}
+              {discount > 0 && (
+                <div className="flex justify-between text-green-600 dark:text-green-400 font-semibold border-t border-gray-200 dark:border-gray-700 pt-2">
+                  <span>Total Savings</span>
+                  <span>-{formatPrice(discount)}</span>
+                </div>
+              )}
+
+              <div className="flex justify-between text-gray-600 dark:text-gray-300">
+                <span>Tax (8%)</span>
                 <span>{formatPrice(tax)}</span>
               </div>
             </div>
 
-            <div className="flex justify-between border-t border-gray-200 pt-4 text-lg font-bold text-gray-800">
+            <div className="flex justify-between border-t-2 border-gray-300 dark:border-gray-600 pt-4 mt-4 text-lg font-bold text-gray-900 dark:text-white">
               <span>Total</span>
               <span>{formatPrice(total)}</span>
             </div>
+
+            {appliedCoupons.length > 0 && (
+              <div className="mt-4 p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-sm text-green-800 dark:text-green-200">
+                <span className="font-semibold">Applied Coupons: </span>
+                <span>{appliedCoupons.map(c => c.code).join(", ")}</span>
+              </div>
+            )}
 
             <button
               onClick={handleSubmit(onSubmit)}
@@ -409,7 +467,7 @@ const CheckoutComponent = () => {
               className={`w-full mt-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 ${
                 loading
                   ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700"
+                  : "bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
               } text-white transition`}
             >
               {loading ? (

@@ -25,10 +25,14 @@ const defaultCartContextValue = {
   clearCart: () => Promise.resolve(),
   getCartTotal: () => 0,
   getItemCount: () => 0,
-  appliedCoupon: null,
-  setAppliedCoupon: () => {},
+  appliedCoupons: [], // Changed from appliedCoupon to appliedCoupons array
+  setAppliedCoupons: () => {},
+  addCoupon: () => {},
+  removeCoupon: () => {},
   fallbackUsed: false,
   setFallbackUsed: () => {},
+  useFallback: false,
+  setUseFallback: () => {},
 };
 
 const CartContext = createContext(defaultCartContextValue);
@@ -37,12 +41,12 @@ export const useCart = () => {
   return useContext(CartContext);
 };
 
-
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [appliedCoupons, setAppliedCoupons] = useState([]); // Changed to array
   const [fallbackUsed, setFallbackUsed] = useState(false);
+  const [useFallback, setUseFallback] = useState(false);
   const { currentUser } = useAuth();
 
   useEffect(() => {
@@ -62,6 +66,39 @@ export const CartProvider = ({ children }) => {
 
     return unsubscribe;
   }, [currentUser]);
+
+  // Helper function to add a coupon
+  const addCoupon = (coupon) => {
+    if (!coupon || !coupon.code) {
+      toast.error('Invalid coupon');
+      return;
+    }
+
+    // Check if coupon already applied
+    const alreadyApplied = appliedCoupons.some(c => c.code === coupon.code);
+    
+    if (alreadyApplied) {
+      toast.error('This coupon is already applied!');
+      return;
+    }
+
+    // Handle special signup/fallback coupon
+    if (typeof coupon.code === 'string' && 
+        ['SIGNUP', 'FALLBACK20'].includes(coupon.code.toUpperCase())) {
+      setUseFallback(true);
+      toast.success('Signup discount applied!');
+    } else {
+      // Add new coupon to the array
+      setAppliedCoupons([...appliedCoupons, coupon]);
+      toast.success(`Coupon ${coupon.code} applied!`);
+    }
+  };
+
+  // Helper function to remove a specific coupon
+  const removeCoupon = (couponCode) => {
+    setAppliedCoupons(appliedCoupons.filter(c => c.code !== couponCode));
+    toast.success(`Coupon ${couponCode} removed`);
+  };
 
   // Accepts: product, quantity, color, productSize
   const addToCart = async (product, quantity = 1, color = null, productSize = null) => {
@@ -88,8 +125,8 @@ export const CartProvider = ({ children }) => {
         // Add new item with color and size
         await addDoc(collection(db, 'carts', currentUser.uid, 'items'), {
           productId: product.id,
-          productName: product.name,
-          productImage: product.images[0],
+          productName: product.productName || product.name,
+          productImage: product.images?.[0] || product.productImage,
           price: product.price,
           sellerId: product.sellerId,
           quantity: quantity,
@@ -147,6 +184,9 @@ export const CartProvider = ({ children }) => {
         deleteDoc(doc(db, 'carts', currentUser.uid, 'items', item.id))
       );
       await Promise.all(deletePromises);
+      // Clear applied coupons when cart is cleared
+      setAppliedCoupons([]);
+      setUseFallback(false);
     } catch (error) {
       console.error('Error clearing cart:', error);
       toast.error('Failed to clear cart');
@@ -172,10 +212,14 @@ export const CartProvider = ({ children }) => {
     clearCart,
     getCartTotal,
     getItemCount,
-    appliedCoupon,
-    setAppliedCoupon,
+    appliedCoupons, // Changed from appliedCoupon
+    setAppliedCoupons,
+    addCoupon, // New helper function
+    removeCoupon, // New helper function
     fallbackUsed,
     setFallbackUsed,
+    useFallback,
+    setUseFallback,
   };
 
   return (

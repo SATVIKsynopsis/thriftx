@@ -1,11 +1,10 @@
 "use client";
 
-
-
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, X } from "lucide-react";
 import { Sansation } from "next/font/google";
 import dynamic from 'next/dynamic';
 import { useRouter } from "next/navigation";
+import { useCart } from '@/contexts/CartContext';
 
 const CartCouponInput = dynamic(() => import('./CartCouponInput'), { ssr: false });
 
@@ -14,37 +13,24 @@ const sansation = Sansation({
   subsets: ["latin"],
 });
 
-export default function OrderSummary({ subtotal, discount, deliveryFee, total, appliedCoupon, onApplyCoupon }) {
+export default function OrderSummary({ 
+  subtotal, 
+  discount, 
+  deliveryFee, 
+  total, 
+  appliedCoupons = [], 
+  onApplyCoupon,
+  onRemoveCoupon,
+  fallbackDiscount = 0,
+  couponDiscount = 0,
+  fallbackUsed = false
+}) {
   const router = useRouter();
   const handleCheckout = () => {
     router.push("/checkout");
   };
 
-  // Calculate both discounts for first-time users
-  let couponDiscount = 0;
-  if (appliedCoupon && typeof appliedCoupon.discountValue === 'number' && subtotal > 0) {
-    if (appliedCoupon.discountType === 'percent') {
-      couponDiscount = Math.floor(subtotal * (appliedCoupon.discountValue / 100));
-    } else if (appliedCoupon.discountType === 'flat' || appliedCoupon.discountType === 'amount') {
-      couponDiscount = Math.min(subtotal, Math.floor(appliedCoupon.discountValue));
-    }
-  }
-  let fallbackDiscount = 0;
-  if (typeof window !== 'undefined') {
-    try {
-      const ctx = require('@/contexts/CartContext');
-      const useCart = ctx.useCart;
-      if (useCart) {
-        const { fallbackUsed } = useCart();
-        if (!fallbackUsed) fallbackDiscount = Math.floor(subtotal * 0.2);
-      }
-    } catch {}
-  }
-  // If context not available, fallback to prop logic
-  if (fallbackDiscount === 0 && !appliedCoupon) {
-    fallbackDiscount = Math.floor(subtotal * 0.2);
-  }
-  const totalAmount = subtotal - fallbackDiscount - couponDiscount;
+  const { useFallback } = useCart();
 
   return (
     <div className={`text-white ${sansation.className}`}>
@@ -59,41 +45,76 @@ export default function OrderSummary({ subtotal, discount, deliveryFee, total, a
         {/* Show signup discount if eligible */}
         {fallbackDiscount > 0 && (
           <div className="flex justify-between text-sm">
-            <span className="text-gray-400">Discount (-20%)</span>
-            <span className="text-red-500 font-semibold">-₹{fallbackDiscount}</span>
+            <span className="text-gray-400">Signup Discount (-20%)</span>
+            <span className="text-green-500 font-semibold">-₹{fallbackDiscount}</span>
           </div>
         )}
 
-        {/* Show coupon discount if applied */}
-        {appliedCoupon && couponDiscount > 0 && (
+        {/* Show each applied coupon */}
+        {appliedCoupons.length > 0 && appliedCoupons.map((coupon) => {
+          const discountText = coupon.discountType === 'percent'
+            ? `${coupon.discountValue}%`
+            : `₹${coupon.discountValue}`;
+          
+          return (
+            <div key={coupon.code} className="flex justify-between items-center text-sm">
+              <span className="text-gray-400">
+                {coupon.code} (-{discountText})
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-green-500 font-semibold">Applied</span>
+                <button
+                  onClick={() => onRemoveCoupon(coupon.code)}
+                  className="text-red-400 hover:text-red-300 transition"
+                  title="Remove coupon"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Total coupon discount summary */}
+        {couponDiscount > 0 && (
           <div className="flex justify-between text-sm">
-            <span className="text-gray-400">
-              Coupon ({appliedCoupon.code})
-              {appliedCoupon.discountType === 'percent'
-                ? ` (-${appliedCoupon.discountValue}%)`
-                : appliedCoupon.discountType === 'flat'
-                ? ` (-₹${appliedCoupon.discountValue})`
-                : ''}
-            </span>
-            <span className="text-red-500 font-semibold">-₹{couponDiscount}</span>
+            <span className="text-gray-400">Total Coupon Savings</span>
+            <span className="text-green-500 font-semibold">-₹{couponDiscount}</span>
           </div>
         )}
 
         <div className="border-t border-gray-600 my-4"></div>
 
+        {/* Total Discount */}
+        {discount > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-400">Total Savings</span>
+            <span className="text-green-500 font-bold">-₹{discount}</span>
+          </div>
+        )}
+
         <div className="flex justify-between items-center">
           <span className="font-semibold text-base">Total</span>
-          <span className="font-bold text-xl">₹{totalAmount}</span>
+          <span className="font-bold text-xl">₹{total}</span>
         </div>
       </div>
 
-
       {/* Info section for first time buyers */}
-      <div className="mb-4 p-3 rounded-lg bg-blue-900/40 border border-blue-700 text-blue-200 text-sm font-medium">
-        <span>Use coupon <span className="font-bold text-white">SIGNUP</span> for first time buyers</span>
-      </div>
+      {!fallbackUsed && fallbackDiscount === 0 && (
+        <div className="mb-4 p-3 rounded-lg bg-blue-900/40 border border-blue-700 text-blue-200 text-sm font-medium">
+          <span>Use coupon <span className="font-bold text-white">SIGNUP</span> for first time buyers</span>
+        </div>
+      )}
 
-      {/* Coupon input below total, as in screenshot */}
+      {/* Show applied coupons list */}
+      {appliedCoupons.length > 0 && (
+        <div className="mb-4 p-3 rounded-lg bg-green-900/20 border border-green-700 text-green-200 text-sm">
+          <span className="font-semibold">Applied Coupons: </span>
+          <span>{appliedCoupons.map(c => c.code).join(", ")}</span>
+        </div>
+      )}
+
+      {/* Coupon input below total */}
       <CartCouponInput onApply={onApplyCoupon} />
 
       <button

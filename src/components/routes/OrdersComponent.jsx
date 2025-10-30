@@ -170,6 +170,8 @@ const ItemImage = ({ alt, ...props }) => (
   <Image
     className="w-16 h-16 object-cover rounded-md shrink-0"
     alt={alt}
+    width={100}
+    height={100}
     {...props}
   />
 );

@@ -1,9 +1,8 @@
-
 "use client";
 
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState } from "react";
 import { db } from "@/firebase/config";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import CartItem from "./cart-item";
@@ -29,10 +28,17 @@ const sansation = Sansation({
 
 export default function CartPage() {
   const { currentUser } = useAuth();
-  const { appliedCoupon, setAppliedCoupon, fallbackUsed, setFallbackUsed } = useCart();
+  const { 
+    appliedCoupons, 
+    addCoupon, 
+    removeCoupon, 
+    fallbackUsed, 
+    setFallbackUsed, 
+    useFallback, 
+    setUseFallback 
+  } = useCart();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-
 
   // Check fallback discount usage on mount
   useEffect(() => {
@@ -73,28 +79,42 @@ export default function CartPage() {
     0
   );
 
-
-  // Coupon discount logic (fix NaN and use correct fields)
-  let couponDiscount = 0;
-  if (appliedCoupon && typeof appliedCoupon.discountValue === 'number' && subtotal > 0) {
-    if (appliedCoupon.discountType === 'percent') {
-      couponDiscount = Math.floor(subtotal * (appliedCoupon.discountValue / 100));
-    } else if (appliedCoupon.discountType === 'flat' || appliedCoupon.discountType === 'amount') {
-      couponDiscount = Math.min(subtotal, Math.floor(appliedCoupon.discountValue));
-    }
-  }
-
-  // Fallback: 20% discount if no coupon and not used before
+  // Calculate fallback (signup) discount first
   let fallbackDiscount = 0;
-  if (!appliedCoupon && !fallbackUsed) {
+  const hasSignupCoupon = appliedCoupons.some(coupon => 
+    coupon && typeof coupon.code === 'string' && 
+    ['SIGNUP', 'FALLBACK20'].includes(coupon.code.toUpperCase())
+  );
+
+  // Apply fallback discount if eligible
+  // It applies automatically if not used, OR if user explicitly opted in via useFallback
+  if (!fallbackUsed && !hasSignupCoupon) {
     fallbackDiscount = Math.floor(subtotal * 0.2);
   }
-  const discount = appliedCoupon ? couponDiscount : fallbackDiscount;
-  const deliveryFee = items.length > 0 ? 15 : 0;
-  const total = subtotal - discount + deliveryFee;
 
-  // Mark fallback as used when discount is applied (and not already used)
-  // Remove fallback usage marking here; will be handled after payment in checkout
+  // Calculate cumulative coupon discounts on remaining amount after fallback
+  let remainingAmount = Math.max(0, subtotal - fallbackDiscount);
+  let totalCouponDiscount = 0;
+
+  appliedCoupons.forEach(coupon => {
+    if (coupon && typeof coupon.discountValue === 'number' && remainingAmount > 0) {
+      let couponDiscount = 0;
+      
+      if (coupon.discountType === 'percent') {
+        couponDiscount = Math.floor(remainingAmount * (coupon.discountValue / 100));
+      } else if (coupon.discountType === 'flat' || coupon.discountType === 'amount') {
+        couponDiscount = Math.min(remainingAmount, Math.floor(coupon.discountValue));
+      }
+      
+      totalCouponDiscount += couponDiscount;
+      remainingAmount = Math.max(0, remainingAmount - couponDiscount);
+    }
+  });
+
+  // Total discount is fallback + all coupon discounts
+  const discount = (fallbackDiscount || 0) + (totalCouponDiscount || 0);
+  const deliveryFee = 0; // No delivery fee in cart, only at checkout
+  const total = Math.max(0, subtotal - discount);
 
   return (
     <main className="flex-1 bg-gray-50 dark:bg-black px-4 sm:px-8 py-12 min-h-screen transition-colors">
@@ -129,10 +149,14 @@ export default function CartPage() {
               <OrderSummary
                 subtotal={subtotal}
                 discount={discount}
-                deliveryFee={deliveryFee}
+                deliveryFee={0}
                 total={total}
-                appliedCoupon={appliedCoupon}
-                onApplyCoupon={setAppliedCoupon}
+                appliedCoupons={appliedCoupons}
+                onApplyCoupon={addCoupon}
+                onRemoveCoupon={removeCoupon}
+                fallbackDiscount={fallbackDiscount}
+                couponDiscount={totalCouponDiscount}
+                fallbackUsed={fallbackUsed}
               />
             </div>
           </div>
