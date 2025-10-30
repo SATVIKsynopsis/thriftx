@@ -59,7 +59,7 @@ export default function Header() {
   const { currentUser, userProfile, isSuperAdmin } = useAuth();
   const { getItemCount } = useCart();
   const router = useRouter();
-  console.log("Current User in header :", currentUser);
+  // console.log("Current User in header :", currentUser);
 
   const toggleMobileMenu = () => setShowMobileMenu(prev => !prev);
 
