@@ -1,4 +1,19 @@
-// Product utility functions
+/**
+ * Product utility functions
+ */
+
+/**
+ * Normalize array-like data to ensure it's always an array
+ * @param {Array|string|undefined|null} data - Input data that might be string, array, or undefined
+ * @returns {Array} Normalized array
+ */
+export const normalizeToArray = (data) => {
+  if (Array.isArray(data)) return data;
+  if (typeof data === 'string') {
+    return data.split(',').map(item => item.trim()).filter(item => item.length > 0);
+  }
+  return [];
+};
 
 /**
  * Parse price from various formats to number
@@ -53,16 +68,30 @@ export const filterProducts = (products, filters, priceRange) => {
       return false;
     }
 
-    // Color filter
-    if (filters.colors.length > 0 &&
-        !filters.colors.includes(product.color)) {
-      return false;
+    // Color filter - check if any product colors match selected filters
+    if (filters.colors.length > 0) {
+      const productColors = normalizeToArray(product.colors);
+      const hasMatchingColor = filters.colors.some(filterColor =>
+        productColors.some(productColor =>
+          productColor.toLowerCase().trim() === filterColor.toLowerCase().trim()
+        )
+      );
+      if (!hasMatchingColor) {
+        return false;
+      }
     }
 
-    // Size filter
-    if (filters.sizes.length > 0 &&
-        !filters.sizes.includes(product.size)) {
-      return false;
+    // Size filter - check if any product sizes match selected filters
+    if (filters.sizes.length > 0) {
+      const productSizes = normalizeToArray(product.sizes);
+      const hasMatchingSize = filters.sizes.some(filterSize =>
+        productSizes.some(productSize =>
+          productSize.toLowerCase().trim() === filterSize.toLowerCase().trim()
+        )
+      );
+      if (!hasMatchingSize) {
+        return false;
+      }
     }
 
     // Brand filter

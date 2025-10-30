@@ -17,14 +17,6 @@ export const useProductFiltering = () => {
     priceRange: PRICE_RANGE
   });
 
-  const [appliedFilters, setAppliedFilters] = useState({
-    categories: [],
-    colors: [],
-    sizes: [],
-    brands: [],
-    priceRange: PRICE_RANGE
-  });
-
   // Fetch products from Firebase
   useEffect(() => {
     const fetchProducts = async () => {
@@ -50,16 +42,16 @@ export const useProductFiltering = () => {
     fetchProducts();
   }, []);
 
-  // Filter products based on applied filters
+  // Filter products based on current filters (automatic filtering)
   const filteredProducts = useMemo(() => {
-    const hasFiltersActive = hasActiveFilters(appliedFilters, appliedFilters.priceRange, PRICE_RANGE);
+    const hasFiltersActive = hasActiveFilters(filters, filters.priceRange, PRICE_RANGE);
 
     if (!hasFiltersActive) {
       return products;
     }
 
-    return filterProducts(products, appliedFilters, appliedFilters.priceRange);
-  }, [products, appliedFilters]);
+    return filterProducts(products, filters, filters.priceRange);
+  }, [products, filters]);
 
   // Filter management functions
   const updateFilters = (filterType, value) => {
@@ -67,10 +59,6 @@ export const useProductFiltering = () => {
       ...prev,
       [filterType]: value
     }));
-  };
-
-  const applyFilters = () => {
-    setAppliedFilters({ ...filters });
   };
 
   const clearFilters = () => {
@@ -82,13 +70,12 @@ export const useProductFiltering = () => {
       priceRange: PRICE_RANGE
     };
     setFilters(resetState);
-    setAppliedFilters(resetState);
   };
 
   // Active filter count for UI
   const activeFilterCount = useMemo(() => {
-    return getActiveFilterCount(appliedFilters, appliedFilters.priceRange, PRICE_RANGE);
-  }, [appliedFilters]);
+    return getActiveFilterCount(filters, filters.priceRange, PRICE_RANGE);
+  }, [filters]);
 
   return {
     // Data
@@ -99,12 +86,10 @@ export const useProductFiltering = () => {
 
     // Filter state
     filters,
-    appliedFilters,
     activeFilterCount,
 
     // Filter actions
     updateFilters,
-    applyFilters,
     clearFilters,
 
     // Constants

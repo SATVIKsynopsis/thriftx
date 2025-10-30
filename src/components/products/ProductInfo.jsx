@@ -201,47 +201,47 @@ const ProductInfo = ({
 
       {/* Quantity and Add to Cart */}
       {!isOwnProduct && product.stock > 0 && (
-        <div className="space-y-4">
+        <div className="space-y-6">
 
-          <div className="flex items-center justify-between p-3 bg-gray-200 dark:bg-gray-800 rounded-xl">
-            <span className="text-md font-medium text-gray-700 dark:text-gray-300">
-              Quantity
-            </span>
-            <div className="flex items-center rounded-full overflow-hidden">
-              {/* Decrement Button */}
+          {/* Quantity and Add to Cart Row */}
+          <div className="flex gap-4">
+            {/* Quantity Selector */}
+            <div className="flex items-center bg-white rounded-full px-4 border border-gray-800">
               <button
                 onClick={() => onQuantityChange(-1)}
-                className="px-4 py-4 bg-lime-500 hover:bg-lime-600 dark:bg-lime-700 dark:hover:bg-lime-600 transition-colors rounded-l-full disabled:opacity-50"
+                className="p-2 text-black disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={quantity <= 1}
-                aria-label="Decrease quantity"
               >
-                <Minus className="w-5 h-5 text-black dark:text-white" />
+                <Minus className="w-5 h-5" />
               </button>
-
-              {/* Quantity Number */}
-              <span className="py-3 px-4 min-w-2 text-center font-bold bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white">
-                {quantity}
-              </span>
-
-              {/* Increment Button */}
+              <span className="px-6 text-black">{quantity}</span>
               <button
                 onClick={() => onQuantityChange(1)}
-                className="px-4 py-4 bg-lime-500 hover:bg-lime-600 dark:bg-lime-700 dark:hover:bg-lime-600 transition-colors rounded-r-full disabled:opacity-50"
+                className="p-2 text-black disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={quantity >= product.stock}
-                aria-label="Increase quantity"
               >
-                <Plus className="w-5 h-5 text-black dark:text-white" />
+                <Plus className="w-5 h-5" />
               </button>
             </div>
+
+            {/* Add to Cart Button */}
+            <button
+              className="flex-1 bg-yellow-400 text-black font-semibold py-3 rounded-full hover:bg-gray-200 transition"
+              onClick={onAddToCart}
+              disabled={cartLoading}
+            >
+              {cartLoading ? "Adding..." : "Add to Cart"}
+            </button>
           </div>
 
-          <button
-            className="w-full bg-lime-500 hover:bg-lime-600 dark:bg-lime-400 dark:hover:bg-lime-500 text-black font-semibold py-4 px-6 rounded-xl transition-all duration-200 text-lg"
-            onClick={onAddToCart}
-            disabled={cartLoading}
-          >
-            {cartLoading ? "Adding..." : "Add to Cart"}
-          </button>
+          {/* Stock Status */}
+          <div className="flex items-center">
+            {product.stock <= 5 && (
+              <p className="text-sm text-red-600 dark:text-orange-400 font-medium">
+                {product.stock === 1 ? 'Last item!' : `Only ${product.stock} left`}
+              </p>
+            )}
+          </div>
         </div>
       )}
 

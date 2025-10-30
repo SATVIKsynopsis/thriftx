@@ -1,8 +1,22 @@
 // Filter configuration constants
 export const PRICE_RANGE = [0, 50000];
 
-// Filter options
-export const CATEGORIES = ['T-Shirts', 'Shorts', 'Shirts', 'Hoodies', 'Jeans'];
+// Filter options - match the categories used in product creation
+export const CATEGORIES = [
+  "Women's Clothing",
+  "Men's Clothing",
+  "Dresses",
+  "Tops & Blouses",
+  "Pants & Jeans",
+  "Skirts & Shorts",
+  "Jackets & Coats",
+  "Shoes",
+  "Bags & Accessories",
+  "Jewelry",
+  "Vintage",
+  "Designer",
+  "Footwear"
+];
 
 export const COLORS = [
   { name: 'Green', class: 'bg-green-500' },

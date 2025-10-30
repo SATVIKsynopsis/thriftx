@@ -9,9 +9,7 @@ const FilterPage = ({
   isMobile = false,
   onClose = () => { },
   filters = { categories: [], colors: [], sizes: [], brands: [], priceRange: [0, 0] },
-  appliedFilters = { categories: [], colors: [], sizes: [], brands: [], priceRange: [0, 0] },
   updateFilters = () => { },
-  applyFilters = () => { },
   clearFilters = () => { }
 }) => {
   const [expandedSections, setExpandedSections] = useState({
@@ -283,15 +281,7 @@ const FilterPage = ({
         </AnimatePresence>
       </div>
 
-      {/* Apply Filter Button */}
-      <motion.button
-        onClick={applyFilters}
-        className="w-full bg-black text-white font-medium py-3 rounded-full border border-white hover:bg-white hover:text-black transition-colors duration-300"
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-      >
-        Apply Filter
-      </motion.button>
+
 
       {/* Range Input Styles */}
       <style jsx>{`

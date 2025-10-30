@@ -86,7 +86,7 @@ const ProductCard = ({ product, isFavorite, renderStars, sectionContext }) => {
 
   return (
     <div
-      className="bg-neutral-100 w-48 dark:bg-neutral-900 rounded-2xl sm:w-48 md:w-full overflow-hidden hover:transform hover:scale-105 transition-transform duration-200 cursor-pointer shadow-sm dark:shadow-md"
+      className="bg-neutral-100 w-full dark:bg-neutral-900 rounded-2xl sm:w-60 md:w-72 lg:w-80 xl:w-80 max-w-full overflow-hidden hover:transform hover:scale-105 transition-transform duration-200 cursor-pointer shadow-sm dark:shadow-md"
       onClick={handleViewProduct}
     >
       <div className="relative w-full h-48 sm:h-64 overflow-hidden">
@@ -94,7 +94,7 @@ const ProductCard = ({ product, isFavorite, renderStars, sectionContext }) => {
           <img
             src={product.images[0]}
             alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+            className="w-full h-full object-contain transition-transform duration-300 hover:scale-105"
             onError={(e) => {
               e.target.style.display = 'none';
               e.target.nextElementSibling.style.display = 'flex';
@@ -137,7 +137,11 @@ const ProductCard = ({ product, isFavorite, renderStars, sectionContext }) => {
 
         <div className="flex items-center gap-2">
           {starsFunction(product.rating)}
-          <span className="text-neutral-500 dark:text-neutral-400 text-xs">({product.reviews})</span>
+          {(product.reviews && product.reviews > 0) ? (
+            <span className="text-neutral-500 dark:text-neutral-400 text-xs">({product.reviews})</span>
+          ) : (
+            <span className="text-neutral-500 dark:text-neutral-400 text-xs">No reviews yet</span>
+          )}
         </div>
       </div>
     </div>

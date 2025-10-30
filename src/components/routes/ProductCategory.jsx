@@ -45,10 +45,8 @@ const ProductsPage = () => {
     filteredProducts,
     loading,
     filters,
-    appliedFilters,
     activeFilterCount,
     updateFilters,
-    applyFilters,
     clearFilters,
     PRICE_RANGE
   } = useProductFiltering();
@@ -70,11 +68,7 @@ const ProductsPage = () => {
     else clearCurrentUser();
   }, [currentUser, setCurrentUser, clearCurrentUser]);
 
-  const handleApplyFilters = () => {
-    applyFilters();
-    setCurrentPage(1);
-    if (isMobile) setShowFilters(false);
-  };
+
 
   const handleClearFilters = () => {
     clearFilters();
@@ -120,9 +114,7 @@ const ProductsPage = () => {
         <div className="w-80 border-r border-gray-200 dark:border-gray-800 overflow-y-auto">
           <FilterPage
             filters={filters}
-            appliedFilters={appliedFilters}
             updateFilters={updateFilters}
-            applyFilters={handleApplyFilters}
             clearFilters={handleClearFilters}
           />
         </div>
@@ -150,9 +142,7 @@ const ProductsPage = () => {
                 isMobile={isMobile}
                 onClose={() => setShowFilters(false)}
                 filters={filters}
-                appliedFilters={appliedFilters}
                 updateFilters={updateFilters}
-                applyFilters={handleApplyFilters}
                 clearFilters={handleClearFilters}
               />
             </motion.div>
@@ -237,7 +227,7 @@ const ProductsPage = () => {
         {/* Products Grid Container */}
         <div className="flex-1 p-4 lg:p-6">
           <ActiveFilters
-            appliedFilters={appliedFilters}
+            appliedFilters={filters}
             onClearAll={clearFilters}
             PRICE_RANGE={PRICE_RANGE}
           />

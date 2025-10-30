@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 // Removed styled-components import
 import { useForm } from 'react-hook-form';
@@ -11,7 +11,9 @@ import {
   IndianRupee,
   ImageIcon,
   Save,
-  ArrowLeft
+  ArrowLeft,
+  ChevronDown,
+  Plus
 } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
@@ -20,9 +22,168 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 import { CATEGORIES, PRODUCT_CONDITIONS } from '@/utils/constants';
+import { COLORS, SIZES } from '@/utils/filterConstants';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import toast from 'react-hot-toast';
 import { v4 as uuidv4 } from 'uuid';
+
+// MultiSelectDropdown Component
+const MultiSelectDropdown = ({
+  id,
+  label,
+  options,
+  value = [],
+  onChange,
+  placeholder = "Select options...",
+  allowCustom = true,
+  error,
+  ...rest
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [customValue, setCustomValue] = useState('');
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+        setShowCustomInput(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const toggleOption = (option) => {
+    const newValue = value.includes(option)
+      ? value.filter(v => v !== option)
+      : [...value, option];
+    onChange(newValue);
+  };
+
+  const addCustomItem = () => {
+    if (customValue.trim() && !value.includes(customValue.trim()) && !options.includes(customValue.trim())) {
+      onChange([...value, customValue.trim()]);
+      setCustomValue('');
+      setShowCustomInput(false);
+    }
+  };
+
+  const removeItem = (item) => {
+    onChange(value.filter(v => v !== item));
+  };
+
+  const availableOptions = options.filter(option => !value.includes(option));
+
+  return (
+    <div className="mb-4">
+      <Label htmlFor={id}>{label}</Label>
+      <div className="relative" ref={dropdownRef}>
+        {/* Selected Items Display */}
+        <div className={`min-h-[48px] w-full py-2 px-3 border-2 ${error ? 'border-red-500' : 'border-gray-200'} rounded-lg bg-white transition-all focus-within:border-blue-600 focus-within:ring-4 focus-within:ring-blue-100 cursor-pointer`}
+             onClick={() => setIsOpen(!isOpen)}
+             {...rest}>
+          <div className="flex flex-wrap gap-1 items-center">
+            {value.length > 0 ? (
+              value.map((item, index) => (
+                <span key={index} className="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded-full">
+                  {item}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeItem(item);
+                    }}
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    <X size={12} />
+                  </button>
+                </span>
+              ))
+            ) : (
+              <span className="text-gray-400">{placeholder}</span>
+            )}
+          </div>
+          <ChevronDown className={`w-4 h-4 absolute right-3 top-1/2 transform -translate-y-1/2 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        </div>
+
+        {/* Dropdown Menu */}
+        {isOpen && (
+          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+            {/* Custom Input Section */}
+            {allowCustom && (
+              <>
+                {!showCustomInput ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowCustomInput(true)}
+                    className="w-full px-3 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+                  >
+                    <Plus size={14} />
+                    Add Custom
+                  </button>
+                ) : (
+                  <div className="px-3 py-2 border-b border-gray-100">
+                    <div className="flex gap-2">
+                      <Input
+                        value={customValue}
+                        onChange={(e) => setCustomValue(e.target.value)}
+                        placeholder="Type custom value..."
+                        className="flex-1"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addCustomItem();
+                          } else if (e.key === 'Escape') {
+                            setShowCustomInput(false);
+                            setCustomValue('');
+                          }
+                        }}
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        onClick={addCustomItem}
+                        className="px-3 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+                      >
+                        Add
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Available Options */}
+            {availableOptions.length > 0 && (
+              <div className="py-1">
+                {availableOptions.map((option, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => toggleOption(option)}
+                    className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100"
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {availableOptions.length === 0 && !allowCustom && (
+              <div className="px-3 py-2 text-sm text-gray-500">
+                No options available
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+      {error && <ErrorMessage>{error}</ErrorMessage>}
+    </div>
+  );
+};
 
 // --- Tailwind Wrapper Components (Replacing Styled Components) ---
 
@@ -234,6 +395,8 @@ const AddProductComponent = () => {
   const [images, setImages] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [selectedSizes, setSelectedSizes] = useState([]);
+  const [selectedColors, setSelectedColors] = useState([]);
 
   const { currentUser, userProfile } = useAuth();
   const navigate = useRouter();
@@ -328,6 +491,19 @@ const AddProductComponent = () => {
     try {
       const imageUrls = await uploadImages();
 
+      // Validate selections
+      if (selectedSizes.length === 0) {
+        toast.error('Please select at least one size.');
+        setUploading(false);
+        return;
+      }
+
+      if (selectedColors.length === 0) {
+        toast.error('Please select at least one color.');
+        setUploading(false);
+        return;
+      }
+
       // Create product document
       const productData = {
         ...data,
@@ -335,8 +511,8 @@ const AddProductComponent = () => {
         originalPrice: data.originalPrice ? parseFloat(data.originalPrice) : null,
         stock: parseInt(data.stock),
         images: imageUrls,
-        sizes: data.sizes.split(',').map(size => size.trim()),
-        colors: data.colors.split(',').map(color => color.trim()),
+        sizes: selectedSizes,  // Use arrays directly
+        colors: selectedColors,  // Use arrays directly
         sellerId: currentUser.uid,
         sellerName: userProfile?.name || currentUser.displayName || 'Unknown Seller',
         createdAt: serverTimestamp(),
@@ -409,32 +585,28 @@ const AddProductComponent = () => {
               {errors.brand && <ErrorMessage>{errors.brand.message}</ErrorMessage>}
             </FormGroup>
             <FormRow columns="1fr 1fr">
-  <FormGroup>
-    <Label htmlFor="sizes">Available Sizes</Label>
-    <Input
-      id="sizes"
-      {...register('sizes', {
-        required: 'Please specify available sizes',
-      })}
-      error={!!errors.sizes}
-      placeholder="e.g. S, M, L, XL"
-    />
-    {errors.sizes && <ErrorMessage>{errors.sizes.message}</ErrorMessage>}
-  </FormGroup>
+              <MultiSelectDropdown
+                id="sizes"
+                label="Available Sizes"
+                options={SIZES}
+                value={selectedSizes}
+                onChange={setSelectedSizes}
+                placeholder="Select sizes (e.g. S, M, L)"
+                allowCustom={true}
+                error={!selectedSizes.length}
+              />
 
-  <FormGroup>
-    <Label htmlFor="colors">Available Colors</Label>
-    <Input
-      id="colors"
-      {...register('colors', {
-        required: 'Please specify available colors',
-      })}
-      error={!!errors.colors}
-      placeholder="e.g. Red, Blue, Black"
-    />
-    {errors.colors && <ErrorMessage>{errors.colors.message}</ErrorMessage>}
-  </FormGroup>
-</FormRow>
+              <MultiSelectDropdown
+                id="colors"
+                label="Available Colors"
+                options={COLORS.map(color => color.name)}
+                value={selectedColors}
+                onChange={setSelectedColors}
+                placeholder="Select colors (e.g. Red, Blue)"
+                allowCustom={true}
+                error={!selectedColors.length}
+              />
+            </FormRow>
 
 
 
