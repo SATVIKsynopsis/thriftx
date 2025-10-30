@@ -146,7 +146,7 @@ const SellerRegister = () => {
                         {
                             name: formData.name.trim(),
                             email: formData.email,
-                            role: "buyer",
+                            role: "seller",
                             location: formData.location.trim(),
                             favoriteStyles: formData.favoriteStyles.trim(),
                             sustainabilityGoals: formData.sustainabilityGoals.trim(),
@@ -181,7 +181,7 @@ const SellerRegister = () => {
                     });
 
                     toast.success("Phone verified successfully! Welcome to ThriftX 🎉");
-                    router.push("/");
+                    router.push("/seller/dashboard");
                 } catch (error) {
                     console.log("error while verifying phone number: ", error);
                 }
@@ -232,8 +232,8 @@ const SellerRegister = () => {
           });
         }
     
-        toast.success(`Welcome, ${user.displayName || "Buyer"}! `);
-        router.push("/");
+        toast.success(`Welcome, ${user.displayName || "Seller"}! `);
+        router.push("/seller/dashboard");
       } catch (error) {
         console.error("Google sign-in error:", error);
         toast.error("Google Sign-In failed. Try again.");

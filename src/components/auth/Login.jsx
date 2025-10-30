@@ -18,11 +18,23 @@ const LoginComponent = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const { login } = useAuth();
+  const { login, userProfile } = useAuth();
   const router = useRouter();
   const from = "/";
   const pathname = usePathname();
   const role = pathname.includes("seller") ? "seller" : "buyer";
+
+  // Helper function to get redirect URL based on user role
+  const getRedirectUrl = (userRole) => {
+    switch (userRole) {
+      case 'seller':
+      case 'admin':
+      case 'superadmin':
+        return '/seller/dashboard';
+      default:
+        return '/';
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -57,8 +69,17 @@ const LoginComponent = () => {
         return;
       }
 
+      // Fetch user role from database to determine redirect
+      const { doc, getDoc } = await import('firebase/firestore');
+      const { db } = await import('@/firebase/config');
+      const userRef = doc(db, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+      const userRole = userSnap.exists() ? userSnap.data().role : 'buyer';
+
       toast.success("Welcome back to ThriftX 👋");
-      router.push("/");
+      const redirectUrl = getRedirectUrl(userRole);
+      console.log("Redirecting user to:", redirectUrl, "Role:", userRole);
+      router.push(redirectUrl);
     } catch (error) {
       console.error("Login error:", error);
       // console.log(error);
@@ -106,8 +127,11 @@ const LoginComponent = () => {
         });
       }
 
+      const userRole = userSnap.data()?.role || 'buyer';
       toast.success(`Welcome ${user.displayName}!`);
-      router.push("/");
+      const redirectUrl = getRedirectUrl(userRole);
+      console.log("Redirecting Google user to:", redirectUrl, "Role:", userRole);
+      router.push(redirectUrl);
     } catch (error) {
       console.error("Google sign-in error:", error);
       toast.error("Google sign-in failed. Please try again.");
