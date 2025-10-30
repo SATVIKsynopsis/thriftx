@@ -195,7 +195,7 @@ const SuperAdminDashboardComponent = () => {
 
   useEffect(() => {
     if (!currentUser || !isSuperAdmin(currentUser)) {
-      if (!currentUser) return; // Wait for currentUser to load
+      if (!currentUser) return; 
       toast.error('Access denied. Super admin privileges required.');
       return;
     }

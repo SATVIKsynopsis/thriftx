@@ -14,7 +14,8 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/firebase/config';
+
+import { db, storage } from '@/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
@@ -23,7 +24,6 @@ import LoadingSpinner from '@/components/common/LoadingSpinner';
 import toast from 'react-hot-toast';
 import { v4 as uuidv4 } from 'uuid';
 
-// --- Tailwind Wrapper Components (Replacing Styled Components) ---
 
 const AddProductContainer = ({ children }) => (
   <div className="min-h-screen bg-gray-50 py-8">
@@ -290,22 +290,31 @@ const AddProductComponent = () => {
     setImages(prev => prev.filter(img => img.id !== imageId));
   };
 
+  // Upload images via /api/upload-images for webp optimization
   const uploadImages = async () => {
     if (images.length === 0) return [];
 
     try {
-      const uploadPromises = images.map(async (image) => {
-        const imageRef = ref(storage, `products/${currentUser.uid}/${uuidv4()}`);
-        await uploadBytes(imageRef, image.file);
-        return getDownloadURL(imageRef);
+      const formData = new FormData();
+      images.forEach((img) => {
+        formData.append('images', img.file);
+      });
+      formData.append('userId', currentUser.uid);
+
+      const res = await fetch('/api/upload-images', {
+        method: 'POST',
+        body: formData,
       });
 
-      return Promise.all(uploadPromises);
+      if (!res.ok) {
+        throw new Error('Image optimization/upload failed');
+      }
+      const data = await res.json();
+      return data.urls || [];
     } catch (error) {
-      console.error('Storage upload failed:', error);
-      // Fallback to placeholder if storage upload fails critically
+      console.error('Image upload/optimization failed:', error);
       toast.error('Image upload failed. Submitting product without images.', { id: 'img-fail' });
-      return []; // Return empty array if upload fails to prevent broken links
+      return [];
     }
   };
 
@@ -317,7 +326,6 @@ const AddProductComponent = () => {
 
     setUploading(true);
 
-    // Validate that at least one image is uploaded
     if (images.length === 0) {
       toast.error('Please upload at least one product image.');
       setUploading(false);
@@ -334,6 +342,8 @@ const AddProductComponent = () => {
         originalPrice: data.originalPrice ? parseFloat(data.originalPrice) : null,
         stock: parseInt(data.stock),
         images: imageUrls,
+        sizes: data.sizes.split(',').map(size => size.trim()),
+        colors: data.colors.split(',').map(color => color.trim()),
         sellerId: currentUser.uid,
         sellerName: userProfile?.name || currentUser.displayName || 'Unknown Seller',
         createdAt: serverTimestamp(),
@@ -394,6 +404,46 @@ const AddProductComponent = () => {
               />
               {errors.description && <ErrorMessage>{errors.description.message}</ErrorMessage>}
             </FormGroup>
+
+            <FormGroup>
+              <Label htmlFor="brand">Brand</Label>
+              <Input
+              id="brand"
+              {...register('brand', { required: 'Brand is required' })}
+              error={!!errors.brand}
+              placeholder="Enter brand name"
+              />
+              {errors.brand && <ErrorMessage>{errors.brand.message}</ErrorMessage>}
+            </FormGroup>
+            <FormRow columns="1fr 1fr">
+  <FormGroup>
+    <Label htmlFor="sizes">Available Sizes</Label>
+    <Input
+      id="sizes"
+      {...register('sizes', {
+        required: 'Please specify available sizes',
+      })}
+      error={!!errors.sizes}
+      placeholder="e.g. S, M, L, XL"
+    />
+    {errors.sizes && <ErrorMessage>{errors.sizes.message}</ErrorMessage>}
+  </FormGroup>
+
+  <FormGroup>
+    <Label htmlFor="colors">Available Colors</Label>
+    <Input
+      id="colors"
+      {...register('colors', {
+        required: 'Please specify available colors',
+      })}
+      error={!!errors.colors}
+      placeholder="e.g. Red, Blue, Black"
+    />
+    {errors.colors && <ErrorMessage>{errors.colors.message}</ErrorMessage>}
+  </FormGroup>
+</FormRow>
+
+
 
             <FormRow columns="1fr 1fr">
               <FormGroup>

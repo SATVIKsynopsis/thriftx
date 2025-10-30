@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   Eye,
@@ -18,7 +19,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import toast from "react-hot-toast";
-import { RecaptchaVerifier, signInWithPhoneNumber, updateProfile } from "firebase/auth";
+import { RecaptchaVerifier, signInWithPhoneNumber, updateProfile, GoogleAuthProvider, signInWithPopup  } from "firebase/auth";
 import { auth, db } from "@/firebase/config";
 import {
   InputOTP,
@@ -26,7 +27,7 @@ import {
   InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
 const BuyerRegister = () => {
   const [formData, setFormData] = useState({
@@ -206,6 +207,41 @@ const BuyerRegister = () => {
       setLoading(false);
     }
   };
+ // Google Sign-In
+const handleGoogleSignIn = async () => {
+  setLoading(true);
+  try {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+
+    // If user doesn't exist, create new one
+    if (!userSnap.exists()) {
+      await setDoc(userRef, {
+        uid: user.uid,
+        name: user.displayName || "",
+        email: user.email,
+        role: "buyer",
+        location: "",
+        favoriteStyles: "",
+        sustainabilityGoals: "",
+        createdAt: new Date().toISOString(),
+        provider: "google",
+      });
+    }
+
+    toast.success(`Welcome, ${user.displayName || "Buyer"}! `);
+    router.push("/");
+  } catch (error) {
+    console.error("Google sign-in error:", error);
+    toast.error("Google Sign-In failed. Try again.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-linear-to-br dark:from-[#0a0a0a] dark:via-[#121212] dark:to-[#1a1a1a] px-4 sm:px-6 py-12 transition-colors">
@@ -363,6 +399,25 @@ const BuyerRegister = () => {
                 : otpSent
                   ? "Verify Phone & Finish"
                   : "Create Account"}
+            </button>
+          </div>
+          {/* OR: Google Sign-In */}
+          <div className="md:col-span-2 flex flex-col items-center gap-3 mt-4">
+            <p className="text-gray-500 dark:text-gray-400 text-sm">or</p>
+            <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={loading}
+            className="w-full py-3 bg-white dark:bg-neutral-900 border border-gray-300 dark:border-gray-700 rounded-full shadow-md flex items-center justify-center gap-3 hover:scale-[1.02] transition-all"
+            >
+              <Image
+              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+              alt="Google"
+              width={20}
+              height={20}
+              className="w-5 h-5"
+              />
+              <span className="text-gray-700 dark:text-gray-200 font-medium">Continue with Google</span>
             </button>
           </div>
         </form>

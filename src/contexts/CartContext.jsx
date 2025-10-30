@@ -17,14 +17,18 @@ import toast from 'react-hot-toast';
 
 // Define the safe default value object
 const defaultCartContextValue = {
-  cartItems: [], // Safe default: an empty array
-  loading: false, // Safe default: false
-  addToCart: () => Promise.resolve(), // Safe default: dummy function
+  cartItems: [],
+  loading: false,
+  addToCart: () => Promise.resolve(),
   removeFromCart: () => Promise.resolve(),
   updateQuantity: () => Promise.resolve(),
   clearCart: () => Promise.resolve(),
   getCartTotal: () => 0,
   getItemCount: () => 0,
+  appliedCoupon: null,
+  setAppliedCoupon: () => {},
+  fallbackUsed: false,
+  setFallbackUsed: () => {},
 };
 
 const CartContext = createContext(defaultCartContextValue);
@@ -33,9 +37,12 @@ export const useCart = () => {
   return useContext(CartContext);
 };
 
+
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [fallbackUsed, setFallbackUsed] = useState(false);
   const { currentUser } = useAuth();
 
   useEffect(() => {
@@ -164,7 +171,11 @@ export const CartProvider = ({ children }) => {
     updateQuantity,
     clearCart,
     getCartTotal,
-    getItemCount
+    getItemCount,
+    appliedCoupon,
+    setAppliedCoupon,
+    fallbackUsed,
+    setFallbackUsed,
   };
 
   return (

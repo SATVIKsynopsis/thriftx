@@ -16,6 +16,7 @@ import {
   User,
   LogOut,
   ExternalLink,
+  TicketPercent
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -36,6 +37,7 @@ export default function AdminLayout({ children, title, description, breadcrumb }
       { path: "/admin/products", label: "Products", icon: Package },
       { path: "/admin/coupon", label: "Coupons", icon: Package },
       { path: "/admin/reports", label: "Reports", icon: BarChart3 },
+      { path: "/admin/coupons", label: "Coupons", icon: TicketPercent },
     ],
     []
   );
@@ -65,15 +67,14 @@ export default function AdminLayout({ children, title, description, breadcrumb }
   const mainLeftOffset = headerLeftOffset;
 
   return (
- 
+
 
     <div className="min-h-screen bg-gray-50 flex relative">
       {/* Overlay (mobile) */}
       <div
         onClick={closeSidebar}
-        className={`fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity ${
-          sidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity ${sidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          }`}
       />
 
       {/* Sidebar */}
@@ -250,7 +251,7 @@ export default function AdminLayout({ children, title, description, breadcrumb }
           mainLeftOffset, // push by sidebar on desktop
         ].join(" ")}
       >
-        
+
         <div className=" mx-auto">
           {/* Content header */}
           <div className="mb-8">

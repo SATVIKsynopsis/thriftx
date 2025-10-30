@@ -2,11 +2,15 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Eye, EyeOff, Mail, Lock, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import toast from "react-hot-toast";
-import { auth } from "@/firebase/config";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db, auth } from "@/firebase/config";
+import Image from "next/image";
+
 
 const LoginComponent = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -17,6 +21,8 @@ const LoginComponent = () => {
   const { login } = useAuth();
   const router = useRouter();
   const from = "/";
+  const pathname = usePathname();
+  const role = pathname.includes("seller") ? "seller" : "buyer";
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -78,6 +84,39 @@ const LoginComponent = () => {
     }
   };
 
+   // Google Login
+  const handleGoogleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    setLoading(true);
+
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        await setDoc(userRef, {
+          name: user.displayName,
+          email: user.email,
+          photoURL: user.photoURL,
+          role,
+          createdAt: new Date().toISOString(),
+        });
+      }
+
+      toast.success(`Welcome ${user.displayName}!`);
+      router.push("/");
+    } catch (error) {
+      console.error("Google sign-in error:", error);
+      toast.error("Google sign-in failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
 
 
   return (
@@ -131,6 +170,25 @@ const LoginComponent = () => {
             {loading ? "Signing you in..." : "Sign In"}
           </button>
         </form>
+        {/* Google Login */}
+        <div className="mt-6 flex flex-col items-center">
+          <p className="text-gray-500 dark:text-gray-400 text-sm mb-3">or</p>
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={loading}
+            className="w-full py-3 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-semibold rounded-full shadow-md hover:bg-gray-100 dark:hover:bg-neutral-800 flex items-center justify-center gap-3 transition-all duration-300"
+          >
+            <Image
+            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+            alt="Google"
+            width={20}
+            height={20}
+            className="w-5 h-5"
+            />
+            Continue with Google
+          </button>
+        </div>
 
         {/* Footer */}
         <div className="text-center text-gray-500 dark:text-gray-400 mt-8 text-sm">

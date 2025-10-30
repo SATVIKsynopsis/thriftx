@@ -1,3 +1,8 @@
+    // 🎟️ Coupons can be managed by admins
+    match /coupons/{couponId} {
+      allow read: if true;
+      allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -50,6 +55,15 @@ service cloud.firestore {
       allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
     
+    // 🎟️ Coupons can be managed by admins and superadmins
+    match /coupons/{couponId} {
+      allow read: if true;
+      allow write: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'superadmin'
+      );
+    }
+
     // Super admin has access to all collections
     match /{document=**} {
       allow read, write: if request.auth != null && request.auth.token.email == 'admin@thriftx.com';

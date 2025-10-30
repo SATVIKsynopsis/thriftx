@@ -679,8 +679,9 @@ const DashboardComponent = ({ onShowCoupons }) => {
                   Start your sustainable fashion journey by adding your first product
                 </p>
                 <Link href="/seller/products/add" className="text-blue-600 border border-blue-600 rounded-lg py-2 px-4 transition-all hover:bg-blue-50">
-                  Add Your First Product
-                </Link>
+  Add Your First Product
+</Link>
+
               </EmptyState>
             )}
           </RecentCard>

@@ -17,6 +17,7 @@ import {
   getDoc,
 } from "firebase/firestore";
 import { db } from "@/firebase/config";
+import Script from "next/script";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { formatPrice } from "@/utils/formatters";
@@ -24,19 +25,62 @@ import toast from "react-hot-toast";
 
 const CheckoutComponent = () => {
   const [loading, setLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState("card");
   const { currentUser, userProfile } = useAuth();
-  const { cartItems, getCartTotal, clearCart } = useCart();
+  const { cartItems, getCartTotal, clearCart, appliedCoupon, setAppliedCoupon, fallbackUsed, setFallbackUsed } = useCart();
   const router = useRouter();
 
   const { register, handleSubmit, formState: { errors } } = useForm();
 
+
+  // Calculate subtotal
   const subtotal = getCartTotal();
-  const shipping = subtotal > 50 ? 0 : 9.99;
-  const tax = subtotal * 0.08;
-  const total = subtotal + shipping + tax;
+  // Coupon discount logic
+        let couponDiscount = 0;
+        if (appliedCoupon && typeof appliedCoupon.discountValue === 'number' && subtotal > 0) {
+          if (appliedCoupon.discountType === 'percent') {
+            couponDiscount = Math.floor(subtotal * (appliedCoupon.discountValue / 100));
+          } else if (appliedCoupon.discountType === 'flat' || appliedCoupon.discountType === 'amount') {
+            couponDiscount = Math.min(subtotal, Math.floor(appliedCoupon.discountValue));
+          }
+        }
+        // Always show fallback (signup) discount for eligible new users
+        let fallbackDiscount = 0;
+        if (!fallbackUsed) {
+          fallbackDiscount = Math.floor(subtotal * 0.2);
+        }
+          const discount = couponDiscount + fallbackDiscount;
+    const shipping = subtotal > 50 ? 0 : 15; 
+    const preTaxTotal = subtotal - discount + shipping;
+    const tax = Math.round(preTaxTotal * 0.08); 
+    const total = preTaxTotal + tax;
 
   const sellerId = cartItems.length > 0 ? cartItems[0].sellerId : null;
+
+  const handleRazorpayPayment = async (orderData, onSuccess) => {
+    if (!window.Razorpay) {
+      toast.error("Razorpay SDK not loaded");
+      return;
+    }
+    const options = {
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_YourKeyHere", // Use env variable for Razorpay key
+      amount: Math.round(orderData.total * 100), // in paise
+      currency: "INR",
+      name: "ThriftX",
+      description: `Order ${orderData.orderNumber}`,
+      handler: async function (response) {
+        // Payment success
+        await onSuccess(response);
+      },
+      prefill: {
+        name: orderData.user.name,
+        email: orderData.user.email,
+        contact: orderData.user.phone,
+      },
+      theme: { color: "#6366f1" },
+    };
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+  };
 
   const onSubmit = async (data) => {
     setLoading(true);
@@ -81,7 +125,6 @@ const CheckoutComponent = () => {
         })
       );
 
-      // ✅ Generate readable order number
       const now = new Date();
       const year = now.getFullYear().toString().slice(-2);
       const month = (now.getMonth() + 1).toString().padStart(2, '0');
@@ -90,20 +133,11 @@ const CheckoutComponent = () => {
       const orderNumber = `ORD-${year}${month}${day}-${randomId}`;
 
       const orderData = {
-        // ✅ Order identification
-        orderNumber: orderNumber,
-        
-        // ✅ User references
+        orderNumber,
         buyerId: currentUser.uid,
-        userId: currentUser.uid, // Also add userId for compatibility
-        
-        // ✅ EMBEDDED user data for quick access (THIS IS KEY!)
+        userId: currentUser.uid,
         user: userData,
-        
-        // Detailed buyer info (shipping address)
         buyerInfo: data,
-        
-        // Shipping address in standard format
         shippingAddress: {
           fullName: `${data.firstName} ${data.lastName}`,
           email: data.email,
@@ -113,37 +147,56 @@ const CheckoutComponent = () => {
           state: data.state,
           zipCode: data.zipCode
         },
-        
-        // Seller information
         sellerId,
-        
-        // Order items
         items: enrichedItems,
-        
-        // Pricing
         subtotal,
         shipping,
         tax,
         total,
-        
-        // Payment
-        paymentMethod,
-        
-        // Status
+  // paymentMethod removed
         status: "pending",
-        
-        // Timestamps
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
+        appliedCoupon: appliedCoupon ? appliedCoupon.code : null,
+        fallbackUsed: !appliedCoupon && !fallbackUsed ? true : false,
       };
 
-      const orderRef = await addDoc(collection(db, "orders"), orderData);
-      console.log("✅ Order created:", orderRef.id);
-      
-      await clearCart();
-
-      toast.success("Order placed successfully!");
-      router.push("/orders");
+      // Razorpay payment
+      await new Promise((resolve, reject) => {
+        handleRazorpayPayment(orderData, async (razorpayResponse) => {
+          try {
+            // 1. Add order to Firestore
+            const orderRef = await addDoc(collection(db, "orders"), orderData);
+            // 2. Mark coupon/fallback as used in Firestore
+            if (appliedCoupon) {
+              // Mark coupon as used
+              const usageRef = doc(db, "coupon_usages", `${currentUser.uid}_${appliedCoupon.code}`);
+              await setDoc(usageRef, {
+                userId: currentUser.uid,
+                couponCode: appliedCoupon.code,
+                usedAt: new Date().toISOString(),
+              }, { merge: true });
+              setAppliedCoupon(null);
+            } else if (!appliedCoupon && !fallbackUsed) {
+              // Mark fallback as used
+              const usageRef = doc(db, "coupon_usages", `${currentUser.uid}_FALLBACK20`);
+              await setDoc(usageRef, {
+                userId: currentUser.uid,
+                couponCode: "FALLBACK20",
+                usedAt: new Date().toISOString(),
+              }, { merge: true });
+              setFallbackUsed(true);
+            }
+            await clearCart();
+            toast.success("Order placed and payment successful!");
+            router.push("/orders");
+            resolve();
+          } catch (err) {
+            toast.error("Order placed but failed to update coupon usage.");
+            resolve();
+          }
+        });
+      });
     } catch (error) {
       console.error("Error placing order:", error);
       toast.error("Failed to place order. Please try again.");
@@ -166,27 +219,29 @@ const CheckoutComponent = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10">
-      <div className="max-w-6xl mx-auto px-4">
-        <h1 className="text-4xl font-bold text-gray-900 text-center mb-10">
+  <main className="flex-1 bg-gray-50 dark:bg-black px-4 sm:px-8 py-12 min-h-screen transition-colors">
+      {/* Razorpay script */}
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
+  <div className="max-w-6xl mx-auto">
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-8">
           Checkout
         </h1>
 
-        <div className="grid lg:grid-cols-[1fr_400px] gap-8">
+  <div className="grid lg:grid-cols-[2fr_1fr] gap-8">
           {/* Checkout Form */}
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="bg-white rounded-xl shadow p-6"
+            className="bg-white dark:bg-[#0f0f0f] border-2 border-gray-300 dark:border-gray-700 rounded-3xl p-6 md:p-8 space-y-6 shadow-lg transition-colors"
           >
             {/* Contact Info */}
             <section className="mb-8">
-              <h2 className="text-xl font-semibold flex items-center gap-2 text-gray-800 mb-4">
+              <h2 className="text-xl font-semibold flex items-center gap-2 text-gray-100 dark:text-white mb-4">
                 <User size={20} /> Contact Information
               </h2>
 
               <div className="grid md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="font-medium text-gray-700">First Name</label>
+                  <label className="font-medium text-gray-100 dark:text-white">First Name</label>
                   <input
                     {...register("firstName", { required: "Required" })}
                     className={`w-full border-2 rounded-lg p-3 mt-1 ${
@@ -195,7 +250,7 @@ const CheckoutComponent = () => {
                   />
                 </div>
                 <div>
-                  <label className="font-medium text-gray-700">Last Name</label>
+                  <label className="font-medium text-gray-100 dark:text-white">Last Name</label>
                   <input
                     {...register("lastName", { required: "Required" })}
                     className={`w-full border-2 rounded-lg p-3 mt-1 ${
@@ -206,7 +261,7 @@ const CheckoutComponent = () => {
               </div>
 
               <div className="mb-4">
-                <label className="font-medium text-gray-700">Email</label>
+                <label className="font-medium text-gray-100 dark:text-white">Email</label>
                 <input
                   type="email"
                   defaultValue={currentUser?.email}
@@ -218,7 +273,7 @@ const CheckoutComponent = () => {
               </div>
 
               <div className="mb-4">
-                <label className="font-medium text-gray-700">Phone</label>
+                <label className="font-medium text-gray-100 dark:text-white">Phone</label>
                 <input
                   {...register("phone", { required: "Required" })}
                   className={`w-full border-2 rounded-lg p-3 mt-1 ${
@@ -230,12 +285,12 @@ const CheckoutComponent = () => {
 
             {/* Address */}
             <section className="mb-8">
-              <h2 className="text-xl font-semibold flex items-center gap-2 text-gray-800 mb-4">
+              <h2 className="text-xl font-semibold flex items-center gap-2 text-gray-100 dark:text-white mb-4">
                 <MapPin size={20} /> Shipping Address
               </h2>
 
               <div className="mb-4">
-                <label className="font-medium text-gray-700">Address</label>
+                <label className="font-medium text-gray-100 dark:text-white">Address</label>
                 <input
                   {...register("address", { required: "Required" })}
                   className={`w-full border-2 rounded-lg p-3 mt-1 ${
@@ -246,7 +301,7 @@ const CheckoutComponent = () => {
 
               <div className="grid md:grid-cols-3 gap-4 mb-4">
                 <div>
-                  <label className="font-medium text-gray-700">City</label>
+                  <label className="font-medium text-gray-100 dark:text-white">City</label>
                   <input
                     {...register("city", { required: "Required" })}
                     className={`w-full border-2 rounded-lg p-3 mt-1 ${
@@ -256,22 +311,18 @@ const CheckoutComponent = () => {
                 </div>
 
                 <div>
-                  <label className="font-medium text-gray-700">State</label>
-                  <select
+                  <label className="font-medium text-gray-100 dark:text-white">State</label>
+                  <input
                     {...register("state", { required: "Required" })}
+                    placeholder="State"
                     className={`w-full border-2 rounded-lg p-3 mt-1 ${
                       errors.state ? "border-red-500" : "border-gray-200"
                     }`}
-                  >
-                    <option value="">Select</option>
-                    <option value="CA">California</option>
-                    <option value="NY">New York</option>
-                    <option value="TX">Texas</option>
-                  </select>
+                  />
                 </div>
 
                 <div>
-                  <label className="font-medium text-gray-700">ZIP</label>
+                  <label className="font-medium text-gray-100 dark:text-white">ZIP</label>
                   <input
                     {...register("zipCode", { required: "Required" })}
                     className={`w-full border-2 rounded-lg p-3 mt-1 ${
@@ -282,65 +333,11 @@ const CheckoutComponent = () => {
               </div>
             </section>
 
-            {/* Payment */}
-            <section className="mb-8">
-              <h2 className="text-xl font-semibold flex items-center gap-2 text-gray-800 mb-4">
-                <CreditCard size={20} /> Payment Method
-              </h2>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div
-                  onClick={() => setPaymentMethod("card")}
-                  className={`p-4 rounded-lg border-2 cursor-pointer text-center ${
-                    paymentMethod === "card"
-                      ? "border-blue-600"
-                      : "border-gray-200 hover:border-blue-400"
-                  }`}
-                >
-                  Credit Card
-                </div>
-                <div
-                  onClick={() => setPaymentMethod("paypal")}
-                  className={`p-4 rounded-lg border-2 cursor-pointer text-center ${
-                    paymentMethod === "paypal"
-                      ? "border-blue-600"
-                      : "border-gray-200 hover:border-blue-400"
-                  }`}
-                >
-                  PayPal
-                </div>
-              </div>
-
-              {paymentMethod === "card" && (
-                <div className="mt-4 grid md:grid-cols-3 gap-4">
-                  <input
-                    placeholder="Card Number"
-                    {...register("cardNumber", { required: "Required" })}
-                    className={`w-full border-2 rounded-lg p-3 ${
-                      errors.cardNumber ? "border-red-500" : "border-gray-200"
-                    }`}
-                  />
-                  <input
-                    placeholder="MM/YY"
-                    {...register("expiry", { required: "Required" })}
-                    className={`w-full border-2 rounded-lg p-3 ${
-                      errors.expiry ? "border-red-500" : "border-gray-200"
-                    }`}
-                  />
-                  <input
-                    placeholder="CVV"
-                    {...register("cvv", { required: "Required" })}
-                    className={`w-full border-2 rounded-lg p-3 ${
-                      errors.cvv ? "border-red-500" : "border-gray-200"
-                    }`}
-                  />
-                </div>
-              )}
-            </section>
+            {/* Payment method selection removed as per requirements */}
           </form>
 
           {/* Order Summary */}
-          <div className="bg-white rounded-xl shadow p-6 h-fit sticky top-8">
+          <div className="bg-white dark:bg-[#0f0f0f] border-2 border-gray-300 dark:border-gray-700 rounded-3xl p-6 md:p-8 h-fit sticky top-8 shadow-lg transition-colors">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">
               Order Summary
             </h2>
@@ -364,19 +361,41 @@ const CheckoutComponent = () => {
               </div>
             ))}
 
-            <div className="flex justify-between mt-4 text-gray-600">
-              <span>Subtotal</span>
-              <span>{formatPrice(subtotal)}</span>
-            </div>
-
-            <div className="flex justify-between text-gray-600">
-              <span>Shipping</span>
-              <span>{shipping === 0 ? "FREE" : formatPrice(shipping)}</span>
-            </div>
-
-            <div className="flex justify-between text-gray-600 mb-2">
-              <span>Tax</span>
-              <span>{formatPrice(tax)}</span>
+            <div className="flex flex-col gap-2 mt-4">
+              <div className="flex justify-between text-gray-600">
+                <span>Subtotal</span>
+                <span>{formatPrice(subtotal)}</span>
+              </div>
+              {fallbackDiscount > 0 && (
+                <div className="flex justify-between text-gray-600">
+                  <span>Signup Discount (-20%)</span>
+                  <span className="text-red-500 font-semibold">- {formatPrice(fallbackDiscount)}</span>
+                </div>
+              )}
+              {appliedCoupon && couponDiscount > 0 && (
+                <div className="flex justify-between text-gray-600">
+                  <span>Coupon ({appliedCoupon.code})
+                    {appliedCoupon.discountType === 'percent'
+                      ? ` (-${appliedCoupon.discountValue}%)`
+                      : appliedCoupon.discountType === 'flat'
+                      ? ` (-${formatPrice(appliedCoupon.discountValue)})`
+                      : ''}
+                  </span>
+                  <span className="text-red-500 font-semibold">- {formatPrice(couponDiscount)}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-gray-600">
+                <span>Delivery Fee</span>
+                <span>{shipping === 0 ? "FREE" : formatPrice(shipping)}</span>
+              </div>
+              <div className="flex justify-between text-gray-600">
+                <span>Pre-Tax Total</span>
+                <span>{formatPrice(preTaxTotal)}</span>
+              </div>
+              <div className="flex justify-between text-gray-600">
+                <span>Tax</span>
+                <span>{formatPrice(tax)}</span>
+              </div>
             </div>
 
             <div className="flex justify-between border-t border-gray-200 pt-4 text-lg font-bold text-gray-800">
@@ -404,7 +423,7 @@ const CheckoutComponent = () => {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 };
 

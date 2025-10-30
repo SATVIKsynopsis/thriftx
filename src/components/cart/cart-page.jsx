@@ -1,18 +1,21 @@
+
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
+import { db } from "@/firebase/config";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCart } from "@/contexts/CartContext";
 import CartItem from "./cart-item";
 import OrderSummary from "./order-summary";
-import dynamic from 'next/dynamic';
-import { useAuth } from "@/contexts/AuthContext";
+import { Anton } from "next/font/google";
+import { Sansation } from "next/font/google";
+import { ShoppingBag } from "lucide-react";
 import {
   subscribeToCart,
   updateCartQuantity,
   removeCartItem,
 } from "../../../lib/cartService";
-import { Anton } from "next/font/google";
-import { Sansation } from "next/font/google";
-import { ShoppingBag } from "lucide-react";
 
 const anton = Anton({
   weight: "400",
@@ -24,16 +27,24 @@ const sansation = Sansation({
   subsets: ["latin"],
 });
 
-const CartCouponInput = dynamic(() => import('./CartCouponInput'), { ssr: false });
-
 export default function CartPage() {
   const { currentUser } = useAuth();
+  const { appliedCoupon, setAppliedCoupon, fallbackUsed, setFallbackUsed } = useCart();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [appliedCoupon, setAppliedCoupon] = useState(null);
 
+
+  // Check fallback discount usage on mount
   useEffect(() => {
     if (!currentUser) return;
+
+    // Check fallback discount usage
+    const checkFallback = async () => {
+      const usageRef = doc(db, "coupon_usages", `${currentUser.uid}_FALLBACK20`);
+      const usageSnap = await getDoc(usageRef);
+      setFallbackUsed(usageSnap.exists());
+    };
+    checkFallback();
 
     const unsubscribe = subscribeToCart(currentUser.uid, (cartItems) => {
       setItems(cartItems);
@@ -41,7 +52,7 @@ export default function CartPage() {
     });
 
     return () => unsubscribe();
-  }, [currentUser]);
+  }, [currentUser, setFallbackUsed]);
 
   const handleQuantityChange = async (id, quantity) => {
     if (!currentUser) return;
@@ -62,20 +73,28 @@ export default function CartPage() {
     0
   );
 
-  // Coupon discount logic
+
+  // Coupon discount logic (fix NaN and use correct fields)
   let couponDiscount = 0;
-  if (appliedCoupon) {
+  if (appliedCoupon && typeof appliedCoupon.discountValue === 'number' && subtotal > 0) {
     if (appliedCoupon.discountType === 'percent') {
-      couponDiscount = Math.floor(subtotal * (appliedCoupon.value / 100));
-    } else if (appliedCoupon.discountType === 'amount') {
-      couponDiscount = Math.min(subtotal, Math.floor(appliedCoupon.value));
+      couponDiscount = Math.floor(subtotal * (appliedCoupon.discountValue / 100));
+    } else if (appliedCoupon.discountType === 'flat' || appliedCoupon.discountType === 'amount') {
+      couponDiscount = Math.min(subtotal, Math.floor(appliedCoupon.discountValue));
     }
   }
 
-  // Fallback: 20% discount if no coupon (legacy logic)
-  const discount = appliedCoupon ? couponDiscount : Math.floor(subtotal * 0.2);
+  // Fallback: 20% discount if no coupon and not used before
+  let fallbackDiscount = 0;
+  if (!appliedCoupon && !fallbackUsed) {
+    fallbackDiscount = Math.floor(subtotal * 0.2);
+  }
+  const discount = appliedCoupon ? couponDiscount : fallbackDiscount;
   const deliveryFee = items.length > 0 ? 15 : 0;
   const total = subtotal - discount + deliveryFee;
+
+  // Mark fallback as used when discount is applied (and not already used)
+  // Remove fallback usage marking here; will be handled after payment in checkout
 
   return (
     <main className="flex-1 bg-gray-50 dark:bg-black px-4 sm:px-8 py-12 min-h-screen transition-colors">
@@ -107,13 +126,13 @@ export default function CartPage() {
 
             {/* Order Summary Container */}
             <div className="bg-white dark:bg-[#0f0f0f] border-2 border-gray-200 dark:border-gray-700 rounded-3xl p-6 md:p-8 shadow-lg self-start transition-colors">
-              <CartCouponInput onApply={setAppliedCoupon} />
               <OrderSummary
                 subtotal={subtotal}
                 discount={discount}
                 deliveryFee={deliveryFee}
                 total={total}
                 appliedCoupon={appliedCoupon}
+                onApplyCoupon={setAppliedCoupon}
               />
             </div>
           </div>

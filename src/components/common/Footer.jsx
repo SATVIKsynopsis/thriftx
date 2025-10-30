@@ -25,7 +25,7 @@ const footerItems = [
       { name: "Delivery Details", link: "#" },
       { name: "Returns", link: "#" },
       { name: "Designer", link: "#" },
-      { name: "Contact us", link: "#" },
+      { name: "Contact us", link: "/contact-us" },
     ],
   },
 ];

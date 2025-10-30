@@ -444,24 +444,24 @@ const ProductsComponent = () => {
             {filteredProducts.map((product) => (
               <ProductCard key={product.id}>
                 {product.images && product.images.length > 0 ? (
-                  <>
-                    <ProductImage
-                      src={product.images[0]}
-                      alt={product.name}
-                      onError={(e) => {
-                        e.target.classList.add('hidden'); // Hide the image on error
-                        e.target.nextElementSibling.classList.remove('hidden'); // Show placeholder
-                      }}
-                    />
-                    <ProductImagePlaceholder className="hidden"> {/* Initially hidden */}
-                      No Image Available
-                    </ProductImagePlaceholder>
-                  </>
-                ) : (
-                  <ProductImagePlaceholder>
-                    No Image Available
-                  </ProductImagePlaceholder>
-                )}
+          <div className="w-full aspect-[4/3] bg-gray-100 flex items-center justify-center overflow-hidden rounded-t-xl">
+            <ProductImage
+              src={product.images[0]}
+              alt={product.name}
+              className="w-full h-full object-contain transition-transform duration-300 hover:scale-105"
+              onError={(e) => {
+                e.currentTarget.src = "https://via.placeholder.com/400x300?text=No+Image";
+              }}
+            />
+          </div>
+        ) : (
+          <div className="w-full aspect-[4/3] flex items-center justify-center bg-gray-100 rounded-t-xl">
+            <ProductImagePlaceholder className="text-gray-500 text-base">
+              No Image Available
+            </ProductImagePlaceholder>
+          </div>
+        )}
+
 
                 <ProductContent>
                   <ProductHeader>
