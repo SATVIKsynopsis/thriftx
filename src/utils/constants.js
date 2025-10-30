@@ -51,7 +51,8 @@ export const CATEGORIES = [
   { value: 'bags-accessories', label: 'Bags & Accessories' },
   { value: 'jewelry', label: 'Jewelry' },
   { value: 'vintage', label: 'Vintage' },
-  { value: 'designer', label: 'Designer' }
+  { value: 'designer', label: 'Designer' },
+  { value: 'footwear', label: 'Footwear' }
 ];
 
 export const US_STATES = [

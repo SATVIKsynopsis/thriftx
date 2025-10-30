@@ -396,6 +396,18 @@ const AddProductComponent = () => {
               {errors.description && <ErrorMessage>{errors.description.message}</ErrorMessage>}
             </FormGroup>
 
+            <FormGroup>
+  <Label htmlFor="brand">Brand</Label>
+  <Input
+    id="brand"
+    {...register('brand', { required: 'Brand is required' })}
+    error={!!errors.brand}
+    placeholder="Enter brand name"
+  />
+  {errors.brand && <ErrorMessage>{errors.brand.message}</ErrorMessage>}
+</FormGroup>
+
+
             <FormRow columns="1fr 1fr">
               <FormGroup>
                 <Label htmlFor="category">Category</Label>
