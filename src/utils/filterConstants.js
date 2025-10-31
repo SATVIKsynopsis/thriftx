@@ -44,4 +44,4 @@ export const SORT_OPTIONS = [
 ];
 
 // Products per page
-export const PRODUCTS_PER_PAGE = 9;
+export const PRODUCTS_PER_PAGE = 12;
