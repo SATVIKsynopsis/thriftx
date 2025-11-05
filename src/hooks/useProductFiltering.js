@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { collection, query, getDocs } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 import { PRICE_RANGE } from '@/utils/filterConstants';
-import { filterProducts, hasActiveFilters, getActiveFilterCount } from '@/utils/productUtils';
+import { filterProducts, hasActiveFilters, getActiveFilterCount, getUniqueCategories, getUniqueBrands, getUniqueSizes, getUniqueColors } from '@/utils/productUtils';
 
 export const useProductFiltering = () => {
   const [products, setProducts] = useState([]);
@@ -77,6 +77,26 @@ export const useProductFiltering = () => {
     return getActiveFilterCount(filters, filters.priceRange, PRICE_RANGE);
   }, [filters]);
 
+  // Available categories from products
+  const availableCategories = useMemo(() => {
+    return getUniqueCategories(products);
+  }, [products]);
+
+  // Available brands from products
+  const availableBrands = useMemo(() => {
+    return getUniqueBrands(products);
+  }, [products]);
+
+  // Available sizes from products
+  const availableSizes = useMemo(() => {
+    return getUniqueSizes(products);
+  }, [products]);
+
+  // Available colors from products
+  const availableColors = useMemo(() => {
+    return getUniqueColors(products);
+  }, [products]);
+
   return {
     // Data
     products,
@@ -87,6 +107,12 @@ export const useProductFiltering = () => {
     // Filter state
     filters,
     activeFilterCount,
+
+    // Available filter options
+    availableCategories,
+    availableBrands,
+    availableSizes,
+    availableColors,
 
     // Filter actions
     updateFilters,

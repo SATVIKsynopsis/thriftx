@@ -111,7 +111,7 @@ export const useProductDetails = (productId) => {
     }
   };
 
-  const isOwnProduct = currentUser && product?.sellerId === currentUser.uid;
+  const isOwnProduct = !!(currentUser && product?.sellerId === currentUser.uid);
 
   return {
     // State

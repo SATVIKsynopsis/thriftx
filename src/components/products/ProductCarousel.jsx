@@ -1,7 +1,8 @@
 import React from 'react';
 import Link from 'next/link';
-import { Heart, ChevronRight, ChevronLeft } from 'lucide-react';
-import { formatPrice } from '../../utils/formatters';
+import { ChevronRight, ChevronLeft } from 'lucide-react';
+import ProductCard from './ProductCard';
+import { NAVIGATION_CONTEXTS } from '@/utils/navigationContextUtils';
 
 /**
  * Reusable product carousel component
@@ -19,19 +20,6 @@ const ProductCarousel = ({
   canGoNext,
   className = ""
 }) => {
-  const renderStars = (rating) => {
-    const stars = [];
-    const fullStars = Math.floor(rating || 0);
-    const hasHalfStar = (rating || 0) % 1 !== 0;
-
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(<span key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400">★</span>);
-    }
-    if (hasHalfStar) {
-      stars.push(<span key="half" className="w-4 h-4 fill-yellow-400 text-yellow-400">★</span>);
-    }
-    return stars;
-  };
 
   if (!products || products.length === 0) {
     return null;
@@ -61,54 +49,10 @@ const ProductCarousel = ({
               className="flex-shrink-0 px-2 sm:px-3"
               style={{ width: `${100 / visibleProducts}%` }}
             >
-              <div className="bg-gray-200 dark:bg-gray-900 rounded-xl sm:rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 transition-all duration-200 h-full">
-                <div className="relative">
-                  <span className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-pink-500 text-white text-xs px-2 sm:px-3 py-1 rounded font-medium z-10">
-                    CATEGORY
-                  </span>
-                  <button className="absolute top-2 right-2 sm:top-4 sm:right-4 w-8 h-8 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10">
-                    <Heart className="w-4 h-4 text-black dark:text-white" />
-                  </button>
-                  <div className="bg-gray-200 dark:bg-gray-700 h-40 sm:h-48 flex items-center justify-center">
-                    {product.images && product.images.length > 0 ? (
-                      <img
-                        src={product.images[0]}
-                        alt={product.name}
-                        className="w-full h-full object-contain"
-                      />
-                    ) : (
-                      <span className="text-gray-500 text-sm">Product image</span>
-                    )}
-                  </div>
-                </div>
-                <div className="p-3 sm:p-4">
-                  <span className="bg-lime-400 text-black text-xs px-2 py-1 rounded font-bold">
-                    BRAND
-                  </span>
-                  <h3 className="text-sm sm:text-base mt-2 mb-1 font-semibold line-clamp-2 dark:text-white text-gray-900">
-                    {product.name}
-                  </h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                    Size M - Excellent condition
-                  </p>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-lime-600 dark:text-lime-400 font-bold text-sm sm:text-base">
-                      {formatPrice(product.price)}
-                    </span>
-                    {product.originalPrice && product.originalPrice > product.price && (
-                      <span className="text-gray-400 dark:text-gray-500 line-through text-xs sm:text-sm">
-                        {formatPrice(product.originalPrice)}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    {renderStars(product.rating || 0)}
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      ({product.reviewCount || 0})
-                    </span>
-                  </div>
-                </div>
-              </div>
+              <ProductCard
+                product={product}
+                sectionContext={NAVIGATION_CONTEXTS.RELATED_PRODUCTS}
+              />
             </div>
           ))}
         </div>

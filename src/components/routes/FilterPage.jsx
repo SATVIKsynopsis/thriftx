@@ -1,16 +1,22 @@
 "use client";
 
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, SlidersHorizontal } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CATEGORIES, COLORS, SIZES, BRANDS, PRICE_RANGE } from '@/utils/filterConstants';
+import { PRICE_RANGE } from '@/utils/filterConstants';
+import { getCategoryDisplayName } from '@/utils/categoryUtils';
+import { SearchableMultiSelect } from '@/components/ui/searchable-multi-select';
 
 const FilterPage = ({
   isMobile = false,
   onClose = () => { },
   filters = { categories: [], colors: [], sizes: [], brands: [], priceRange: [0, 0] },
   updateFilters = () => { },
-  clearFilters = () => { }
+  clearFilters = () => { },
+  availableCategories = [],
+  availableBrands = [],
+  availableSizes = [],
+  availableColors = []
 }) => {
   const [expandedSections, setExpandedSections] = useState({
     price: true,
@@ -19,17 +25,33 @@ const FilterPage = ({
     brand: true
   });
 
-  const categories = CATEGORIES;
-  const colors = COLORS;
-  const sizes = SIZES;
-  const brands = BRANDS;
+  const categories = availableCategories;
+  const sizes = availableSizes;
+  const brands = availableBrands;
 
-  const toggleCategory = (category) => {
-    const newCategories = filters.categories.includes(category)
-      ? filters.categories.filter(c => c !== category)
-      : [...filters.categories, category];
-    updateFilters('categories', newCategories);
-  };
+  // Create color objects with classes for dynamic colors
+  const colors = availableColors.map(colorName => {
+    // For now, use a simple color mapping. In a real app, you'd want a more comprehensive color system
+    const colorMap = {
+      'red': 'bg-red-500',
+      'blue': 'bg-blue-500',
+      'green': 'bg-green-500',
+      'yellow': 'bg-yellow-400',
+      'orange': 'bg-orange-500',
+      'purple': 'bg-purple-500',
+      'pink': 'bg-pink-500',
+      'black': 'bg-black',
+      'white': 'bg-white border-2 border-gray-300',
+      'gray': 'bg-gray-500',
+      'brown': 'bg-amber-800',
+      'cyan': 'bg-cyan-400'
+    };
+
+    return {
+      name: colorName,
+      class: colorMap[colorName.toLowerCase()] || 'bg-gray-400' // Default fallback color
+    };
+  });
 
   const toggleColor = (color) => {
     const newColors = filters.colors.includes(color)
@@ -43,13 +65,6 @@ const FilterPage = ({
       ? filters.sizes.filter(s => s !== size)
       : [...filters.sizes, size];
     updateFilters('sizes', newSizes);
-  };
-
-  const toggleBrand = (brand) => {
-    const newBrands = filters.brands.includes(brand)
-      ? filters.brands.filter(b => b !== brand)
-      : [...filters.brands, brand];
-    updateFilters('brands', newBrands);
   };
 
   const updatePriceRange = (newRange) => {
@@ -83,20 +98,16 @@ const FilterPage = ({
 
       {/* Categories */}
       <div className="mb-6">
-        <div className="space-y-2">
-          {categories.map((category) => (
-            <div
-              key={category}
-              className="flex items-center justify-between py-2 cursor-pointer hover:text-black dark:hover:text-white transition-colors"
-              onClick={() => toggleCategory(category)}
-            >
-              <span className={`text-sm ${filters.categories.includes(category) ? 'text-black dark:text-white font-semibold' : 'text-gray-900 dark:text-gray-500'}`}>
-                {category} {filters.categories.includes(category) && '✓'}
-              </span>
-              <ChevronRight className="w-4 h-4 text-gray-800 dark:text-gray-400" />
-            </div>
-          ))}
-        </div>
+        <h3 className="text-base font-semibold mb-3 text-gray-800 dark:text-gray-100">Categories</h3>
+        <SearchableMultiSelect
+          options={categories}
+          value={filters.categories}
+          onChange={(selectedCategories) => updateFilters('categories', selectedCategories)}
+          placeholder="Select categories..."
+          searchPlaceholder="Search categories..."
+          emptyMessage="No categories found."
+          maxDisplay={3}
+        />
       </div>
 
       {/* Price */}
@@ -243,42 +254,16 @@ const FilterPage = ({
 
       {/* Brand */}
       <div className="mb-6">
-        <button
-          className="flex items-center justify-between w-full mb-3 border-2 border-t-neutral-600 text-gray-800 dark:text-gray-100 hover:text-black dark:hover:text-white transition-colors"
-          onClick={() => toggleSection('brand')}
-        >
-          <h3 className="text-base font-semibold">Brand</h3>
-          <motion.div animate={{ rotate: expandedSections.brand ? 180 : 0 }} transition={{ duration: 0.2 }}>
-            <ChevronDown className="w-5 h-5" />
-          </motion.div>
-        </button>
-        <AnimatePresence>
-          {expandedSections.brand && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden"
-            >
-              <div className="space-y-3">
-                {brands.map((brand) => (
-                  <label key={brand} className="flex items-center space-x-3 cursor-pointer group">
-                    <input
-                      type="checkbox"
-                      checked={filters.brands.includes(brand)}
-                      onChange={() => toggleBrand(brand)}
-                      className="w-4 h-4 rounded border-gray-600 bg-gray-300 dark:bg-gray-800 text-[#bdf800] focus:ring-[#bdf800] focus:ring-offset-0 cursor-pointer"
-                    />
-                    <span className={`text-sm group-hover:text-white transition-colors ${filters.brands.includes(brand) ? 'text-black dark:text-white font-semibold' : 'text-gray-600 dark:text-gray-400'}`}>
-                      {brand}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <h3 className="text-base font-semibold mb-3 text-gray-800 dark:text-gray-100">Brand</h3>
+        <SearchableMultiSelect
+          options={brands}
+          value={filters.brands}
+          onChange={(selectedBrands) => updateFilters('brands', selectedBrands)}
+          placeholder="Select brands..."
+          searchPlaceholder="Search brands..."
+          emptyMessage="No brands found."
+          maxDisplay={3}
+        />
       </div>
 
 

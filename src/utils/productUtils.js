@@ -128,6 +128,66 @@ export const hasActiveFilters = (filters, priceRange, defaultPriceRange) => {
 };
 
 /**
+ * Extract unique categories from products array
+ * @param {Array} products - Array of product objects
+ * @returns {Array} Array of unique category values
+ */
+export const getUniqueCategories = (products) => {
+  if (!Array.isArray(products)) return [];
+
+  const categories = products
+    .map(product => product.category)
+    .filter(category => category && typeof category === 'string' && category.trim().length > 0);
+
+  return [...new Set(categories)].sort();
+};
+
+/**
+ * Extract unique brands from products array
+ * @param {Array} products - Array of product objects
+ * @returns {Array} Array of unique brand values
+ */
+export const getUniqueBrands = (products) => {
+  if (!Array.isArray(products)) return [];
+
+  const brands = products
+    .map(product => product.brand)
+    .filter(brand => brand && typeof brand === 'string' && brand.trim().length > 0);
+
+  return [...new Set(brands)].sort();
+};
+
+/**
+ * Extract unique sizes from products array
+ * @param {Array} products - Array of product objects
+ * @returns {Array} Array of unique size values
+ */
+export const getUniqueSizes = (products) => {
+  if (!Array.isArray(products)) return [];
+
+  const allSizes = products
+    .flatMap(product => normalizeToArray(product.sizes))
+    .filter(size => size && typeof size === 'string' && size.trim().length > 0);
+
+  return [...new Set(allSizes)].sort();
+};
+
+/**
+ * Extract unique colors from products array
+ * @param {Array} products - Array of product objects
+ * @returns {Array} Array of unique color names
+ */
+export const getUniqueColors = (products) => {
+  if (!Array.isArray(products)) return [];
+
+  const allColors = products
+    .flatMap(product => normalizeToArray(product.colors))
+    .filter(color => color && typeof color === 'string' && color.trim().length > 0);
+
+  return [...new Set(allColors)].sort();
+};
+
+/**
  * Calculate active filter count for UI
  * @param {Object} filters - Filter criteria
  * @param {Array} priceRange - Price range [min, max]

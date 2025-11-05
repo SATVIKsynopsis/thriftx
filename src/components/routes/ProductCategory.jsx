@@ -46,6 +46,10 @@ const ProductsPage = () => {
     loading,
     filters,
     activeFilterCount,
+    availableCategories,
+    availableBrands,
+    availableSizes,
+    availableColors,
     updateFilters,
     clearFilters,
     PRICE_RANGE
@@ -111,11 +115,15 @@ const ProductsPage = () => {
     <div className="flex min-h-screen bg-white text-black dark:bg-black dark:text-white">
       {/* Filter Sidebar - Desktop */}
       {showFilters && !isMobile && (
-        <div className="w-80 border-r border-gray-200 dark:border-gray-800 overflow-y-auto">
+        <div className="w-80 border-r border-gray-200 dark:border-gray-800 overflow-y-auto max-h-screen">
           <FilterPage
             filters={filters}
             updateFilters={updateFilters}
             clearFilters={handleClearFilters}
+            availableCategories={availableCategories}
+            availableBrands={availableBrands}
+            availableSizes={availableSizes}
+            availableColors={availableColors}
           />
         </div>
       )}
@@ -136,7 +144,7 @@ const ProductsPage = () => {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed right-0 top-0 h-full w-80 bg-white dark:bg-black border-l border-gray-200 dark:border-gray-800 z-50 overflow-y-auto"
+              className="fixed right-0 top-20 h-[calc(100vh-5rem)] w-80 bg-white dark:bg-black border-l border-gray-200 dark:border-gray-800 z-50 overflow-y-auto"
             >
               <FilterPage
                 isMobile={isMobile}
@@ -144,6 +152,10 @@ const ProductsPage = () => {
                 filters={filters}
                 updateFilters={updateFilters}
                 clearFilters={handleClearFilters}
+                availableCategories={availableCategories}
+                availableBrands={availableBrands}
+                availableSizes={availableSizes}
+                availableColors={availableColors}
               />
             </motion.div>
           </>

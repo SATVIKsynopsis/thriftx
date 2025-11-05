@@ -11,7 +11,8 @@ export const NAVIGATION_CONTEXTS = {
   SEARCH: 'search',
   CATEGORY: 'category',
   WISHLIST: 'wishlist',
-  HOME: 'home'
+  HOME: 'home',
+  RELATED_PRODUCTS: 'related_products'
 };
 
 // Context display names for UI
