@@ -70,11 +70,7 @@ const SearchableMultiSelect = React.forwardRef(({
               {visibleValues.length > 0 ? (
                 <>
                   {visibleValues.map((item) => (
-                    <Badge
-                      key={item}
-                      variant="secondary"
-                      className="text-xs px-2 py-0.5 h-6"
-                    >
+                    <Badge key={item} variant="secondary" className="text-xs px-2 py-0.5 h-6">
                       {item}
                       <span
                         className="ml-1 hover:bg-secondary-foreground/20 rounded-full p-0.5 cursor-pointer inline-flex items-center justify-center"
@@ -100,13 +96,13 @@ const SearchableMultiSelect = React.forwardRef(({
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
+
+        {/* ✅ PopoverContent with Portal to escape scroll/clipping */}
         <PopoverContent
           className="w-full p-0"
           align="start"
           side="bottom"
-          avoidCollisions={false}
-          collisionPadding={0}
-          portal={true}
+          sideOffset={4}        // space between trigger and dropdown
         >
           <Command>
             <CommandInput
@@ -138,6 +134,7 @@ const SearchableMultiSelect = React.forwardRef(({
           </Command>
         </PopoverContent>
       </Popover>
+
     </div>
   );
 });
