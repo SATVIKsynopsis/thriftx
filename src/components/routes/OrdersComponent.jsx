@@ -142,6 +142,54 @@ const OrderStatus = ({ status, children }) => {
   );
 };
 
+// Shipping Status Component
+const ShippingStatus = ({ order }) => {
+  const { awb_code, courier_name, tracking_url, shipping_status, estimated_delivery } = order;
+
+  if (!awb_code && !courier_name) {
+    return null; 
+  }
+
+  return (
+    <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+            <span className="font-semibold text-blue-800 dark:text-blue-200 text-sm">
+              Shipping Details
+            </span>
+          </div>
+          {courier_name && (
+            <p className="text-xs text-blue-700 dark:text-blue-300 mb-1">
+              Courier: {courier_name}
+            </p>
+          )}
+          {awb_code && (
+            <p className="text-xs text-blue-700 dark:text-blue-300 mb-1">
+              AWB: {awb_code}
+            </p>
+          )}
+          {estimated_delivery && (
+            <p className="text-xs text-blue-700 dark:text-blue-300">
+              Est. Delivery: {estimated_delivery}
+            </p>
+          )}
+        </div>
+        {tracking_url && (
+          <a
+            href={tracking_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded hover:bg-blue-700 transition-colors"
+          >
+            Track Order
+          </a>
+        )}
+      </div>
+    </div>
+  );
+};
 const OrderTotal = ({ children }) => (
   <div className="text-2xl font-bold text-green-700">
     {children}

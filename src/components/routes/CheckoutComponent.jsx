@@ -223,6 +223,7 @@ const CheckoutComponent = () => {
           try {
             const orderRef = await addDoc(collection(db, "orders"), orderData);
             
+            const orderDocId = orderRef.id;
             // Mark all applied coupons as used
             for (const coupon of appliedCoupons) {
               const usageRef = doc(db, "coupon_usages", `${currentUser.uid}_${coupon.code}`);
