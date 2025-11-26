@@ -17,7 +17,7 @@ const NewArrival = ({ loading, newProducts }) => {
       if (window.innerWidth >= 1024) return 4;
       if (window.innerWidth >= 768) return 3;
       if (window.innerWidth >= 640) return 2;
-      return 1;
+      return 2;
     }
     return 4;
   };
@@ -26,9 +26,8 @@ const NewArrival = ({ loading, newProducts }) => {
     const updateVisible = () => {
       const visible = getVisibleProducts();
       setVisibleProducts(visible);
-      const max = Math.max(newProducts.length - visible, 0);
-      setMaxIndex(max);
-      setCurrentIndex(prev => Math.min(prev, max));
+      setMaxIndex(Math.max(newProducts.length - visible, 0));
+      setCurrentIndex(prev => Math.min(prev, Math.max(newProducts.length - visible, 0)));
     };
 
     updateVisible();
@@ -105,7 +104,9 @@ const NewArrival = ({ loading, newProducts }) => {
           </div>
         ) : (
           <>
-            <div className="relative overflow-hidden">
+ <div
+              className="relative overflow-hidden"
+            >
               <div
                 className="flex transition-transform duration-500 ease-in-out"
                 style={{ transform: `translateX(-${currentIndex * (100 / visibleProducts)}%)` }}
@@ -113,10 +114,11 @@ const NewArrival = ({ loading, newProducts }) => {
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
               >
-                {newProducts.map(product => (
+                {newProducts.map((product) => (
                   <div
                     key={product.id}
-                    className={`flex-shrink-0 w-auto p-2 sm:w-1/3 md:w-1/3 lg:w-1/4`} 
+                    className="flex-shrink-0 p-2"
+                    style={{ width: `${100 / visibleProducts}%` }}
                   >
                     <ProductCard
                       product={product}
