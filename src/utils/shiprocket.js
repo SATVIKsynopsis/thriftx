@@ -1,20 +1,36 @@
+/**
+ * Shiprocket API Integration
+ * Handles authentication, order creation, tracking, and rate calculations
+ */
 
+// Shiprocket API Configuration
+const SHIPROCKET_BASE_URL = 'https://apiv2.shiprocket.in/v1/external';
 
-const SHIPROCKET_BASE_URL = "https://apiv2.shiprocket.in/v1/external";
-
-
+// Default product shipping specifications (across all categories)
 const DEFAULT_SHIPPING_CONFIG = {
-  weight: 0.4,
-  length: 30,
-  width: 25,
-  height: 5
+  weight: 0.4, // 400 grams
+  length: 30,  // 30 cm
+  width: 25,   // 25 cm
+  height: 5    // 5 cm
 };
 
+// Shiprocket API Authentication
 let authToken = null;
 let tokenExpiry = null;
 
-/** ShipRocket Authentication  */
+/**
+ * Clear auth token cache (used for testing)
+ */
+function clearAuthToken() {
+  authToken = null;
+  tokenExpiry = null;
+}
+
+/**
+ * Get authentication token for Shiprocket API
+ */
 async function getAuthToken() {
+  // Return cached token if still valid (tokens typically last 24 hours)
   if (authToken && tokenExpiry && new Date() < tokenExpiry) {
     return authToken;
   }
@@ -23,63 +39,90 @@ async function getAuthToken() {
   const password = process.env.SHIPROCKET_PASSWORD;
 
   if (!email || !password) {
-    throw new Error("Shiprocket credentials are missing");
+    throw new Error('Shiprocket credentials not configured. Please set SHIPROCKET_EMAIL and SHIPROCKET_PASSWORD environment variables.');
   }
 
   try {
     const response = await fetch(`${SHIPROCKET_BASE_URL}/auth/login`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({
+        email,
+        password,
+      }),
     });
 
     const data = await response.json();
 
-    if (!response.ok) throw new Error(data.message);
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to authenticate with Shiprocket');
+    }
 
     authToken = data.token;
+    // Set expiry to 1 day from now (Shiprocket tokens typically last 24 hours)
     tokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
     return authToken;
-  } catch (err) {
-    console.error("Shiprocket Authentication Error:", err);
-    throw new Error("Failed to authenticate with Shiprocket API");
+  } catch (error) {
+    console.error('Shiprocket Authentication Error:', error);
+    throw new Error('Failed to authenticate with Shiprocket API');
   }
 }
 
 /**
-  API request
+ * Make authenticated request to Shiprocket API
  */
 async function shiprocketRequest(endpoint, options = {}) {
   const token = await getAuthToken();
 
-  const url = endpoint.startsWith("http")
-    ? endpoint
-    : `${SHIPROCKET_BASE_URL}${endpoint}`;
+  const url = endpoint.startsWith('http') ? endpoint : `${SHIPROCKET_BASE_URL}${endpoint}`;
 
   const response = await fetch(url, {
     ...options,
     headers: {
-      "Authorization": `Bearer ${token}`,
-      "Content-Type": "application/json",
-      ...options.headers
-    }
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
   });
 
   const data = await response.json();
 
   if (!response.ok) {
-    console.error("Shiprocket API Error:", data);
-    throw new Error(data.message || "Shiprocket API request failed");
+    console.error('Shiprocket API Error:', data);
+    throw new Error(data.message || 'Shiprocket API request failed');
   }
 
   return data;
 }
 
 /**
- * Calculate shipping rates
+ * Get pickup locations from ShipRocket
+ */
+async function getPickupLocations() {
+  try {
+    const response = await shiprocketRequest('/settings/company/pickup', {
+      method: 'GET'
+    });
+
+    return response.data || [];
+  } catch (error) {
+    console.error('Error fetching pickup locations:', error);
+    // Return default fallback location
+    return [{
+      pickup_location: process.env.DEFAULT_PICKUP_LOCATION || 'Default',
+      state: 'Delhi',
+      city: 'New Delhi',
+      pin_code: '110001'
+    }];
+  }
+}
+
+/**
+ * Calculate shipping rates for given pickup and delivery locations
+ * Uses ShipRocket's serviceability API to get available couriers and rates
  */
 async function calculateShippingRates({
   pickup_postcode,
@@ -90,38 +133,78 @@ async function calculateShippingRates({
   height = DEFAULT_SHIPPING_CONFIG.height
 }) {
   try {
-    const response = await shiprocketRequest('/courier/serviceability', {
-      method: "POST",
+    // Check serviceability and get rates (POST request with shipment details)
+    const ratesData = await shiprocketRequest('/courier/serviceability', {
+      method: 'POST',
       body: JSON.stringify({
-        pickup_postcode: Number(pickup_postcode),
-        delivery_postcode: Number(delivery_postcode),
+        pickup_postcode: parseInt(pickup_postcode),
+        delivery_postcode: parseInt(delivery_postcode),
         weight,
         length,
         breadth,
         height,
-        cod: 0
+        cod: 0, // Prepaid only for marketplace
+        declared_value: 0, // Optional
       }),
     });
 
-    return response?.data?.available_courier_companies || [];
-  } catch (err) {
-    console.error("Error calculating shipping rates:", err);
-
+    // Return available courier options with rates
+    return ratesData.data?.available_courier_companies || ratesData.data || [];
+  } catch (error) {
+    console.error('Error calculating shipping rates:', error);
+    // Return default rates as fallback
     return [{
-      courier_name: "Standard Delivery",
+      courier_name: 'Standard Delivery',
       rate: 50,
-      estimated_delivery_days: "5–7 days"
+      etd: '5-7 days',
+      courier_id: 1
     }];
   }
 }
 
 /**
- * Create a Shiprocket order
+ * Create a shipment order in Shiprocket
  */
 async function createShiprocketOrder(orderData) {
+  const {
+    order_id,
+    order_date,
+    pickup_location,
+    channel_id = '', // Optional: your Shiprocket channel
+    comment = '',
+    billing_customer_name,
+    billing_last_name,
+    billing_address,
+    billing_address_2 = '',
+    billing_city,
+    billing_pincode,
+    billing_state,
+    billing_country,
+    billing_email,
+    billing_phone,
+    shipping_is_billing = true,
+    shipping_customer_name,
+    shipping_last_name,
+    shipping_address,
+    shipping_address_2 = '',
+    shipping_city,
+    shipping_pincode,
+    shipping_country,
+    shipping_state,
+    shipping_email,
+    shipping_phone,
+    order_items,
+    payment_method = 'Prepaid',
+    sub_total,
+    length = DEFAULT_SHIPPING_CONFIG.length,
+    breadth = DEFAULT_SHIPPING_CONFIG.width,
+    height = DEFAULT_SHIPPING_CONFIG.height,
+    weight = DEFAULT_SHIPPING_CONFIG.weight
+  } = orderData;
+
   try {
-    const formattedItems = orderData.order_items.map(item => ({
-      name: item.name.substring(0, 100),
+    const formattedItems = order_items.map(item => ({
+      name: item.name.substring(0, 100), // Limit to 100 chars
       sku: item.sku || item.product_id || `PROD-${Date.now()}`,
       units: item.quantity,
       selling_price: item.price,
@@ -130,52 +213,86 @@ async function createShiprocketOrder(orderData) {
       hsn: item.hsn || 0
     }));
 
-    const payload = {
-      ...orderData,
+    const orderPayload = {
+      order_id,
+      order_date,
+      pickup_location,
+      channel_id,
+      comment,
+      billing_customer_name,
+      billing_last_name,
+      billing_address,
+      billing_address_2,
+      billing_city,
+      billing_pincode,
+      billing_state,
+      billing_country,
+      billing_email,
+      billing_phone,
+      shipping_is_billing,
+      shipping_customer_name,
+      shipping_last_name,
+      shipping_address,
+      shipping_address_2,
+      shipping_city,
+      shipping_pincode,
+      shipping_country,
+      shipping_state,
+      shipping_email,
+      shipping_phone,
       order_items: formattedItems,
-      length: orderData.length ?? DEFAULT_SHIPPING_CONFIG.length,
-      breadth: orderData.breadth ?? DEFAULT_SHIPPING_CONFIG.width,
-      height: orderData.height ?? DEFAULT_SHIPPING_CONFIG.height,
-      weight: orderData.weight ?? DEFAULT_SHIPPING_CONFIG.weight
+      payment_method,
+      sub_total,
+      length,
+      breadth,
+      height,
+      weight
     };
 
-    return await shiprocketRequest("/orders/create/adhoc", {
-      method: "POST",
-      body: JSON.stringify(payload)
+    const response = await shiprocketRequest('/orders/create/adhoc', {
+      method: 'POST',
+      body: JSON.stringify(orderPayload)
     });
 
-  } catch (err) {
-    console.error("Error creating Shiprocket order:", err);
-    throw err;
+    return response;
+  } catch (error) {
+    console.error('Error creating Shiprocket order:', error);
+    throw error;
   }
 }
 
 /**
- * Generate shipping label
+ * Generate shipping label/AWB for an order
  */
-async function generateShippingLabel(shipment_id) {
+async function generateShippingLabel(order_id) {
   try {
-    return await shiprocketRequest("/courier/generate/label", {
-      method: "POST",
-      body: JSON.stringify({ shipment_id: [shipment_id] })
+    const response = await shiprocketRequest('/courier/generate/label', {
+      method: 'POST',
+      body: JSON.stringify({
+        shipment_id: [order_id]
+      })
     });
-  } catch (err) {
-    console.error("Error generating shipping label:", err);
-    throw err;
+
+    return response;
+  } catch (error) {
+    console.error('Error generating shipping label:', error);
+    throw error;
   }
 }
 
 /**
- * Track a shipment
+ * Track shipment by AWB number
  */
 async function trackShipment(awb_code) {
   try {
-    return await shiprocketRequest(`/courier/track/awb/${awb_code}`, {
-      method: "GET"
+    const response = await shiprocketRequest(`/courier/track/shipment/${awb_code}`, {
+      method: 'GET'
     });
-  } catch (err) {
-    console.error("Error tracking shipment:", err);
-    throw err;
+
+    return response;
+  } catch (error) {
+    console.error('Error tracking shipment:', error);
+    throw error;
   }
 }
 
@@ -184,20 +301,24 @@ async function trackShipment(awb_code) {
  */
 async function cancelShipment(awb_code) {
   try {
-    return await shiprocketRequest("/orders/cancel/shipment/awbs", {
-      method: "POST",
+    const response = await shiprocketRequest(`/orders/cancel/shipment`, {
+      method: 'POST',
       body: JSON.stringify({
         awbs: [awb_code]
       })
     });
-  } catch (err) {
-    console.error("Error cancelling shipment:", err);
-    throw err;
+
+    return response;
+  } catch (error) {
+    console.error('Error cancelling shipment:', error);
+    throw error;
   }
 }
 
 module.exports = {
+  clearAuthToken,
   getAuthToken,
+  getPickupLocations,
   calculateShippingRates,
   createShiprocketOrder,
   generateShippingLabel,

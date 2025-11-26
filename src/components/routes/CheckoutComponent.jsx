@@ -222,8 +222,8 @@ const CheckoutComponent = () => {
         handleRazorpayPayment(orderData, async (razorpayResponse) => {
           try {
             const orderRef = await addDoc(collection(db, "orders"), orderData);
-            
             const orderDocId = orderRef.id;
+
             // Mark all applied coupons as used
             for (const coupon of appliedCoupons) {
               const usageRef = doc(db, "coupon_usages", `${currentUser.uid}_${coupon.code}`);
@@ -245,17 +245,47 @@ const CheckoutComponent = () => {
               setFallbackUsed(true);
             }
 
+            // Create Shiprocket order for shipping
+            try {
+              const shiprocketResponse = await fetch('/api/shiprocket/create-order', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  orderId: orderDocId,
+                  orderData: {
+                    ...orderData,
+                    orderId: orderDocId
+                  }
+                })
+              });
+
+              const shiprocketResult = await shiprocketResponse.json();
+              if (!shiprocketResult.success) {
+                console.error('Shiprocket order creation failed:', shiprocketResult.error);
+                // Don't break the flow - order is already placed
+                toast('Order placed successfully. Shipping setup may take a few moments.');
+              } else {
+                console.log('Shiprocket order created:', shiprocketResult.data);
+              }
+            } catch (shiprocketError) {
+              console.error('-shiprocket integration error:', shiprocketError);
+              // Don't break the order flow
+              toast('Order placed successfully. Shipping will be arranged manually.');
+            }
+
             // Clear all coupons and cart
             setAppliedCoupons([]);
             setUseFallback(false);
             await clearCart();
-            
+
             toast.success("Order placed and payment successful!");
             router.push("/orders");
             resolve();
           } catch (err) {
-            console.error("Error updating coupon usage:", err);
-            toast.error("Order placed but failed to update coupon usage.");
+            console.error("Error updating order:", err);
+            toast.error("Order placed but failed to update order details.");
             resolve();
           }
         });

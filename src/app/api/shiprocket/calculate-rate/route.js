@@ -5,7 +5,7 @@ export async function POST(request) {
     const body = await request.json();
     const { pickup_postcode, delivery_postcode } = body;
 
-    
+    // Validate required fields
     if (!pickup_postcode || !delivery_postcode) {
       return Response.json(
         { error: 'pickup_postcode and delivery_postcode are required' },
@@ -13,7 +13,7 @@ export async function POST(request) {
       );
     }
 
-    
+    // Validate PIN code format (Indian PIN codes are 6 digits)
     if (!/^\d{6}$/.test(pickup_postcode) || !/^\d{6}$/.test(delivery_postcode)) {
       return Response.json(
         { error: 'Invalid PIN code format. Must be 6 digits.' },
@@ -26,7 +26,7 @@ export async function POST(request) {
       delivery_postcode
     });
 
-    
+    // Transform rates to a simpler format for frontend
     const formattedRates = rates.map(rate => ({
       courier_name: rate.courier_name || 'Standard Delivery',
       rate: parseFloat(rate.rate) || 0,
@@ -42,7 +42,7 @@ export async function POST(request) {
   } catch (error) {
     console.error('Error calculating shipping rates:', error);
 
-    
+    // Return fallback rate if Shiprocket API fails
     return Response.json({
       success: true,
       data: [{

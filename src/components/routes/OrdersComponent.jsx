@@ -147,7 +147,7 @@ const ShippingStatus = ({ order }) => {
   const { awb_code, courier_name, tracking_url, shipping_status, estimated_delivery } = order;
 
   if (!awb_code && !courier_name) {
-    return null; 
+    return null; // No shipping info yet
   }
 
   return (
@@ -190,6 +190,7 @@ const ShippingStatus = ({ order }) => {
     </div>
   );
 };
+
 const OrderTotal = ({ children }) => (
   <div className="text-2xl font-bold text-green-700">
     {children}
@@ -441,6 +442,7 @@ const OrdersComponent = () => {
                     <OrderStatus status={order.status}>
                       {order.status || 'pending'}
                     </OrderStatus>
+                    <ShippingStatus order={order} />
                   </OrderInfo>
 
                   <OrderTotal>
