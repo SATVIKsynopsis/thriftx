@@ -2,19 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  collection,
-  query,
-  where,
-  getDocs,
-  orderBy
-} from 'firebase/firestore';
-import {
   Package,
   Calendar,
   Eye,
   // Removed unused icons: Clock, CheckCircle, XCircle, DollarSign
 } from 'lucide-react';
-import { db } from '@/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { formatPrice } from '@/utils/formatters';
@@ -309,45 +301,16 @@ const OrdersComponent = () => {
       console.log(`[Step 1] Fetching orders for UID: ${currentUser.uid}`);
 
       try {
-        // Fetch orders where user is the buyer
-        const buyerOrdersQuery = query(
-          collection(db, 'orders'),
-          where('buyerId', '==', currentUser.uid),
-          orderBy('createdAt', 'desc')
-        );
+        // Use API route instead of direct Firestore queries to bypass client-side permissions
+        const response = await fetch(`/api/orders?userId=${currentUser.uid}`);
+        const data = await response.json();
 
-        const buyerSnapshot = await getDocs(buyerOrdersQuery);
+        if (data.error) {
+          throw new Error(data.error);
+        }
 
-        const buyerOrders = buyerSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          type: 'purchase'
-        }));
-
-        // Fetch orders where user is the seller
-        const sellerOrdersQuery = query(
-          collection(db, 'orders'),
-          where('sellerId', '==', currentUser.uid),
-          orderBy('createdAt', 'desc')
-        );
-
-        const sellerSnapshot = await getDocs(sellerOrdersQuery);
-
-        const sellerOrders = sellerSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          type: 'sale'
-        }));
-
-        const allUserOrders = [...buyerOrders, ...sellerOrders].sort((a, b) => {
-          const dateA = a.createdAt?.toDate?.() || 0;
-          const dateB = b.createdAt?.toDate?.() || 0;
-          // Sort descending (latest first)
-          return dateB.getTime() - dateA.getTime();
-        });
-
-        setOrders(allUserOrders);
-        setFilteredOrders(allUserOrders);
+        setOrders(data.orders);
+        setFilteredOrders(data.orders);
 
       } catch (error) {
         console.error("Error fetching orders:", error);

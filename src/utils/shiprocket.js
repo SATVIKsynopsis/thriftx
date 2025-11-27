@@ -107,16 +107,16 @@ async function getPickupLocations() {
       method: 'GET'
     });
 
-    return response.data || [];
+    // ShipRocket returns pickup locations in response.data.shipping_address
+    const locations = response.data?.shipping_address || [];
+    console.log('ShipRocket pickup locations:', locations);
+    return locations;
   } catch (error) {
     console.error('Error fetching pickup locations:', error);
-    // Return default fallback location
-    return [{
-      pickup_location: process.env.DEFAULT_PICKUP_LOCATION || 'Default',
-      state: 'Delhi',
-      city: 'New Delhi',
-      pin_code: '110001'
-    }];
+    // Return empty array - let the order processing handle the fallback
+    // Don't return fake locations as they will cause ShipRocket API errors
+    console.warn('No pickup locations available. Order processing will use seller\'s stored location or fail gracefully.');
+    return [];
   }
 }
 

@@ -1,65 +1,123 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users can read and write their own user document
-    // Super admin can read all users
+
+    // ---------- USERS ----------
+    // Owners can read/write their own user doc. Authenticated users may read other profiles (for order processing).
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-      allow read: if request.auth != null && request.auth.token.email == 'admin@thriftx.com';
+      allow read: if request.auth != null; // authenticated users can read user profiles
+      allow write: if request.auth != null && request.auth.uid == userId; // only owner can write
+      // admin override (optional)
+      allow read, write: if request.auth != null && request.auth.token.email == 'admin@thriftx.com';
     }
-    
-    // Products can be read by anyone, but only created/updated by authenticated users
+
+    // ---------- PRODUCTS ----------
     match /products/{productId} {
       allow read: if true;
 
-      // ✅ Sellers OR Super Admin can create/update products
-      allow create, update: if request.auth != null &&
+      allow create: if request.auth != null &&
+        request.resource.data.keys().hasAll(['sellerId','title','price']) &&
+        request.resource.data.sellerId == request.auth.uid;
+
+      allow update: if request.auth != null &&
         (
-          request.auth.uid == request.resource.data.sellerId ||
-          request.auth.token.email == 'admin@thriftx.com'
+          request.auth.uid == resource.data.sellerId ||
+          request.auth.token.email == 'admin@thriftx.com' ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
         );
 
-      // ✅ Deletion allowed for product owner OR Admin
       allow delete: if request.auth != null &&
         (
           request.auth.uid == resource.data.sellerId ||
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
-          request.auth.token.email == 'admin@thriftx.com'
+          request.auth.token.email == 'admin@thriftx.com' ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
         );
     }
 
-    // Orders can only be accessed by the buyer, seller, or admin
+    // ---------- ORDERS ----------
+    // Documents must contain buyerId and sellerId (your code already does this).
     match /orders/{orderId} {
-      allow read, write: if request.auth != null && 
-        (request.auth.uid == resource.data.buyerId || 
-         request.auth.uid == resource.data.sellerId ||
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
-      allow read: if request.auth != null && request.auth.token.email == 'admin@thriftx.com';
+      // Create: only allow creation if buyerId in request matches auth.uid (server/admin may also create)
+      allow create: if request.auth != null &&
+        request.resource.data.keys().hasAll(['buyerId','sellerId','items','total','createdAt']) &&
+        request.resource.data.buyerId == request.auth.uid ||
+        (request.auth != null && request.auth.token.email == 'admin@thriftx.com');
+
+      // Get a single order: buyer, seller, or admin can read
+      allow get: if request.auth != null && (
+        request.auth.uid == resource.data.buyerId ||
+        request.auth.uid == resource.data.sellerId ||
+        request.auth.token.email == 'admin@thriftx.com' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
+
+      // List: only allow queries that filter buyerId == auth.uid (so users can list their own orders)
+      allow list: if request.auth != null &&
+        request.query.where('buyerId', '==', request.auth.uid);
+
+      // Update: seller or admin can update; allow buyer only limited update (e.g., cancel) — adjust as needed
+      allow update: if request.auth != null && (
+        // seller/admin can update freely
+        request.auth.uid == resource.data.sellerId ||
+        request.auth.token.email == 'admin@thriftx.com' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+        // buyer may only set status to 'cancelled' and not modify other fields
+        (request.auth.uid == resource.data.buyerId
+          && request.resource.data.keys().hasOnly(resource.data.keys().union(['status']))
+          && request.resource.data.status == 'cancelled')
+      );
+
+      // Delete: only admin
+      allow delete: if request.auth != null && (
+        request.auth.token.email == 'admin@thriftx.com' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
     }
 
-    // Cart items can only be accessed by the owner
+    // ---------- CARTS ----------
     match /carts/{userId}/items/{itemId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Categories can be read by anyone, managed by admins
+    // ---------- CATEGORIES ----------
     match /categories/{categoryId} {
       allow read: if true;
-      allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // 🎟️ Coupons can be managed by admins and superadmins
+    // ---------- COUPONS ----------
     match /coupons/{couponId} {
       allow read: if true;
       allow write: if request.auth != null && (
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'superadmin'
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin','superadmin'] ||
+        request.auth.token.email == 'admin@thriftx.com'
       );
     }
 
-    // Super admin has access to all collections
+    // ---------- COUPON USAGES ----------
+    // Doc ID pattern expected: "<uid>_<COUPONCODE>"
+    match /coupon_usages/{usageId} {
+      // Read: owner or admin
+      allow read: if request.auth != null && (
+        usageId.matches('^' + request.auth.uid + '_.*') ||
+        request.auth.token.email == 'admin@thriftx.com' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
+
+      // Create / Update / Write: owner only, and request.resource must have userId == auth.uid
+      allow create, update, write: if request.auth != null &&
+        usageId.matches('^' + request.auth.uid + '_.*') &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.couponCode is string;
+    }
+
+    // ---------- OPTIONAL ADMIN FALLBACK ----------
+    // Keep an explicit admin-only fallback if you want — but be careful: missing collection-specific rules will be denied for non-admins.
     match /{document=**} {
-      allow read, write: if request.auth != null && request.auth.token.email == 'admin@thriftx.com';
+      allow read, write: if false; // safest default: deny everything not explicitly allowed
+      // or to keep an admin-only fallback, uncomment next line instead:
+      // allow read, write: if request.auth != null && request.auth.token.email == 'admin@thriftx.com';
     }
   }
 }

@@ -1,5 +1,4 @@
-import { collection, doc, setDoc, query, where, getDocs } from 'firebase/firestore';
-import { db } from '@/firebase/config';
+import { adminDb } from '@/lib/firebaseAdmin';
 
 /**
  * ShipRocket Webhook Handler
@@ -34,9 +33,10 @@ export async function POST(request) {
 
     if (shipment_id) {
       // Query orders where shiprocket_order_id matches
-      const ordersRef = collection(db, 'orders');
-      const q = query(ordersRef, where('shiprocket_order_id', '==', shipment_id));
-      const querySnapshot = await getDocs(q);
+      const querySnapshot = await adminDb.collection('orders')
+        .where('shiprocket_order_id', '==', shipment_id)
+        .limit(1)
+        .get();
 
       if (!querySnapshot.empty) {
         orderId = querySnapshot.docs[0].id;
@@ -45,9 +45,10 @@ export async function POST(request) {
 
     if (!orderId && awb) {
       // Query orders where awb_code matches
-      const ordersRef = collection(db, 'orders');
-      const q = query(ordersRef, where('awb_code', '==', awb));
-      const querySnapshot = await getDocs(q);
+      const querySnapshot = await adminDb.collection('orders')
+        .where('awb_code', '==', awb)
+        .limit(1)
+        .get();
 
       if (!querySnapshot.empty) {
         orderId = querySnapshot.docs[0].id;
@@ -60,7 +61,7 @@ export async function POST(request) {
     }
 
     // Update order with new shipment status
-    const orderRef = doc(db, 'orders', orderId);
+    const orderRef = adminDb.collection('orders').doc(orderId);
 
     const updateData = {
       shipping_status: status,
@@ -77,7 +78,7 @@ export async function POST(request) {
       updateData.shipping_activity = activity;
     }
 
-    await setDoc(orderRef, updateData, { merge: true });
+    await orderRef.update(updateData);
 
     console.log('Order updated with webhook data:', { orderId, status });
 
