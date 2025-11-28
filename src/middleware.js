@@ -47,7 +47,7 @@ export function middleware(request) {
 export const config = {
   matcher: [
     '/cart', 
-    // '/admin/:path*', 
+   '/admin/:path*', 
     '/profile',
     '/login',
     '/register/customer',
