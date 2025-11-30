@@ -34,6 +34,7 @@ const SellerRegister = () => {
         otpCode: "",
         role: "seller",
         location: "",
+        shiprocketPickupLocation: "" ,
         favoriteStyles: "",
         sustainabilityGoals: "",
     });
@@ -45,6 +46,8 @@ const SellerRegister = () => {
     const [otpSent, setOtpSent] = useState(false);
     const [useEmail, setUseEmail] = useState(true);
     const [confirmationResult, setConfirmationResult] = useState(null);
+    const [pickupLocations, setPickupLocations] = useState([]);
+    const [loadingLocations, setLoadingLocations] = useState(false);
 
     const { signup } = useAuth();
     const router = useRouter();
@@ -80,6 +83,30 @@ const SellerRegister = () => {
         setupRecaptcha();
     }, [setupRecaptcha]);
 
+    // Fetch ShipRocket pickup locations
+    useEffect(() => {
+        const fetchPickupLocations = async () => {
+            setLoadingLocations(true);
+            try {
+                const response = await fetch('/api/shiprocket/pickup-locations');
+                const data = await response.json();
+                if (data.success && data.data) {
+                    setPickupLocations(data.data);
+                } else {
+                    console.warn('No pickup locations available:', data.message);
+                    setPickupLocations([]);
+                }
+            } catch (error) {
+                console.error('Error fetching pickup locations:', error);
+                setPickupLocations([]);
+            } finally {
+                setLoadingLocations(false);
+            }
+        };
+
+        fetchPickupLocations();
+    }, []);
+
     const validateForm = (step = 1) => {
         const newErrors = {};
         if (step === 1) {
@@ -87,6 +114,7 @@ const SellerRegister = () => {
             if (!formData.password) newErrors.password = "Password is required";
             else if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters";
             if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Passwords do not match";
+            if (!formData.shiprocketPickupLocation) newErrors.shiprocketPickupLocation = "Please select a shipping pickup location";
 
             if (useEmail) {
                 if (!formData.email.trim()) newErrors.email = "Email is required";
@@ -148,6 +176,7 @@ const SellerRegister = () => {
                             email: formData.email,
                             role: "seller",
                             location: formData.location.trim(),
+                            shiprocketPickupLocation: formData.shiprocketPickupLocation,
                             favoriteStyles: formData.favoriteStyles.trim(),
                             sustainabilityGoals: formData.sustainabilityGoals.trim(),
                         }
@@ -175,6 +204,7 @@ const SellerRegister = () => {
                         phoneNumber: formData.phoneNumber,
                         role: formData.role,
                         location: formData.location.trim(),
+                        shiprocketPickupLocation: formData.shiprocketPickupLocation,
                         favoriteStyles: formData.favoriteStyles.trim(),
                         sustainabilityGoals: formData.sustainabilityGoals.trim(),
                         createdAt: new Date().toISOString(),
@@ -271,6 +301,43 @@ const SellerRegister = () => {
 
                             <div className="flex flex-col gap-4">
                                 <InputField label="Store Location (optional)" name="location" icon={<MapPin size={18} />} value={formData.location} onChange={handleChange} />
+
+                                {/* ShipRocket Pickup Location Selection */}
+                                <div className="relative group">
+                                    <label className="block text-gray-700 dark:text-gray-300 font-medium mb-1">
+                                        Shipping Pickup Location *
+                                        {loadingLocations && <span className="text-sm text-gray-500 ml-2">Loading...</span>}
+                                    </label>
+                                    <div className={`relative rounded-full overflow-hidden border ${!formData.shiprocketPickupLocation ? "border-red-500" : "border-gray-300 dark:border-gray-700"} bg-white dark:bg-neutral-900/50 transition-all group-hover:border-rose-500 dark:group-hover:border-rose-400`}>
+                                        <select
+                                            name="shiprocketPickupLocation"
+                                            value={formData.shiprocketPickupLocation}
+                                            onChange={handleChange}
+                                            disabled={loadingLocations}
+                                            className="w-full bg-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-rose-500 dark:focus:ring-purple-500 rounded-full appearance-none"
+                                        >
+                                            <option value="">Select a pickup location</option>
+                                            {pickupLocations.map((location, index) => (
+                                                <option key={location.id} value={location.id}>
+                                                   {location.pickup_location} - {location.city}, {location.state}
+                                                </option>
+
+                                            ))}
+                                        </select>
+                                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
+                                            <MapPin size={18} />
+                                        </div>
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    {!formData.shiprocketPickupLocation && !loadingLocations && (
+                                        <p className="text-red-500 text-sm mt-1">Please select a shipping pickup location</p>
+                                    )}
+                                </div>
+
                                 <InputField label="Specialty or Product Type (optional)" name="favoriteStyles" icon={<Heart size={18} />} value={formData.favoriteStyles} onChange={handleChange} />
                             </div>
 

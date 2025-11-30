@@ -452,7 +452,7 @@ const InputField = ({
   setToggle,
 }) => (
   <div className="relative group">
-    <label className="block text-gray-700 dark:text-gray-300 font-medium mb-1">
+    <label htmlFor={name} className="block text-gray-700 dark:text-gray-300 font-medium mb-1">
       {label}
     </label>
     <div
@@ -467,6 +467,7 @@ const InputField = ({
         name={name}
         value={value}
         onChange={onChange}
+        id={name}
         className="w-full bg-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-lime-500 rounded-full"
       />
       {toggle !== undefined && (

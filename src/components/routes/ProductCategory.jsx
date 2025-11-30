@@ -30,6 +30,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { ScrollArea } from '../ui/scroll-area';
 
 const ProductsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -46,6 +47,10 @@ const ProductsPage = () => {
     loading,
     filters,
     activeFilterCount,
+    availableCategories,
+    availableBrands,
+    availableSizes,
+    availableColors,
     updateFilters,
     clearFilters,
     PRICE_RANGE
@@ -108,14 +113,18 @@ const ProductsPage = () => {
   );
 
   return (
-    <div className="flex min-h-screen bg-white text-black dark:bg-black dark:text-white">
+    <div className="flex h-screen bg-white text-black dark:bg-black dark:text-white">
       {/* Filter Sidebar - Desktop */}
       {showFilters && !isMobile && (
-        <div className="w-80 border-r border-gray-200 dark:border-gray-800 overflow-y-auto">
+        <div className="w-80 border-r border-gray-200 dark:border-gray-800 overflow-y-auto max-h-screen">
           <FilterPage
             filters={filters}
             updateFilters={updateFilters}
             clearFilters={handleClearFilters}
+            availableCategories={availableCategories}
+            availableBrands={availableBrands}
+            availableSizes={availableSizes}
+            availableColors={availableColors}
           />
         </div>
       )}
@@ -136,7 +145,7 @@ const ProductsPage = () => {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed right-0 top-0 h-full w-80 bg-white dark:bg-black border-l border-gray-200 dark:border-gray-800 z-50 overflow-y-auto"
+              className="fixed right-0 top-20 h-[calc(100vh-5rem)] w-80 bg-white dark:bg-black border-l border-gray-200 dark:border-gray-800 z-50 overflow-y-auto"
             >
               <FilterPage
                 isMobile={isMobile}
@@ -144,6 +153,10 @@ const ProductsPage = () => {
                 filters={filters}
                 updateFilters={updateFilters}
                 clearFilters={handleClearFilters}
+                availableCategories={availableCategories}
+                availableBrands={availableBrands}
+                availableSizes={availableSizes}
+                availableColors={availableColors}
               />
             </motion.div>
           </>
@@ -152,102 +165,107 @@ const ProductsPage = () => {
 
       {/* Main Content */}
       <div className={`flex-1 flex flex-col ${showFilters && isMobile ? 'blur-sm' : ''}`}>
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 lg:p-6 border-b border-gray-200 dark:border-gray-800">
-          <h1 className="text-xl lg:text-2xl font-bold">Category</h1>
+        <ScrollArea className="flex-1 h-full">
+          <div className="flex flex-col min-h-full">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 lg:p-4 border-b border-gray-200 dark:border-gray-800">
+              <h1 className="text-xl lg:text-2xl font-bold">Category</h1>
 
-          <div className="flex items-center gap-2 lg:gap-4">
-            <span className="text-xs lg:text-sm text-gray-500 dark:text-gray-400 hidden sm:inline">
-              Showing {paginationInfo.startProduct}-{paginationInfo.endProduct} of {paginationInfo.totalProducts} Products
-            </span>
-            <div className="flex items-center gap-2">
-              <span className="text-xs lg:text-sm text-gray-500 dark:text-gray-400 hidden md:inline">Sort by:</span>
+              <div className="flex items-center gap-2 lg:gap-4">
+                <span className="text-xs lg:text-sm text-gray-500 dark:text-gray-400 hidden sm:inline">
+                  Showing {paginationInfo.startProduct}-{paginationInfo.endProduct} of {paginationInfo.totalProducts} Products
+                </span>
 
-              <Popover open={sortPopoverOpen} onOpenChange={setSortPopoverOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={sortPopoverOpen}
-                    className="w-[160px] lg:w-[200px] justify-between text-xs lg:text-sm"
+                <div className="flex items-center gap-2 ">
+                  <span className="text-xs lg:text-sm text-gray-500 dark:text-gray-400 hidden md:inline">Sort by:</span>
+
+                  <Popover open={sortPopoverOpen} onOpenChange={setSortPopoverOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={sortPopoverOpen}
+                        className="w-[160px] lg:w-[200px] justify-between text-xs lg:text-sm"
+                      >
+                        {sortBy || "Sort by..."}
+                        <ChevronsUpDown className="ml-2 opacity-50 w-4 h-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[160px] lg:w-[200px] p-0 ">
+                      <Command>
+                        <CommandInput placeholder="Search options..." className="h-9" />
+                        <CommandList>
+                          <CommandEmpty>No options found.</CommandEmpty>
+                          <CommandGroup>
+                            {SORT_OPTIONS.map(option => (
+                              <CommandItem
+                                key={option}
+                                value={option}
+                                onSelect={(currentValue) => {
+                                  setSortBy(currentValue);
+                                  setSortPopoverOpen(false);
+                                }}
+                              >
+                                {option}
+                                <Check
+                                  className={cn(
+                                    "ml-auto",
+                                    sortBy === option ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                {!showFilters && (
+                  <button
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="relative p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-lg transition-colors"
+                    aria-label="Open filters"
                   >
-                    {sortBy || "Sort by..."}
-                    <ChevronsUpDown className="ml-2 opacity-50 w-4 h-4" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[160px] lg:w-[200px] p-0">
-                  <Command>
-                    <CommandInput placeholder="Search options..." className="h-9" />
-                    <CommandList>
-                      <CommandEmpty>No options found.</CommandEmpty>
-                      <CommandGroup>
-                        {SORT_OPTIONS.map(option => (
-                          <CommandItem
-                            key={option}
-                            value={option}
-                            onSelect={(currentValue) => {
-                              setSortBy(currentValue);
-                              setSortPopoverOpen(false); // close after select
-                            }}
-                          >
-                            {option}
-                            <Check
-                              className={cn(
-                                "ml-auto",
-                                sortBy === option ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-
+                    <SlidersHorizontal className="w-5 h-5" />
+                    {activeFilterCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#bdf800] text-black text-xs font-bold rounded-full flex items-center justify-center">
+                        {activeFilterCount}
+                      </span>
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
 
-            {!showFilters && (
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="relative p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-lg transition-colors"
-                aria-label="Open filters"
-              >
-                <SlidersHorizontal className="w-5 h-5" />
-                {activeFilterCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#bdf800] text-black text-xs font-bold rounded-full flex items-center justify-center">
-                    {activeFilterCount}
-                  </span>
-                )}
-              </button>
-            )}
+            {/* Products Grid Container */}
+            <div className="flex-1 p-4 lg:p-6">
+              <ActiveFilters
+                appliedFilters={filters}
+                onClearAll={clearFilters}
+                PRICE_RANGE={PRICE_RANGE}
+              />
+
+              <ProductGrid
+                products={paginatedProducts}
+                loading={loading}
+                favorites={favorites}
+                renderStars={renderStars}
+                onClearFilters={clearFilters}
+                sectionContext={NAVIGATION_CONTEXTS.CATEGORY}
+              />
+            </div>
+
+            {/* Pagination */}
+            <Pagination
+              paginationInfo={paginationInfo}
+              onPageChange={setCurrentPage}
+            />
           </div>
-        </div>
-
-        {/* Products Grid Container */}
-        <div className="flex-1 p-4 lg:p-6">
-          <ActiveFilters
-            appliedFilters={filters}
-            onClearAll={clearFilters}
-            PRICE_RANGE={PRICE_RANGE}
-          />
-
-          <ProductGrid
-            products={paginatedProducts}
-            loading={loading}
-            favorites={favorites}
-            renderStars={renderStars}
-            onClearFilters={clearFilters}
-            sectionContext={NAVIGATION_CONTEXTS.CATEGORY}
-          />
-        </div>
-
-        {/* Pagination */}
-        <Pagination
-          paginationInfo={paginationInfo}
-          onPageChange={setCurrentPage}
-        />
+        </ScrollArea>
       </div>
+
     </div>
   );
 };

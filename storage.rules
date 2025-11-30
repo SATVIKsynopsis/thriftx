@@ -1,13 +1,119 @@
 rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
-    match /products/{allPaths=**} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-    
-    match /users/{userId}/{allPaths=**} {
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --------------------------
+    // Users: only owner or admin
+    // --------------------------
+    match /users/{userId} {
+      // Owner can read/write their own doc
       allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Super admin (by custom claim or by email) can read all users
+      allow read: if request.auth != null &&
+                  (request.auth.token.role == 'admin' || request.auth.token.email == 'admin@thriftx.com');
+    }
+
+    // --------------------------
+    // Products
+    // --------------------------
+    match /products/{productId} {
+      // public read
+      allow read: if true;
+
+      // create: authenticated user whose uid matches sellerId in request (or admin)
+      allow create: if request.auth != null &&
+                    (
+                      request.auth.uid == request.resource.data.sellerId ||
+                      request.auth.token.role == 'admin' ||
+                      request.auth.token.email == 'admin@thriftx.com'
+                    );
+
+      // update: only product owner (resource.data.sellerId) or admin
+      allow update: if request.auth != null &&
+                    (
+                      request.auth.uid == resource.data.sellerId ||
+                      request.auth.token.role == 'admin' ||
+                      request.auth.token.email == 'admin@thriftx.com'
+                    );
+
+      // delete: owner or admin
+      allow delete: if request.auth != null &&
+                    (
+                      request.auth.uid == resource.data.sellerId ||
+                      request.auth.token.role == 'admin' ||
+                      request.auth.token.email == 'admin@thriftx.com'
+                    );
+    }
+
+    // --------------------------
+    // Orders
+    // --------------------------
+    match /orders/{orderId} {
+      // read: buyer, seller, or admin
+      allow read: if request.auth != null &&
+                  (
+                    request.auth.uid == resource.data.buyerId ||
+                    request.auth.uid == resource.data.sellerId ||
+                    request.auth.token.role == 'admin' ||
+                    request.auth.token.email == 'admin@thriftx.com'
+                  );
+
+      // create: buyer (when placing order) or admin
+      allow create: if request.auth != null &&
+                    (
+                      request.auth.uid == request.resource.data.buyerId ||
+                      request.auth.token.role == 'admin' ||
+                      request.auth.token.email == 'admin@thriftx.com'
+                    );
+
+      // update: seller (to update status) OR buyer (to cancel) OR admin
+      allow update: if request.auth != null &&
+                    (
+                      request.auth.uid == resource.data.sellerId ||
+                      request.auth.uid == resource.data.buyerId ||
+                      request.auth.token.role == 'admin' ||
+                      request.auth.token.email == 'admin@thriftx.com'
+                    );
+
+      // delete: only admin
+      allow delete: if request.auth != null && (
+                      request.auth.token.role == 'admin' ||
+                      request.auth.token.email == 'admin@thriftx.com'
+                    );
+    }
+
+    // --------------------------
+    // Cart items (nested)
+    // --------------------------
+    match /carts/{userId}/items/{itemId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // --------------------------
+    // Categories
+    // --------------------------
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.role == 'admin';
+    }
+
+    // --------------------------
+    // Coupons
+    // --------------------------
+    match /coupons/{couponId} {
+      allow read: if true;
+      allow write: if request.auth != null &&
+                    (request.auth.token.role == 'admin' || request.auth.token.role == 'superadmin');
+    }
+
+    // --------------------------
+    // Optional: super-admin catch-all
+    // --------------------------
+    // Keep this at the end. Grants full access to superadmin accounts.
+    match /{document=**} {
+      allow read, write: if request.auth != null &&
+        (request.auth.token.role == 'superadmin' || request.auth.token.email == 'admin@thriftx.com');
     }
   }
 }

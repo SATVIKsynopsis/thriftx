@@ -2,13 +2,13 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Mail, Lock, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import toast from "react-hot-toast";
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { db, auth } from "@/firebase/config";
+import { signOut } from "firebase/auth";
+import { auth } from "@/firebase/config";
+
 import Image from "next/image";
 
 
@@ -18,11 +18,8 @@ const LoginComponent = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const { login, userProfile } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const router = useRouter();
-  const from = "/";
-  const pathname = usePathname();
-  const role = pathname.includes("seller") ? "seller" : "buyer";
 
   // Helper function to get redirect URL based on user role
   const getRedirectUrl = (userRole) => {
@@ -63,7 +60,7 @@ const LoginComponent = () => {
       const user = userCredential.user;
 
       if (!user.emailVerified) {
-        await auth.signOut();
+        await signOut(auth);
         toast.error("Please verify your email before logging in.");
         setLoading(false);
         return;
@@ -83,10 +80,10 @@ const LoginComponent = () => {
     } catch (error) {
       console.error("Login error:", error);
       // console.log(error);
-      if (error.code.includes('auth/email-not-verified')) {
+      if (error?.code?.includes('auth/email-not-verified')) {
         toast.error(error.message);
       } else {
-        switch (error.code) {
+        switch (error?.code) {
           case "auth/user-not-found":
             toast.error("No account found with this email");
             break;
@@ -105,33 +102,12 @@ const LoginComponent = () => {
     }
   };
 
-   // Google Login
+   // Google Login - Uses AuthContext's consistent implementation
   const handleGoogleSignIn = async () => {
-    const provider = new GoogleAuthProvider();
     setLoading(true);
-
     try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-
-      const userRef = doc(db, "users", user.uid);
-      const userSnap = await getDoc(userRef);
-
-      if (!userSnap.exists()) {
-        await setDoc(userRef, {
-          name: user.displayName,
-          email: user.email,
-          photoURL: user.photoURL,
-          role,
-          createdAt: new Date().toISOString(),
-        });
-      }
-
-      const userRole = userSnap.data()?.role || 'buyer';
-      toast.success(`Welcome ${user.displayName}!`);
-      const redirectUrl = getRedirectUrl(userRole);
-      console.log("Redirecting Google user to:", redirectUrl, "Role:", userRole);
-      router.push(redirectUrl);
+      await loginWithGoogle();
+      // AuthContext handles the redirect automatically
     } catch (error) {
       console.error("Google sign-in error:", error);
       toast.error("Google sign-in failed. Please try again.");
@@ -244,7 +220,7 @@ const InputField = ({
   setToggle,
 }) => (
   <div className="relative group">
-    <label className="block text-gray-700 dark:text-gray-300 font-medium mb-1">
+    <label htmlFor={name} className="block text-gray-700 dark:text-gray-300 font-medium mb-1">
       {label}
     </label>
 
@@ -261,6 +237,7 @@ const InputField = ({
         name={name}
         value={value}
         onChange={onChange}
+        id={name}
         className="w-full bg-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-lime-500 rounded-full"
       />
 

@@ -19,7 +19,7 @@ const TrendingFind = ({ loading, featuredProducts }) => {
       if (window.innerWidth >= 640) return 2;
       // *** MODIFICATION HERE ***
       // This line now returns 2 for screens smaller than 640px (e.g., mobile)
-      return 2; 
+      return 2;
     }
     return 4;
   };
@@ -72,11 +72,10 @@ const TrendingFind = ({ loading, featuredProducts }) => {
             <button
               onClick={handlePrev}
               disabled={currentIndex === 0}
-              className={`p-3 rounded-full transition-colors ${
-                currentIndex === 0 
-                ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed' 
-                : 'text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-800'
-              }`}
+              className={`p-3 rounded-full transition-colors ${currentIndex === 0
+                  ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                  : 'text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-800'
+                }`}
               aria-label="Previous products"
             >
               <ChevronLeft size={24} />
@@ -84,11 +83,10 @@ const TrendingFind = ({ loading, featuredProducts }) => {
             <button
               onClick={handleNext}
               disabled={currentIndex >= maxIndex}
-              className={`p-3 rounded-full transition-colors ${
-                currentIndex >= maxIndex 
-                ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed' 
-                : 'text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-800'
-              }`}
+              className={`p-3 rounded-full transition-colors ${currentIndex >= maxIndex
+                  ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                  : 'text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-800'
+                }`}
               aria-label="Next products"
             >
               <ChevronRight size={24} />
@@ -105,7 +103,9 @@ const TrendingFind = ({ loading, featuredProducts }) => {
           </div>
         ) : (
           <>
-            <div className="relative overflow-hidden">
+            <div
+              className="relative overflow-hidden"
+            >
               <div
                 className="flex transition-transform duration-500 ease-in-out"
                 style={{ transform: `translateX(-${currentIndex * (100 / visibleProducts)}%)` }}
@@ -116,7 +116,8 @@ const TrendingFind = ({ loading, featuredProducts }) => {
                 {featuredProducts.map((product) => (
                   <div
                     key={product.id}
-                    className={`flex-shrink-0 w-auto p-2 sm:w-1/3 md:w-1/3 lg:w-1/4`} 
+                    className="flex-shrink-0 p-2"
+                    style={{ width: `${100 / visibleProducts}%` }}
                   >
                     <ProductCard
                       product={product}
@@ -127,6 +128,7 @@ const TrendingFind = ({ loading, featuredProducts }) => {
               </div>
             </div>
 
+
             <div className="flex justify-center mt-6 sm:hidden">
               {Array.from({ length: Math.ceil(featuredProducts.length / visibleProducts) }).map((_, idx) => {
                 const slideValue = idx * visibleProducts;
@@ -135,11 +137,10 @@ const TrendingFind = ({ loading, featuredProducts }) => {
                   <button
                     key={idx}
                     onClick={() => setCurrentIndex(actualIndex)}
-                    className={`w-2 h-2 rounded-full transition-colors mx-1 ${
-                      idx === Math.floor(currentIndex / visibleProducts) 
-                      ? 'bg-gray-900 dark:bg-white' 
-                      : 'bg-gray-400 dark:bg-gray-600'
-                    }`}
+                    className={`w-2 h-2 rounded-full transition-colors mx-1 ${idx === Math.floor(currentIndex / visibleProducts)
+                        ? 'bg-gray-900 dark:bg-white'
+                        : 'bg-gray-400 dark:bg-gray-600'
+                      }`}
                     aria-label={`Go to product set ${idx + 1}`}
                   />
                 );

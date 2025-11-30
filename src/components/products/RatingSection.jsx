@@ -2,15 +2,15 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Star, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { db } from '../../firebase/config'; 
+import { db } from '../../firebase/config';
 import { collection, query, onSnapshot, addDoc, serverTimestamp, orderBy } from 'firebase/firestore';
-import ReviewForm from './ReviewForm'; 
-
+import ReviewForm from './ReviewForm';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 
 const RatingSection = ({ product, className = "" }) => {
   const { currentUser } = useAuth();
 
- //States
+  //States
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -50,14 +50,14 @@ const RatingSection = ({ product, className = "" }) => {
         id: doc.id,
         ...doc.data(),
         date: doc.data().createdAt?.toDate().toLocaleDateString('en-US', {
-            year: 'numeric', month: 'long', day: 'numeric'
+          year: 'numeric', month: 'long', day: 'numeric'
         })
       }));
       setReviews(reviewsData);
       setLoading(false);
     });
 
-    
+
     return () => unsubscribe();
   }, [product?.id]);
 
@@ -76,7 +76,7 @@ const RatingSection = ({ product, className = "" }) => {
         userName: currentUser.displayName || currentUser.email || 'Anonymous',
         createdAt: serverTimestamp(),
       });
-      setShowReviewForm(false); 
+      setShowReviewForm(false);
     } catch (error) {
       console.error("Error adding review: ", error);
       alert("Failed to submit review. Please try again.");
@@ -122,11 +122,10 @@ const RatingSection = ({ product, className = "" }) => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`pb-3 sm:pb-4 px-1 whitespace-nowrap text-sm sm:text-base font-medium transition-all ${
-                  activeTab === tab.id
-                    ? 'border-b-2 border-indigo-500 dark:border-white text-gray-900 dark:text-white'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300'
-                }`}
+                className={`pb-3 sm:pb-4 px-1 whitespace-nowrap text-sm sm:text-base font-medium transition-all ${activeTab === tab.id
+                  ? 'border-b-2 border-indigo-500 dark:border-white text-gray-900 dark:text-white'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300'
+                  }`}
               >
                 {tab.label}
               </button>
@@ -142,7 +141,7 @@ const RatingSection = ({ product, className = "" }) => {
                 Customer Reviews
               </h2>
               {currentUser ? (
-                <button 
+                <button
                   onClick={() => setShowReviewForm(true)}
                   className="bg-indigo-600 text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors dark:bg-lime-500 dark:text-black dark:hover:bg-lime-600"
                 >
@@ -181,7 +180,7 @@ const RatingSection = ({ product, className = "" }) => {
             )}
           </div>
         )}
-        
+
         {/* Product Details  */}
         {activeTab === 'details' && (
           <div className="prose dark:prose-invert max-w-none text-gray-600 dark:text-gray-400">
@@ -192,31 +191,19 @@ const RatingSection = ({ product, className = "" }) => {
         )}
         {/* FAQs Tab Content */}
         {activeTab === 'faqs' && (
-          <div className="max-w-3xl mx-auto">
-            <div className="space-y-4">
+          <div className="max-w-5xl mx-auto my-20">
+            <Accordion type="single" collapsible className="space-y-4">
               {faqs.map((faq, index) => (
-                <div key={index} className="border-b border-gray-300 dark:border-gray-700 pb-4">
-                  <button
-                    onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
-                    className="w-full flex justify-between items-center text-left"
-                  >
-                    <span className="text-base font-semibold text-gray-800 dark:text-white">
-                      {faq.question}
-                    </span>
-                    <ChevronDown
-                      className={`w-5 h-5 text-gray-500 dark:text-gray-400 transform transition-transform duration-300 ${
-                        openFaqIndex === index ? 'rotate-180' : ''
-                      }`}
-                    />
-                  </button>
-                  {openFaqIndex === index && (
-                    <div className="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">
-                      <p>{faq.answer}</p>
-                    </div>
-                  )}
-                </div>
+                <AccordionItem key={index} value={`item-${index}`} className="border-b border-gray-300 dark:border-gray-700">
+                  <AccordionTrigger className="flex justify-between items-center text-left text-base font-semibold text-gray-800 dark:text-white">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
               ))}
-            </div>
+            </Accordion>
           </div>
         )}
       </div>

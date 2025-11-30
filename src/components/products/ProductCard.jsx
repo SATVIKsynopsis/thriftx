@@ -86,10 +86,10 @@ const ProductCard = ({ product, isFavorite, renderStars, sectionContext }) => {
 
   return (
     <div
-      className="bg-neutral-100 w-full dark:bg-neutral-900 rounded-2xl sm:w-60 md:w-72 lg:w-80 xl:w-80 max-w-full overflow-hidden hover:transform hover:scale-105 transition-transform duration-200 cursor-pointer shadow-sm dark:shadow-md"
+      className="bg-neutral-100 w-full dark:bg-neutral-900 rounded-2xl h-96 flex flex-col overflow-hidden hover:transform hover:scale-105 transition-transform duration-200 cursor-pointer shadow-sm dark:shadow-md"
       onClick={handleViewProduct}
     >
-      <div className="relative w-full h-48 sm:h-64 overflow-hidden">
+      <div className="relative w-full h-48 sm:h-64 flex-shrink-0 overflow-hidden">
         {product.images && product.images.length > 0 ? (
           <img
             src={product.images[0]}
@@ -126,22 +126,28 @@ const ProductCard = ({ product, isFavorite, renderStars, sectionContext }) => {
         </button>
       </div>
 
-      <div className="p-4">
-        <h3 className="font-semibold text-base mb-1 text-neutral-900 dark:text-white">{product.name}</h3>
-        <p className="text-neutral-500 dark:text-neutral-400 text-xs mb-3">{product.condition}</p>
-
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-lime-600 dark:text-lime-400 text-xl font-bold">{product.price}</span>
-          <span className="text-neutral-400 dark:text-neutral-600 text-sm line-through">{product.originalPrice}</span>
+      <div className="p-4 flex flex-col flex-1">
+        <div className="flex-1 min-h-0">
+          <h3 className="font-semibold text-base mb-1 text-neutral-900 dark:text-white line-clamp-1 leading-tight">
+            {product.name}
+          </h3>
+          <p className="text-neutral-500 dark:text-neutral-400 text-xs mb-3">{product.condition}</p>
         </div>
 
-        <div className="flex items-center gap-2">
-          {starsFunction(product.rating)}
-          {(product.reviews && product.reviews > 0) ? (
-            <span className="text-neutral-500 dark:text-neutral-400 text-xs">({product.reviews})</span>
-          ) : (
-            <span className="text-neutral-500 dark:text-neutral-400 text-xs">No reviews yet</span>
-          )}
+        <div className="flex-shrink-0 mt-auto">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-lime-600 dark:text-lime-400 text-xl font-bold">{product.price}</span>
+            <span className="text-neutral-400 dark:text-neutral-600 text-sm line-through">{product.originalPrice}</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {starsFunction(product.rating)}
+            {(product.reviews && product.reviews > 0) ? (
+              <span className="text-neutral-500 dark:text-neutral-400 text-xs">({product.reviews})</span>
+            ) : (
+              <span className="text-neutral-500 dark:text-neutral-400 text-xs">No reviews yet</span>
+            )}
+          </div>
         </div>
       </div>
     </div>

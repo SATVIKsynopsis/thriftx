@@ -118,154 +118,199 @@ const CheckoutComponent = () => {
   const sellerId = cartItems.length > 0 ? cartItems[0].sellerId : null;
 
   const handleRazorpayPayment = async (orderData, onSuccess) => {
-    if (!window.Razorpay) {
-      toast.error("Razorpay SDK not loaded");
-      return;
-    }
-    const options = {
-      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_YourKeyHere",
-      amount: Math.round(orderData.total * 100),
-      currency: "INR",
-      name: "ThriftX",
-      description: `Order ${orderData.orderNumber}`,
-      handler: async function (response) {
-        await onSuccess(response);
-      },
-      prefill: {
-        name: orderData.user.name,
-        email: orderData.user.email,
-        contact: orderData.user.phone,
-      },
-      theme: { color: "#6366f1" },
-    };
-    const rzp = new window.Razorpay(options);
-    rzp.open();
+  if (!window.Razorpay) {
+    toast.error("Razorpay SDK not loaded");
+    return;
+  }
+
+  // 1️⃣ Ask backend to create Razorpay order
+  const res = await fetch("/api/razorpay/create-order", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      amount: orderData.total,
+      receipt: orderData.orderNumber,
+      notes: { buyerId: orderData.buyerId },
+    }),
+  });
+
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    console.error("Razorpay create order failed:", json);
+    toast.error("Failed to start payment. Try again.");
+    return;
+  }
+
+  const { order } = json;
+
+  // 2️⃣ Open Razorpay Checkout with server-created order_id
+  const options = {
+    key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+    order_id: order.id,
+    amount: order.amount,
+    currency: order.currency,
+    name: "ThriftX",
+    description: `Order ${orderData.orderNumber}`,
+    handler: async function (response) {
+      // 3️⃣ On success, forward to callback with both response + order
+      await onSuccess(response, order);
+    },
+    prefill: {
+      name: orderData.user.name,
+      email: orderData.user.email,
+      contact: orderData.user.phone,
+    },
+    theme: { color: "#6366f1" },
   };
 
-  const onSubmit = async (data) => {
-    setLoading(true);
-    if (!sellerId) {
-      toast.error("Seller information is missing.");
-      setLoading(false);
-      return;
+  const rzp = new window.Razorpay(options);
+  rzp.open();
+};
+
+
+
+
+ const onSubmit = async (data) => {
+  setLoading(true);
+
+  if (!sellerId) {
+    toast.error("Seller information is missing.");
+    setLoading(false);
+    return;
+  }
+
+  try {
+    const userRef = doc(db, "users", currentUser.uid);
+    const userDoc = await getDoc(userRef);
+
+    let userData = {
+      name: `${data.firstName} ${data.lastName}`,
+      email: data.email || currentUser.email,
+      phone: data.phone || "",
+    };
+
+    if (userDoc.exists()) {
+      const userInfo = userDoc.data();
+      userData = {
+        name:
+          userInfo.name ||
+          userInfo.displayName ||
+          `${data.firstName} ${data.lastName}`,
+        email: userInfo.email || currentUser.email,
+        phone: data.phone || userInfo.phone || "",
+      };
     }
 
-    try {
-      const userRef = doc(db, "users", currentUser.uid);
-      const userDoc = await getDoc(userRef);
-      
-      let userData = {
-        name: `${data.firstName} ${data.lastName}`,
-        email: data.email || currentUser.email,
-        phone: data.phone || ''
-      };
-      
-      if (userDoc.exists()) {
-        const userInfo = userDoc.data();
-        userData = {
-          name: userInfo.name || userInfo.displayName || `${data.firstName} ${data.lastName}`,
-          email: userInfo.email || currentUser.email,
-          phone: data.phone || userInfo.phone || ''
-        };
-      }
+    const enrichedItems = await Promise.all(
+      cartItems.map(async (item) => {
+        const productRef = doc(db, "products", item.productId);
+        const productSnap = await getDoc(productRef);
+        if (productSnap.exists()) {
+          return {
+            ...item,
+            category: productSnap.data().category || "Uncategorized",
+          };
+        }
+        return { ...item, category: "Uncategorized" };
+      })
+    );
 
-      const enrichedItems = await Promise.all(
-        cartItems.map(async (item) => {
-          const productRef = doc(db, "products", item.productId);
-          const productSnap = await getDoc(productRef);
-          if (productSnap.exists()) {
-            return {
-              ...item,
-              category: productSnap.data().category || "Uncategorized",
-            };
-          }
-          return { ...item, category: "Uncategorized" };
-        })
-      );
+    const now = new Date();
+    const year = now.getFullYear().toString().slice(-2);
+    const month = (now.getMonth() + 1).toString().padStart(2, "0");
+    const day = now.getDate().toString().padStart(2, "0");
+    const randomId = Math.random().toString(36).substring(2, 6).toUpperCase();
+    const orderNumber = `ORD-${year}${month}${day}-${randomId}`;
 
-      const now = new Date();
-      const year = now.getFullYear().toString().slice(-2);
-      const month = (now.getMonth() + 1).toString().padStart(2, '0');
-      const day = now.getDate().toString().padStart(2, '0');
-      const randomId = Math.random().toString(36).substring(2, 6).toUpperCase();
-      const orderNumber = `ORD-${year}${month}${day}-${randomId}`;
+    // ⚠️ createdAt / updatedAt should now be set on backend (admin),
+    // not with client-side serverTimestamp()
+    const orderData = {
+      orderNumber,
+      buyerId: currentUser.uid,
+      userId: currentUser.uid,
+      user: userData,
+      buyerInfo: data,
+      shippingAddress: {
+        fullName: `${data.firstName} ${data.lastName}`,
+        email: data.email,
+        phone: data.phone,
+        address: data.address,
+        city: data.city,
+        state: data.state,
+        zipCode: data.zipCode,
+      },
+      sellerId,
+      items: enrichedItems,
+      subtotal,
+      shipping,
+      tax,
+      total,
+      status: "pending",
+      appliedCoupons: appliedCoupons.map((c) => c.code),
+      fallbackUsed: fallbackDiscount > 0 ? true : false,
+    };
 
-      const orderData = {
-        orderNumber,
-        buyerId: currentUser.uid,
-        userId: currentUser.uid,
-        user: userData,
-        buyerInfo: data,
-        shippingAddress: {
-          fullName: `${data.firstName} ${data.lastName}`,
-          email: data.email,
-          phone: data.phone,
-          address: data.address,
-          city: data.city,
-          state: data.state,
-          zipCode: data.zipCode
-        },
-        sellerId,
-        items: enrichedItems,
-        subtotal,
-        shipping,
-        tax,
-        total,
-        status: "pending",
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        appliedCoupons: appliedCoupons.map(c => c.code),
-        fallbackUsed: fallbackDiscount > 0 ? true : false,
-      };
-
-      await new Promise((resolve, reject) => {
-        handleRazorpayPayment(orderData, async (razorpayResponse) => {
+    // 🔥 Secure flow: let backend verify payment + create order + call Shiprocket
+    await new Promise((resolve) => {
+      handleRazorpayPayment(
+        orderData,
+        async (razorpayResponse, razorpayOrder) => {
           try {
-            const orderRef = await addDoc(collection(db, "orders"), orderData);
-            
-            // Mark all applied coupons as used
-            for (const coupon of appliedCoupons) {
-              const usageRef = doc(db, "coupon_usages", `${currentUser.uid}_${coupon.code}`);
-              await setDoc(usageRef, {
-                userId: currentUser.uid,
-                couponCode: coupon.code,
-                usedAt: new Date().toISOString(),
-              }, { merge: true });
+           const verifyRes = await fetch("/api/razorpay/verify-payment", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    razorpay_order_id: razorpayResponse.razorpay_order_id,
+    razorpay_payment_id: razorpayResponse.razorpay_payment_id,
+    razorpay_signature: razorpayResponse.razorpay_signature,
+    orderData,
+  }),
+});
+
+
+            const verifyJson = await verifyRes.json();
+
+            if (!verifyRes.ok || !verifyJson.success) {
+              console.error("Payment verification failed:", verifyJson);
+              toast.error(
+                "Payment verification failed. If money is deducted, contact support."
+              );
+              resolve();
+              return;
             }
 
-            // Mark fallback as used if it was applied
-            if (fallbackDiscount > 0 && !fallbackUsed) {
-              const usageRef = doc(db, "coupon_usages", `${currentUser.uid}_FALLBACK20`);
-              await setDoc(usageRef, {
-                userId: currentUser.uid,
-                couponCode: "FALLBACK20",
-                usedAt: new Date().toISOString(),
-              }, { merge: true });
-              setFallbackUsed(true);
-            }
+            // ✅ Here the backend has:
+            // - verified Razorpay signature
+            // - created Firestore order (admin)
+            // - (optionally) created Shiprocket order
+            // - (optionally) marked coupons as used
 
-            // Clear all coupons and cart
+            // Clear cart & local coupon state
             setAppliedCoupons([]);
             setUseFallback(false);
             await clearCart();
-            
+
             toast.success("Order placed and payment successful!");
             router.push("/orders");
             resolve();
           } catch (err) {
-            console.error("Error updating coupon usage:", err);
-            toast.error("Order placed but failed to update coupon usage.");
+            console.error("Error verifying payment:", err);
+            toast.error(
+              "Payment succeeded but order setup failed. Contact support."
+            );
             resolve();
           }
-        });
-      });
-    } catch (error) {
-      console.error("Error placing order:", error);
-      toast.error("Failed to place order. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+        }
+      );
+    });
+  } catch (error) {
+    console.error("Error placing order:", error);
+    toast.error("Failed to place order. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   if (cartItems.length === 0) {
     return (

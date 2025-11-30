@@ -82,7 +82,7 @@ const ProductImageGallery = ({
         <img
           src={images[selectedImage]}
           alt="Product"
-          className="w-full aspect-square object-cover"
+          className="w-full h-80 sm:h-96 object-contain"
           onError={(e) => {
             e.target.style.display = 'none';
             e.target.nextElementSibling.style.display = 'flex';

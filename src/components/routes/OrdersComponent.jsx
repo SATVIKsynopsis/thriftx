@@ -2,19 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  collection,
-  query,
-  where,
-  getDocs,
-  orderBy
-} from 'firebase/firestore';
-import {
   Package,
   Calendar,
   Eye,
   // Removed unused icons: Clock, CheckCircle, XCircle, DollarSign
 } from 'lucide-react';
-import { db } from '@/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { formatPrice } from '@/utils/formatters';
@@ -142,6 +134,55 @@ const OrderStatus = ({ status, children }) => {
   );
 };
 
+// Shipping Status Component
+const ShippingStatus = ({ order }) => {
+  const { awb_code, courier_name, tracking_url, shipping_status, estimated_delivery } = order;
+
+  if (!awb_code && !courier_name) {
+    return null; // No shipping info yet
+  }
+
+  return (
+    <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+            <span className="font-semibold text-blue-800 dark:text-blue-200 text-sm">
+              Shipping Details
+            </span>
+          </div>
+          {courier_name && (
+            <p className="text-xs text-blue-700 dark:text-blue-300 mb-1">
+              Courier: {courier_name}
+            </p>
+          )}
+          {awb_code && (
+            <p className="text-xs text-blue-700 dark:text-blue-300 mb-1">
+              AWB: {awb_code}
+            </p>
+          )}
+          {estimated_delivery && (
+            <p className="text-xs text-blue-700 dark:text-blue-300">
+              Est. Delivery: {estimated_delivery}
+            </p>
+          )}
+        </div>
+        {tracking_url && (
+          <a
+            href={tracking_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded hover:bg-blue-700 transition-colors"
+          >
+            Track Order
+          </a>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const OrderTotal = ({ children }) => (
   <div className="text-2xl font-bold text-green-700">
     {children}
@@ -260,45 +301,16 @@ const OrdersComponent = () => {
       console.log(`[Step 1] Fetching orders for UID: ${currentUser.uid}`);
 
       try {
-        // Fetch orders where user is the buyer
-        const buyerOrdersQuery = query(
-          collection(db, 'orders'),
-          where('buyerId', '==', currentUser.uid),
-          orderBy('createdAt', 'desc')
-        );
+        // Use API route instead of direct Firestore queries to bypass client-side permissions
+        const response = await fetch(`/api/orders?userId=${currentUser.uid}`);
+        const data = await response.json();
 
-        const buyerSnapshot = await getDocs(buyerOrdersQuery);
+        if (data.error) {
+          throw new Error(data.error);
+        }
 
-        const buyerOrders = buyerSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          type: 'purchase'
-        }));
-
-        // Fetch orders where user is the seller
-        const sellerOrdersQuery = query(
-          collection(db, 'orders'),
-          where('sellerId', '==', currentUser.uid),
-          orderBy('createdAt', 'desc')
-        );
-
-        const sellerSnapshot = await getDocs(sellerOrdersQuery);
-
-        const sellerOrders = sellerSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          type: 'sale'
-        }));
-
-        const allUserOrders = [...buyerOrders, ...sellerOrders].sort((a, b) => {
-          const dateA = a.createdAt?.toDate?.() || 0;
-          const dateB = b.createdAt?.toDate?.() || 0;
-          // Sort descending (latest first)
-          return dateB.getTime() - dateA.getTime();
-        });
-
-        setOrders(allUserOrders);
-        setFilteredOrders(allUserOrders);
+        setOrders(data.orders);
+        setFilteredOrders(data.orders);
 
       } catch (error) {
         console.error("Error fetching orders:", error);
@@ -325,12 +337,33 @@ const OrdersComponent = () => {
   const formatDate = (timestamp) => {
     if (!timestamp) return 'N/A';
 
-    let date;
-    if (timestamp.toDate) {
-      date = timestamp.toDate();
-    } else {
-      date = new Date(timestamp);
-    }
+    const formatDate = (timestamp) => {
+  if (!timestamp) return "N/A";
+
+  let date;
+
+  if (timestamp?.toDate) {
+    date = timestamp.toDate();
+  }
+  else if (typeof timestamp === "number") {
+    date = new Date(timestamp);
+  }
+  else if (typeof timestamp === "string") {
+    const parsed = new Date(timestamp);
+    if (!isNaN(parsed)) date = parsed;
+  }
+
+  if (!date || isNaN(date.getTime())) {
+    return "N/A";
+  }
+
+  return date.toLocaleString("en-IN", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
+
 
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
@@ -393,6 +426,7 @@ const OrdersComponent = () => {
                     <OrderStatus status={order.status}>
                       {order.status || 'pending'}
                     </OrderStatus>
+                    <ShippingStatus order={order} />
                   </OrderInfo>
 
                   <OrderTotal>

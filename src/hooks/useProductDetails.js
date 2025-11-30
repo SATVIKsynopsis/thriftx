@@ -67,7 +67,10 @@ export const useProductDetails = (productId) => {
     if (!currentUser) {
       toast.error('Please login to add items to cart');
       router.push('/login');
-      return;
+    return;
+    }
+    else{
+      router.push('/cart');
     }
 
     if (!product) return;
@@ -111,7 +114,7 @@ export const useProductDetails = (productId) => {
     }
   };
 
-  const isOwnProduct = currentUser && product?.sellerId === currentUser.uid;
+  const isOwnProduct = !!(currentUser && product?.sellerId === currentUser.uid);
 
   return {
     // State
