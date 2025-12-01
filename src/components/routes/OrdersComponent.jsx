@@ -334,45 +334,40 @@ const OrdersComponent = () => {
   }, [orders, activeFilter]);
 
 
-  const formatDate = (timestamp) => {
-    if (!timestamp) return 'N/A';
-
-    const formatDate = (timestamp) => {
+const formatDate = (timestamp) => {
   if (!timestamp) return "N/A";
 
   let date;
 
+  // Firestore Timestamp
   if (timestamp?.toDate) {
     date = timestamp.toDate();
   }
+  // Unix ms number
   else if (typeof timestamp === "number") {
     date = new Date(timestamp);
   }
+  // ISO/string date
   else if (typeof timestamp === "string") {
     const parsed = new Date(timestamp);
     if (!isNaN(parsed)) date = parsed;
   }
 
+  // Fallback if invalid
   if (!date || isNaN(date.getTime())) {
     return "N/A";
   }
 
+  // Final formatted string (date + time)
   return date.toLocaleString("en-IN", {
     year: "numeric",
     month: "short",
     day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 };
 
-
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
 
   if (loading) {
     return (
